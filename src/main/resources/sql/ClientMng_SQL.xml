@@ -1,0 +1,1263 @@
+<?xml version="1.0" encoding="UTF-8"?><!--Converted at: Fri Mar 07 17:01:54 KST 2014-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="superMng.superMng.superMng.clientMng">
+	<sql id="selectListQuery">
+		SELECT	A.COMP_NM,		A.COMP_ID,		A.SERVICE_DT,	C1.CODE_NM	AS SERVICE_STATUS,
+				A.CHARGE_NM,	A.CHARGE_TEL,	A.USE_YN,		C2.CODE_NM	AS PAY_INFO,
+				A.HAS_DEFAULT_DATA_YN,
+				A.TABLE_CNT
+		FROM	(
+					SELECT	A.COMP_NM,	A.COMP_ID,
+							(
+								CASE	WHEN	SYSDATE <![CDATA[>]]> TO_DATE(B.SERVICE_END_DT,'YYYYMMDD')	THEN	'04' 
+										WHEN	SYSDATE <![CDATA[>]]> TO_DATE(B.SERVICE_START_DT,'YYYYMMDD') AND TO_DATE(B.SERVICE_END_DT,'YYYYMMDD')-15 <![CDATA[>]]> SYSDATE	THEN	'02'
+										WHEN	TO_DATE(B.SERVICE_START_DT,'YYYYMMDD') <![CDATA[>]]> SYSDATE	THEN	'01'
+										WHEN	TO_DATE(B.SERVICE_START_DT,'YYYYMMDD') IS NULL	THEN	''
+										ELSE	'03'
+								END
+							)	AS SERVICE_STATUS,
+							TO_CHAR(TO_DATE(B.SERVICE_START_DT, 'YYYYMMDD'), 'YYYY.MM.DD') || ' ~ ' ||TO_CHAR(TO_DATE(B.SERVICE_END_DT, 'YYYYMMDD'), 'YYYY.MM.DD')	AS SERVICE_DT, 
+							A.CHARGE_NM,	A.CHARGE_TEL,
+							NVL(A.USE_YN, 'Y')	AS USE_YN,
+							B.PAY_INFO,
+							NVL(A.HAS_DEFAULT_DATA_YN, 'N')	AS HAS_DEFAULT_DATA_YN,
+							D.TABLE_CNT
+					FROM	COM_COMPINFO A
+							LEFT JOIN	COM_COMPINFO_DETAIL B
+									ON	A.COMP_ID = B.COMP_ID AND CURRENT_SEQ = 'Y'
+							LEFT OUTER JOIN COM_COMP_DBINFO C
+							ON A.COMP_ID = C.COMP_ID
+							LEFT OUTER JOIN (SELECT OWNER AS TABLE_SCHEMA, COUNT(1) AS TABLE_CNT FROM DBA_TABLES WHERE OWNER IN (SELECT DB_ID FROM COM_COMP_DBINFO) GROUP BY OWNER) D
+							ON LOWER(C.DB_ID) = LOWER(D.TABLE_SCHEMA)			
+					WHERE	1 = 1	
+					<if test='searchCondition != null'>
+						<if test='searchCondition =="01"'>
+							AND UPPER(A.COMP_NM) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+						</if>
+						
+						<if test='searchCondition =="02"'>
+							AND UPPER(A.COMP_ID) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+						</if>
+					</if>
+					
+					<if test='findServiceStatus != null'>
+						<if test='findServiceStatus=="01"'>
+							AND TO_DATE(B.SERVICE_START_DT,'YYYYMMDD') <![CDATA[>]]> SYSDATE
+						</if>
+						
+						<if test='findServiceStatus=="02"'>
+							AND TO_DATE(B.SERVICE_END_DT,'YYYYMMDD')-15 <![CDATA[>]]> SYSDATE
+						</if>
+						
+						<if test='findServiceStatus=="03"'>
+							AND SYSDATE <![CDATA[>]]> TO_DATE(B.SERVICE_END_DT,'YYYYMMDD')-15
+							AND TO_DATE(B.SERVICE_END_DT,'YYYYMMDD') <![CDATA[>]]> SYSDATE
+						</if>
+						
+						<if test='findServiceStatus=="04"'>
+							AND SYSDATE <![CDATA[>]]> TO_DATE(B.SERVICE_END_DT,'YYYYMMDD')
+						</if>
+					</if>
+					
+					<if test='findUseYn != null'>
+						<if test='findUseYn == "Y"'>
+							AND	(A.USE_YN = 'Y' OR A.USE_YN IS NULL)
+						</if>
+						
+						<if test='findUseYn == "N"'>
+							AND	A.USE_YN = 'N'
+						</if>
+					</if>
+					
+					<if test='findPayStatus != null'>
+						<if test='findPayStatus == "Y"'>
+							AND B.PAY_INFO = 'Y'
+						</if>
+						
+						<if test='findPayStatus == "N"'>
+							AND B.PAY_INFO = 'N'
+						</if>
+					</if>
+				) A
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="347"/>
+					<property name="pAlias" value="C1"/>
+					<property name="pCompareColumn" value="A.SERVICE_STATUS"/>
+				</include>
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="348"/>
+					<property name="pAlias" value="C2"/>
+					<property name="pCompareColumn" value="A.PAY_INFO"/>
+				</include>
+		ORDER BY	
+			<choose>
+				<when test='sidx == "compNm"'>
+					A.COMP_NM
+				</when>
+				<when test='sidx == "compId"'>
+					A.COMP_ID
+				</when>
+				<when test='sidx == "serviceStatus"'>
+					C.CODE_NM
+				</when>
+				<when test='sidx == "payType"'>
+					A.COMP_NM
+				</when>
+				<when test='sidx == "serviceDt"'>
+					A.SERVICE_DT
+				</when>
+				<when test='sidx == "chargeNm"'>
+					A.CHARGE_NM
+				</when>
+				<when test='sidx == "chargeTel"'>
+					A.CHARGE_TEL
+				</when>
+				<when test='sidx == "useYn"'>
+					A.USE_YN
+				</when>
+				<otherwise>
+					A.COMP_NM
+				</otherwise>
+			</choose>
+			<choose>
+				<when test='sord == "DESC" or sord == "desc"'>
+					DESC
+				</when>
+				<otherwise>
+					ASC
+				</otherwise>
+			</choose>
+	</sql>
+	
+	<select id="selectList" parameterType="clientMngVO" resultType="clientMngVO">
+		/*	고객사 목록 조회	superMng.superMng.superMng.clientMng.selectList	*/
+		SELECT	T.*
+		FROM	(
+					<include refid="common.pagingHeader"/>
+					<include refid="selectListQuery"/>
+					<include refid="common.pagingFooter"/>
+				) T
+	</select>
+
+	<select id="selectListCount" parameterType="clientMngVO" resultType="java.lang.Integer">
+		/*	고객사 목록 수	superMng.superMng.superMng.clientMng.selectListCount	*/
+		SELECT	COUNT(1)
+		FROM	(
+					<include refid="selectListQuery"/>
+				)
+	</select>
+
+	<update id="updateUseYn" >
+		/*	서비스 사용여부 수정	superMng.superMng.superMng.clientMng.updateUseYn	*/	
+		UPDATE	COM_COMPINFO 
+			SET	USE_YN = #{useYn}
+		WHERE	COMP_ID = #{newCompId}
+	</update>
+	
+	<update id="callSpMakeDefaultData" statementType="CALLABLE">
+		/*	기초데이터 생성	superMng.superMng.superMng.clientMng.callSpMakeDefaultData	*/	
+		{CALL SP_MAKE_DEFAULT_DATA(#{newCompId}, #{encryptionCode})}
+	</update>
+	
+	<select id="selectLang" parameterType="clientMngVO" resultType="clientMngVO">
+		/*	언어 목록 조회	superMng.superMng.superMng.clientMng.selectLang	*/
+		SELECT	A.LANG,	
+				A.LANG_NM, 
+				DECODE(B.LANG, NULL, 'N', 'Y')	AS LANG_USE_YN
+		FROM	COM_LANG A
+				LEFT JOIN	COM_COMP_LANG B
+						ON	A.LANG = B.LANG
+						AND	B.COMP_ID = #{newCompId}
+		ORDER BY	A.SORT_ORDER
+	</select>
+	
+	<select id="selectDetail" resultType="clientMngVO">	
+		/*	고객사 상세 조회 superMng.superMng.superMng.clientMng.selectDetail	*/
+		SELECT	A.COMP_ID,		A.COMP_ID	AS NEW_COMP_ID,	A.COMP_ID	AS OLD_COMP_ID,
+				A.COMP_NM,		A.BIZ_NO,		A.CEO_NM,		A.BIZ_CONDITION,
+				A.BIZ_TYPE,		A.COMP_TEL,		A.COMP_FAX,		A.COUNTRY,
+				A.COMP_LANG,	A.COMP_ADDR,	A.CHARGE_NM,	A.CHARGE_TEL,
+				A.CHARGE_EMAIL,	A.MEMO,			A.THEME,		A.COMM_YEAR_BATCH_YN,	A.USE_YN,
+				CASE	WHEN	B.SERVICE_END_DT IS NULL	THEN	'Y'
+						WHEN	TO_CHAR(SYSDATE, 'YYYYMMDD') >	B.SERVICE_END_DT	THEN	'E'
+						ELSE	'C'
+				END	CONTRACT_STATUS,
+				TO_CHAR(TO_DATE(B.CONTRACT_DT, 'YYYYMMDD'), 'YYYY.MM.DD')	AS CONTRACT_DT,
+				TO_CHAR(TO_DATE(B.SERVICE_START_DT, 'YYYYMMDD'), 'YYYY.MM.DD')	AS SERVICE_START_DT,
+				TO_CHAR(TO_DATE(B.SERVICE_END_DT, 'YYYYMMDD'), 'YYYY.MM.DD')	AS SERVICE_END_DT,
+				B.PAY_TYPE,		B.SERVICE_TYPE,	B.PAY_INFO,
+				A.USE_MONITORING_YN	AS MONITORING_YN,
+				A.HAS_DEFAULT_DATA_YN
+		FROM	COM_COMPINFO A
+				LEFT JOIN	COM_COMPINFO_DETAIL B
+						ON	A.COMP_ID = B.COMP_ID
+						AND B.CURRENT_SEQ = 'Y'
+		WHERE	A.COMP_ID = #{newCompId}
+	</select>
+
+	<select id="selectIdCnt" parameterType="clientMngVO" resultType="int">
+		/*	ID 중복 체크	superMng.superMng.superMng.clientMng.selectIdCnt	*/
+		SELECT	COUNT(COMP_ID)	AS CNT
+		FROM	COM_COMPINFO
+		WHERE	COMP_ID = #{newCompId}
+	</select>
+	
+	<select id="selectHistory" parameterType="clientMngVO" resultType="clientMngVO">
+		/*	이력 조회	superMng.superMng.superMng.clientMng.selectHistory	*/
+		SELECT	TO_CHAR(TO_DATE(A.CONTRACT_DT,'YYYYMMDD'), 'YYYY.MM.DD')	AS CONTRACT_DT,
+				TO_CHAR(TO_DATE(A.SERVICE_START_DT, 'YYYYMMDD'), 'YYYY.MM.DD') || ' ~ ' || TO_CHAR(TO_DATE(A.SERVICE_END_DT, 'YYYYMMDD'), 'YYYY.MM.DD')	AS SERVICE_DT,
+				A.SERVICE_TYPE
+				<!-- C.CODE_NM AS SERVICE_TYPE -->
+		FROM	COM_COMPINFO_DETAIL A
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="351"/>
+					<property name="pAlias" value="C"/>
+					<property name="pCompareColumn" value="SERVICE_TYPE"/>
+				</include>
+		WHERE	A.COMP_ID = #{newCompId}
+		ORDER BY	A.CONTRACT_DT	ASC
+	</select>
+	
+	<select id="selectHistoryCount" parameterType="clientMngVO" resultType="int">
+		/*	이력 수 조회	superMng.superMng.superMng.clientMng.selectHistoryCount	*/
+		SELECT	COUNT(COMP_ID)
+		FROM	COM_COMPINFO_DETAIL
+		WHERE	COMP_ID = #{newCompId}
+	</select>
+	
+	<delete id="deleteLang" parameterType="clientMngVO"> 
+		/*	사용 언어 정보 삭제	superMng.superMng.superMng.clientMng.deleteLang	*/	
+		DELETE	FROM	COM_COMP_LANG
+		WHERE	COMP_ID = #{newCompId}
+	</delete>
+	
+	<insert id="insertLang" parameterType="clientMngVO"> 
+		/*	사용 언어 정보 저장	superMng.superMng.superMng.clientMng.insertLang	*/
+		INSERT	INTO	COM_COMP_LANG	(
+			COMP_ID,		LANG
+		) VALUES (
+			#{newCompId},	#{newLang}
+		)
+	</insert>
+	
+	<insert id="insertData" parameterType="clientMngVO"> 
+		/*	고객사 입력	superMng.superMng.superMng.clientMng.insertData	*/
+		INSERT	INTO	COM_COMPINFO (
+			COMP_ID,		COMP_NM,		BIZ_NO,		CEO_NM,
+			BIZ_CONDITION,	BIZ_TYPE,		COMP_TEL,	COMP_FAX,
+			COUNTRY,		COMP_LANG,		COMP_ADDR,	CHARGE_NM,
+			CHARGE_TEL,		CHARGE_EMAIL,	MEMO,		USE_YN,
+			THEME,			USE_MONITORING_YN,	
+			COMM_YEAR_BATCH_YN 
+		) VALUES (
+			#{newCompId},		#{compNm},		#{bizNo},		#{ceoNm},
+			#{bizCondition},	#{bizType},		#{compTel},		#{compFax},
+			#{country},			#{compLang},	#{compAddr},	#{chargeNm},
+			#{chargeTel},		#{chargeEmail},	#{memo},		#{useYn},
+			#{theme},			'N',
+			#{commYearBatchYn} 
+		)
+	</insert>
+	
+	<update id="updateData" parameterType="clientMngVO">
+		/*	고객사 수정	superMng.superMng.superMng.clientMng.updateData	*/	
+		UPDATE	COM_COMPINFO 
+			SET	COMP_ID = #{newCompId},
+				COMP_NM = #{compNm},
+				BIZ_NO = #{bizNo},
+				CEO_NM = #{ceoNm},
+				BIZ_CONDITION = #{bizCondition},
+				BIZ_TYPE = #{bizType},
+				COMP_TEL = #{compTel},
+				COMP_FAX = #{compFax},
+				COUNTRY = #{country},
+				COMP_LANG = #{compLang},
+				COMP_ADDR = #{compAddr},
+				CHARGE_NM = #{chargeNm},
+				CHARGE_TEL = #{chargeTel},
+				CHARGE_EMAIL = #{chargeEmail},
+				MEMO = #{memo},
+				THEME = #{theme},
+				COMM_YEAR_BATCH_YN = #{commYearBatchYn}, 
+				USE_YN = #{useYn}
+		WHERE	COMP_ID = #{oldCompId}
+	</update>
+	
+	<update id="updateContractCompId" parameterType="clientMngVO">
+		/*	계약 정보 compId 수정	superMng.superMng.superMng.clientMng.updateContractCompId	*/
+		UPDATE	COM_COMPINFO_DETAIL
+			SET	COMP_ID = #{newCompId}
+		WHERE	COMP_ID = #{oldCompId}
+	</update>
+	
+	<update id="updateContract" >		
+		/*	계약사항 수정	superMng.superMng.superMng.clientMng.updateContract	*/	
+		UPDATE	COM_COMPINFO_DETAIL
+			SET	COMP_ID = #{newCompId},
+				CONTRACT_DT = #{contractDt},
+				SERVICE_START_DT = #{serviceStartDt},
+				SERVICE_END_DT = #{serviceEndDt},
+				PAY_TYPE = #{payType},
+				SERVICE_TYPE =#{serviceType},
+				PAY_INFO =#{payInfo}
+		WHERE	COMP_ID = #{newCompId}
+			AND	CURRENT_SEQ = 'Y'
+	</update>
+	
+	<update id="updateCurrentSeq" >		
+		/*	계약사항 CURRNET SEQ 수정	superMng.superMng.superMng.clientMng.updateCurrentSeq	*/	
+		UPDATE	COM_COMPINFO_DETAIL
+			SET	COMP_ID = #{newCompId},
+				CURRENT_SEQ = 'N'
+		WHERE	COMP_ID = #{newCompId}
+	</update>
+	
+	<insert id="insertContract" parameterType="clientMngVO">
+		/* 계약사항 입력	superMng.superMng.superMng.clientMng.insertContract	*/
+		INSERT	INTO	COM_COMPINFO_DETAIL	(
+			COMP_ID,			SEQ,			CURRENT_SEQ,	CONTRACT_DT,
+			SERVICE_START_DT,	SERVICE_END_DT,	PAY_TYPE,		SERVICE_TYPE,
+			PAY_INFO
+		) VALUES (
+			#{newCompId},
+			(
+				SELECT	NVL(MAX(SEQ), 0) + 1
+				FROM	COM_COMPINFO_DETAIL
+				WHERE	COMP_ID = #{newCompId}
+			),
+			'Y',	#{contractDt},
+			#{serviceStartDt},	#{serviceEndDt},	#{payType},	#{serviceType},
+			#{payInfo}
+		)
+	</insert>
+	
+	<select id="selectServiceTypeData" parameterType="clientMngVO" resultType="java.lang.String">
+	/*	배포시 필요한 업무구무 id값 조회	superMng.superMng.superMng.clientMng.selectServiceTypeData	*/
+		SELECT SERVICE_TYPE
+		  FROM COM_COMPINFO_DETAIL
+		 WHERE	COMP_ID = #{newCompId}
+		   AND CURRENT_SEQ = 'Y' 
+	
+	</select>
+	
+	<!-- BSC_CLOUD의 SP_MAKE_DEFAULT_DATA를 DB 호환을 위해 일반 쿼리로 컨버팅 -->
+	<select id="makeDefaultDataStep0_0" parameterType="clientMngVO" resultType="String">
+		/*	공통코드 테이블에 현재 연도의 데이터가 없는 경우 연도를 현재 연도로 UPDATE	superMng.superMng.superMng.clientMng.makeDefaultDataStep0_0	*/
+		SELECT	TO_CHAR(SYSDATE, 'YYYY')
+		FROM	DUAL
+	</select>
+	
+	<select id="makeDefaultDataStep0_1" parameterType="clientMngVO" resultType="String">
+		/*	공통코드 테이블에 현재 연도의 데이터가 없는 경우 연도를 현재 연도로 UPDATE	superMng.superMng.superMng.clientMng.makeDefaultDataStep0_1	*/
+		SELECT	MAX(YEAR)
+		FROM	COM_CODE
+		WHERE	COMP_ID = #{templateId}
+			AND	YEAR != '9999'
+	</select>
+	
+	<update id="makeDefaultDataStep0_2" parameterType="clientMngVO">
+		/*	공통코드 테이블에 현재 연도의 데이터가 없는 경우 연도를 현재 연도로 UPDATE	superMng.superMng.superMng.clientMng.makeDefaultDataStep0_2	*/
+		UPDATE	COM_CODE
+			SET	YEAR = #{year}
+		WHERE	COMP_ID = #{templateId}
+			AND	YEAR != '9999'
+			AND	YEAR = #{maxYear}
+	</update>
+	
+	<update id="makeDefaultDataStep0_3" parameterType="clientMngVO">
+		/*	공통코드 테이블에 현재 연도의 데이터가 없는 경우 연도를 현재 연도로 UPDATE	superMng.superMng.superMng.clientMng.makeDefaultDataStep0_3	*/
+		UPDATE	COM_CODE_NM
+			SET	YEAR = #{year}
+		WHERE	COMP_ID = #{templateId}
+			AND	YEAR != '9999'
+			AND	YEAR = #{maxYear}
+	</update>
+	
+	<select id="makeDefaultDataStep1" parameterType="clientMngVO" resultType="int">
+		/*	회사정보 체크	superMng.superMng.superMng.clientMng.makeDefaultDataStep1	*/
+		SELECT	COUNT(COMP_ID)
+		FROM	COM_COMPINFO
+		WHERE	COMP_ID = #{newCompId}
+	</select>
+	
+	<!-- 
+	<delete id="makeDefaultDataStep2" statementType="CALLABLE" parameterType="clientMngVO">
+		/*	데이터 초기화	superMng.superMng.superMng.clientMng.makeDefaultDataStep2	*/
+		{CALL SP_MAKE_DEFAULT_DATA_STEP2(#{newCompId})}
+	</delete>
+	-->
+	
+	
+	<delete id="makeDefaultDataStep2" parameterType="clientMngVO">
+		/*	데이터 초기화	superMng.superMng.superMng.clientMng.makeDefaultDataStep2	*/
+		{call
+			declare
+			begin
+				DELETE	FROM	${targetDbId}.BSC_ACTUAL	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_ACTUAL_CLOSE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_ACTUAL_COL_HISTORY	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_ACTUAL_HISTORY	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_ACTUAL_IN_TERM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_APPROVE_USE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_CAL_METRIC	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_DASHBOARD_ITEM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_DASHBOARD_ITEM_USER	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_DASHBOARD_METRIC_USER	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_DEPTSCORE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_EVAL_GRADE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_EVAL_GRADE_CNT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_EVAL_METHOD	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_INITIATIVE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_INTERFACE_ORIGINAL_DATA	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRICSCORE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_APPROVE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_APPROVE_HIS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_CLOSE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_COL	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_COMMENT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_GRP	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_GRP_COL	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_GRP_MON	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_GRP_SECTION	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_IN_TERM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_MON	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_METRIC_SECTION	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_CLOSE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_DEGREE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_DEGREE_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_EVAL	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_EVAL_CLOSE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_EVAL_SUMMARY	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_FINAL_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_ITEM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_METRIC	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_UNIT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_USER	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_NONMET_USER_END	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_PERSPECTIVE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_PERSSCORE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_PROC_ADMIN	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_PROC_MASTER	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_SC_DEPT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_SC_DEPT_MAP	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_SC_DEPT_MAPPING	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_STRATEGY	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_STRATEGYSCORE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_STRATEGY_MAP	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_SYSTEM_ITEM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_TARGET	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_TARGET_HISTORY	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_TOT_CLOSE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_TOT_EVAL_ITEM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_TOT_EVAL_ITEM_SCORE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_TOT_EVAL_RATE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_TOT_EVAL_SETTING	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_TOT_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_VISION_MISSION	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.BSC_WEAK_CAUSE_PLAN	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COMTNFILE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COMTNFILEDETAIL	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_ADMIN	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_BOARD	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_BOARD_COMMENT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_BOARD_SETTING	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_BOOKMARK	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_CAL_TYPE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_CODE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_CODE_GRP	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_CODE_GRP_NM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_CODE_NM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_DEPTINFO	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_NOTICE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_PGM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_PGM_AUTH	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_PGM_NM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_SEQ	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_SIGNAL_STATUS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_USERINFO	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.COM_PROCESS	WHERE	COMP_ID = #{newCompId};
+		        DELETE	FROM	${targetDbId}.COM_PROCESS_NM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_ACTUAL	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_BOARD	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_CAL_TYPE_COL	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_DETAIL_COMPARE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_DETAIL_MEAS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_DETAIL_NOMEAS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_DETAIL_POINTOUT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_EVAL_CAT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_EVAL_CAT_GRP	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_METRIC	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_METRIC_EVAL_ITEM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_METRIC_MAPPING	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_METRIC_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_PAST_ACTUAL	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_SIMU	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_SIMU_COL_HISTORY	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_SIMU_FACTOR	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_SIMU_FACTOR_HISTORY	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_SIMU_HISTORY	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_STAFF	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_STAFF_MEETING	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.GOV_TARGET	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_ACTUAL_SUBMIT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_COACH	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_COACH_DEGREE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_DEGREE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_GRP	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_GRP_EVAL_JIKGUB	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_GRP_EVAL_POS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_GRP_JIKGUB	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_GRP_POS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_METRIC	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_OPINION	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_RATE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_RATE_MAPPING	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_TARGET	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_TARGET_JIKGUB	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_EVAL_TARGET_POS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_INITIATIVE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_INITIATIVE_HISTORY	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_METRIC	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_METRIC_APPROVE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_METRIC_APPROVE_HIS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_METRIC_CLOSE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_METRIC_HISTORY	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_SELF_EVAL_METRIC	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_SELF_EVAL_OPINION	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_TOT_CLOSE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_TOT_GRP	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_TOT_GRP_JIKGUB	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_TOT_GRP_POS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_TOT_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PAE_TOT_TARGET	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_APPROVE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_CAPA_GBN_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_CLOSE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVALUATOR	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVALUATOR_END	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_APP_JIKGUB	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_APP_POS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_GBN_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_GRP	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_GRP_JIKGUB	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_GRP_POS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_GRP_RATE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_IN_TERM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_ITEM_GBN_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_ITEM_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_JIKGUB	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_POS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_STANDARD	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_TARGET	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_TARGET_DEPT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_TARGET_ITEM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_EVAL_TARGET_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_ITEM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PCE_ITEM_GBN	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_CLOSE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_DEPT_SCORE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_EVAL_ITEM	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_EVAL_ITEM_SCORE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_EVAL_RATE	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_GRP	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_GRP_JIKGUB	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_GRP_POS	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_ITEM_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_RESULT	WHERE	COMP_ID = #{newCompId};
+				DELETE	FROM	${targetDbId}.PRS_TOT_TARGET	WHERE	COMP_ID = #{newCompId};
+			END
+		}
+	</delete>
+	
+	
+	<delete id="makeDefaultDataStep2_1" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_1	*/
+		DELETE	FROM	${targetDbId}.BSC_SC_DEPT		WHERE	COMP_ID = #{newCompId}	AND	SC_DEPT_ID = #{defaultDeptId}
+	</delete>
+	<delete id="makeDefaultDataStep2_1_1" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_1_1	*/
+		DELETE	FROM	${targetDbId}.COM_DEPTINFO	WHERE	COMP_ID = #{newCompId}	AND	DEPT_ID = #{defaultDeptId}
+	</delete>
+	<delete id="makeDefaultDataStep2_1_2" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_1_2	*/
+		DELETE	FROM	${targetDbId}.BSC_SC_DEPT_MAPPING	WHERE	COMP_ID = #{newCompId}	AND	SC_DEPT_ID = #{defaultDeptId}
+	</delete>
+	<delete id="makeDefaultDataStep2_2" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_2	*/
+		DELETE	FROM	${targetDbId}.COM_USERINFO	WHERE	COMP_ID = #{newCompId}	AND	USER_ID = #{userId}
+	</delete>
+	<delete id="makeDefaultDataStep2_3" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_3	*/
+		DELETE	FROM	${targetDbId}.COM_ADMIN		WHERE	COMP_ID = #{newCompId}	AND	USER_ID = #{userId}
+	</delete>
+	<delete id="makeDefaultDataStep2_4" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_4	*/
+		DELETE	FROM	${targetDbId}.COM_CODE_GRP	WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_5" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_5	*/
+		DELETE	FROM	${targetDbId}.COM_CODE		WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_6" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_6	*/
+		DELETE	FROM	${targetDbId}.COM_CODE_GRP_NM	WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_7" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_7	*/
+		DELETE	FROM	${targetDbId}.COM_CODE_NM		WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_8" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_8	*/
+		DELETE	FROM	${targetDbId}.COM_PGM		WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_9" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_9	*/
+		DELETE	FROM	${targetDbId}.COM_PGM_NM		WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_10" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_10	*/
+		DELETE	FROM	${targetDbId}.COM_PGM_AUTH	WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_11" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_11	*/
+		DELETE	FROM	${targetDbId}.BSC_PROC_MASTER	WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_12" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_12	*/
+		DELETE	FROM	${targetDbId}.COM_CAL_TYPE	WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_13" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_13	*/
+		DELETE	FROM	${targetDbId}.BSC_EVAL_GRADE	WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_14" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_14	*/
+		DELETE	FROM	${targetDbId}.BSC_EVAL_METHOD	WHERE	COMP_ID = #{newCompId}
+	</delete>
+	<delete id="makeDefaultDataStep2_15" parameterType="clientMngVO">
+		/*	기존 데이터 삭제	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_15	*/
+		DELETE	FROM	${targetDbId}.COM_SEQ			WHERE	COMP_ID = #{newCompId}
+	</delete>
+	
+	<delete id="makeDefaultDataStep2_16" parameterType="clientMngVO">
+		/*	기존 데이터 삭제 (Dashboard)	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_16	*/
+		DELETE	FROM	${targetDbId}.BSC_DASHBOARD_ITEM	WHERE	COMP_ID = #{newCompId}
+	</delete>
+	
+	<delete id="makeDefaultDataStep2_17" parameterType="clientMngVO">
+		/*	기존 데이터 삭제 (게시판 설정)	superMng.superMng.superMng.clientMng.makeDefaultDataStep2_17	*/
+		DELETE	FROM	${targetDbId}.COM_BOARD_SETTING	WHERE	COMP_ID = #{newCompId}
+	</delete>
+	
+	<insert id="makeDefaultDataStep3_1" parameterType="clientMngVO">
+		/*	공통코드 복사	superMng.superMng.superMng.clientMng.makeDefaultDataStep3_1	*/
+		INSERT INTO	${targetDbId}.COM_CODE_GRP (
+			COMP_ID,	CODE_GRP_ID,	CODE_GRP_NM,	CODE_GBN_ID,  MODIFY_YN, CODE_DEF_ID,	YEAR_YN,
+			CONTENT,	CREATE_DT,		DELETE_DT
+		)
+		SELECT	#{newCompId},	CODE_GRP_ID,	CODE_GRP_NM, CODE_GBN_ID,	MODIFY_YN, CODE_DEF_ID,	YEAR_YN,
+				CONTENT,	CREATE_DT,		DELETE_DT
+		FROM	COM_CODE_GRP
+		WHERE	COMP_ID = #{templateId}
+		        <!-- 
+		        <if test="codeServiceTypes.size != 0">
+				    AND CODE_GBN_ID IN 
+					<foreach collection="codeServiceTypes" item="item" index="index" separator="," open="(" close=")">
+						#{item}
+					</foreach>
+			    </if>
+			    -->
+		  AND	DELETE_DT IS NULL
+	</insert>
+	
+	<insert id="makeDefaultDataStep3_2" parameterType="clientMngVO">
+		/*	공통코드 복사	superMng.superMng.superMng.clientMng.makeDefaultDataStep3_2	*/
+		INSERT INTO	${targetDbId}.COM_CODE (
+			COMP_ID,	CODE_GRP_ID,	CODE_ID,		YEAR,		CODE_NM,
+			SORT_ORDER,	CONTENT,		ETC1,			ETC2,		CREATE_DT,
+			DELETE_DT
+		)
+		SELECT	#{newCompId},	CODE_GRP_ID,	CODE_ID,		YEAR,		CODE_NM,
+				SORT_ORDER,	CONTENT,		ETC1,			ETC2,		CREATE_DT,
+				DELETE_DT
+		FROM	COM_CODE
+		WHERE	COMP_ID = #{templateId}
+		AND     DELETE_DT IS NULL
+		<!-- 
+		<if test="codeServiceTypes.size != 0">
+		  AND   CODE_GRP_ID IN (SELECT CODE_GRP_ID
+			                      FROM COM_CODE_GRP
+			                     WHERE	COMP_ID = #{templateId}
+							       AND CODE_GBN_ID IN 
+								   <foreach collection="codeServiceTypes" item="item" index="index" separator="," open="(" close=")">
+									 #{item}
+								   </foreach>
+								   AND DELETE_DT IS NULL 
+			                    )
+		</if>
+		-->
+	</insert>
+	
+	<insert id="makeDefaultDataStep4" parameterType="clientMngVO">
+		/*	메뉴 복사	superMng.superMng.superMng.clientMng.makeDefaultDataStep4	*/
+		INSERT INTO	${targetDbId}.COM_PGM (
+				COMP_ID,		PGM_ID,			PGM_NM,		FULL_PGM_NM,	UP_PGM_ID,
+				PGM_LEVEL_ID,	URL,			SORT_ORDER,	REAL_ORDER,		CONTENT,
+				PARAM,			URL_PATTERN,	CREATE_DT,	DELETE_DT,		IS_LEAF,
+				FULL_PGM_ID, PGM_GBN_ID
+		)
+		SELECT	#{newCompId},	PGM_ID,			PGM_NM,		FULL_PGM_NM,	UP_PGM_ID,
+				PGM_LEVEL_ID,	URL,			SORT_ORDER,	REAL_ORDER,		CONTENT,
+				PARAM,			URL_PATTERN,	CREATE_DT,	DELETE_DT,		IS_LEAF,
+				FULL_PGM_ID, PGM_GBN_ID
+		FROM	COM_PGM
+		WHERE	COMP_ID = #{templateId}
+			<!-- 
+			<if test="menuServiceTypes.size != 0">
+			    AND PGM_GBN_ID IN 
+				<foreach collection="menuServiceTypes" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+				</foreach>
+			</if>
+			-->
+			AND	DELETE_DT IS NULL
+	</insert>
+	
+	<insert id="makeDefaultDataStep5" parameterType="clientMngVO">
+		/*	권한 복사	superMng.superMng.superMng.clientMng.makeDefaultDataStep5	*/
+		INSERT INTO	${targetDbId}.COM_PGM_AUTH (
+				COMP_ID,		AUTH_GUBUN,	PGM_ID,	CREATE_DT
+		)
+		SELECT	#{newCompId},	AUTH_GUBUN,	PGM_ID,	SYSDATE
+		FROM	COM_PGM_AUTH
+		WHERE	COMP_ID = #{templateId}
+		<!-- 
+		<if test="menuServiceTypes.size != 0">
+		  AND   PGM_ID IN (SELECT PGM_ID
+		                     FROM COM_PGM
+		                    WHERE	COMP_ID = #{templateId}
+								    AND PGM_GBN_ID IN 
+									<foreach collection="menuServiceTypes" item="item" index="index" separator="," open="(" close=")">
+										#{item}
+									</foreach>
+							  AND DELETE_DT IS NULL 
+		                   )
+		</if>
+		-->
+	</insert>
+	
+	<select id="makeDefaultDataStep6_1" parameterType="clientMngVO" resultType="String">
+		/*	다국어 관련 테이블 복사	superMng.superMng.superMng.clientMng.makeDefaultDataStep6_1	*/
+		SELECT	LANG	FROM	COM_COMP_LANG
+		WHERE	COMP_ID = #{newCompId}
+	</select>
+	
+	<insert id="makeDefaultDataStep6_2" parameterType="clientMngVO">
+		/*	다국어 관련 테이블 복사	superMng.superMng.superMng.clientMng.makeDefaultDataStep6_2	*/
+		INSERT INTO	${targetDbId}.COM_CODE_GRP_NM (
+				COMP_ID,	LANG,		CODE_GRP_ID,	CODE_GRP_NM,
+				CREATE_DT
+		)
+		SELECT	#{newCompId},	LANG,	CODE_GRP_ID,	CODE_GRP_NM,
+				SYSDATE
+		FROM	COM_CODE_GRP_NM
+		WHERE	COMP_ID = #{templateId}
+		  AND	LANG = #{lang}
+		 <!-- 
+		 <if test="codeServiceTypes.size != 0">
+		  AND   CODE_GRP_ID IN (SELECT CODE_GRP_ID
+			                      FROM COM_CODE_GRP
+			                     WHERE	COMP_ID = #{templateId}
+							       AND CODE_GBN_ID IN 
+								   <foreach collection="codeServiceTypes" item="item" index="index" separator="," open="(" close=")">
+									 #{item}
+								   </foreach>
+								   AND DELETE_DT IS NULL 
+			                    )
+		</if>
+		-->
+	</insert>
+	
+	<insert id="makeDefaultDataStep6_3" parameterType="clientMngVO">
+		/*	다국어 관련 테이블 복사	superMng.superMng.superMng.clientMng.makeDefaultDataStep6_3	*/
+		INSERT INTO	${targetDbId}.COM_CODE_NM (
+				COMP_ID,		LANG,	CODE_GRP_ID,	CODE_ID,	YEAR,
+				CODE_NM,		CREATE_DT
+		)
+		SELECT	#{newCompId},	LANG,	CODE_GRP_ID,	CODE_ID,	YEAR,
+				CODE_NM,		SYSDATE
+		FROM	COM_CODE_NM
+		WHERE	COMP_ID = #{templateId}
+		  AND	LANG = #{lang}
+		  AND   CODE_ID IN (SELECT CODE_ID FROM COM_CODE WHERE	COMP_ID = #{templateId} AND DELETE_DT IS NULL)
+		<!-- 
+		<if test="codeServiceTypes.size != 0">
+		  AND   CODE_GRP_ID IN (SELECT CODE_GRP_ID
+			                      FROM COM_CODE_GRP
+			                     WHERE	COMP_ID = #{templateId}
+							       AND CODE_GBN_ID IN 
+								   <foreach collection="codeServiceTypes" item="item" index="index" separator="," open="(" close=")">
+									 #{item}
+								   </foreach>
+								   AND DELETE_DT IS NULL 
+			                    )
+		</if>
+		-->
+	</insert>
+	
+	<insert id="makeDefaultDataStep6_4" parameterType="clientMngVO">
+		/*	다국어 관련 테이블 복사	superMng.superMng.superMng.clientMng.makeDefaultDataStep6_4	*/
+		INSERT INTO	${targetDbId}.COM_PGM_NM (
+				COMP_ID,		LANG,		PGM_ID,	PGM_NM,
+				FULL_PGM_NM,	CREATE_DT
+		)
+		SELECT	#{newCompId},	LANG,	PGM_ID,	PGM_NM,
+				FULL_PGM_NM,	SYSDATE
+		FROM	COM_PGM_NM
+		WHERE	COMP_ID = #{templateId}
+			AND	LANG = #{lang}
+			<!-- 
+			<if test="menuServiceTypes.size != 0">
+		    AND PGM_ID IN (SELECT PGM_ID
+		                     FROM COM_PGM
+		                    WHERE	COMP_ID = #{templateId}
+								    AND PGM_GBN_ID IN 
+									<foreach collection="menuServiceTypes" item="item" index="index" separator="," open="(" close=")">
+										#{item}
+									</foreach>
+							  AND DELETE_DT IS NULL 
+		                   )
+		    </if>
+		    -->
+	</insert>
+	
+	<insert id="makeDefaultDataStep7" parameterType="clientMngVO">
+		/*	시스템 관리자 생성	superMng.superMng.superMng.clientMng.makeDefaultDataStep7	*/
+		INSERT	INTO	${targetDbId}.COM_USERINFO (
+			COMP_ID,	USER_ID,	USER_NM,	DEPT_ID,	DEPT_NM,
+			PASSWD,		BEING_YN,	CREATE_DT,	LANG,		HIDDEN_YN
+		)
+		SELECT	#{newCompId},	#{userId},	'ADMIN',	#{defaultDeptId},	COMP_NM,
+				#{adminPassword},	'Y',	SYSDATE,	COMP_LANG,	'Y'
+		FROM	COM_COMPINFO
+		WHERE	COMP_ID = #{newCompId}
+	</insert>
+	
+	<insert id="makeDefaultDataStep8_1" parameterType="clientMngVO">
+		/*	관리자용 최상위 부서 임의 생성	superMng.superMng.superMng.clientMng.makeDefaultDataStep8_1	*/
+		INSERT	INTO	${targetDbId}.BSC_SC_DEPT (
+				COMP_ID,		YEAR,		SC_DEPT_ID,			FULL_SC_DEPT_ID,
+				SC_DEPT_NM,		SC_DEPT_FULL_NM,	FULL_DESC_SC_DEPT_NM,	FULL_ASC_SC_DEPT_NM,
+				UP_SC_DEPT_ID,	DEPT_KIND,		LEVEL_ID,	IS_LEAF,	
+				SORT_ORDER,	REAL_SORT_ORDER,	CREATE_DT
+		)
+		SELECT	#{newCompId},	#{year},	#{defaultDeptId},	#{defaultDeptId},
+				COMP_NM,		COMP_NM,	COMP_NM,			COMP_NM,
+				NULL,			'05',		1,					'Y',
+				1,				1,			SYSDATE
+		FROM	COM_COMPINFO
+		WHERE	COMP_ID = #{newCompId}
+	</insert>
+	
+	<insert id="makeDefaultDataStep8_2" parameterType="clientMngVO">
+		/*	관리자용 상위 부서 임의 생성	superMng.superMng.superMng.clientMng.makeDefaultDataStep8_2	*/
+		INSERT	INTO	${targetDbId}.COM_DEPTINFO	(
+			COMP_ID,	YEAR,				DEPT_ID,	DEPT_NM,
+			DEPT_F_NM,	UP_DEPT_ID,			DEPT_LEVEL,	CHIEF_ID,
+			SORT_ORDER,	REAL_SORT_ORDER,	IS_LEAF,	CREATE_DT,
+			MODIFY_DT,	BEING_YN
+		)
+		SELECT	COMP_ID,			YEAR,				SC_DEPT_ID,	SC_DEPT_NM,
+				SC_DEPT_FULL_NM,	UP_SC_DEPT_ID,		LEVEL_ID,	MANAGER_USER_ID,	
+				SORT_ORDER,			REAL_SORT_ORDER,	IS_LEAF,	CREATE_DT,
+				MODIFY_DT,			CASE	WHEN	DELETE_DT IS NULL	THEN	'Y'	ELSE	'N'	END
+		FROM	BSC_SC_DEPT
+		WHERE	COMP_ID = #{newCompId}
+			AND	YEAR = #{year}
+	</insert>
+	
+	<insert id="makeDefaultDataStep8_3" parameterType="clientMngVO">
+		/*	부서 매핑 정보 생성	superMng.superMng.superMng.clientMng.makeDefaultDataStep8_3	*/
+		INSERT	INTO	${targetDbId}.BSC_SC_DEPT_MAPPING	(
+				COMP_ID,	YEAR,	SC_DEPT_ID,	DEPT_ID,
+				CREATE_DT
+		)
+		SELECT	COMP_ID,	YEAR,	SC_DEPT_ID,	SC_DEPT_ID,
+				SYSDATE
+		FROM	${targetDbId}.BSC_SC_DEPT
+		WHERE	COMP_ID = #{newCompId}
+			AND	YEAR = #{year}
+	</insert>
+	
+	<insert id="makeDefaultDataStep9" parameterType="clientMngVO">
+		/*	시스템 관리자에 권한 부여	superMng.superMng.superMng.clientMng.makeDefaultDataStep9	*/
+		INSERT ALL
+			INTO	${targetDbId}.COM_ADMIN (COMP_ID,	AUTH_GUBUN,	USER_ID,	DEPT_ID) VALUES (#{newCompId},	'01',	#{userId},	#{defaultDeptId})
+			INTO	${targetDbId}.COM_ADMIN (COMP_ID,	AUTH_GUBUN,	USER_ID,	DEPT_ID) VALUES (#{newCompId},	'99',	#{userId},	#{defaultDeptId})
+		SELECT * FROM DUAL
+	</insert>
+	
+	<insert id="makeDefaultDataStep10" parameterType="clientMngVO">
+		/*	데이터 집계 프로시저 목록	superMng.superMng.superMng.clientMng.makeDefaultDataStep10	*/
+		INSERT INTO	${targetDbId}.BSC_PROC_MASTER (
+				COMP_ID,	PROC_ID,	PROC_NM,
+				PROC_GBN,	SORT_ORDER,	CONTENT
+		)
+		SELECT	#{newCompId},	PROC_ID,	PROC_NM,
+				PROC_GBN,	SORT_ORDER,	CONTENT
+		FROM	BSC_PROC_MASTER
+		WHERE	COMP_ID = #{templateId}
+	</insert>
+	
+	<insert id="makeDefaultDataStep11" parameterType="clientMngVO">
+		/*	득점산식	superMng.superMng.superMng.clientMng.makeDefaultDataStep11	*/
+		INSERT INTO ${targetDbId}.COM_CAL_TYPE (
+				COMP_ID,	CAL_TYPE_ID,	CAL_TYPE_NM,
+				CAL_TYPE,	CONTENT,		CREATE_DT
+		)
+		SELECT	#{newCompId},	CAL_TYPE_ID,	CAL_TYPE_NM,
+				CAL_TYPE,	CONTENT,		SYSDATE
+		FROM	COM_CAL_TYPE
+		WHERE	COMP_ID = #{templateId}
+			AND DELETE_DT IS NULL
+	</insert>
+	
+	<insert id="makeDefaultDataStep12" parameterType="clientMngVO">
+		/*	등급설정	superMng.superMng.superMng.clientMng.makeDefaultDataStep12	*/
+		INSERT INTO	${targetDbId}.BSC_EVAL_GRADE (
+				COMP_ID,	YEAR,		EVAL_METHOD_ID,	GRADE_ID,
+				GRADE_NM,	GRADE_RATE,	GRADE_SCORE,	SORT_ORDER,
+				CREATE_DT
+		)
+		SELECT	#{newCompId},	#{year},		EVAL_METHOD_ID,	GRADE_ID,
+				GRADE_NM,	GRADE_RATE,	GRADE_SCORE,	SORT_ORDER,
+				SYSDATE
+		FROM	BSC_EVAL_GRADE
+		WHERE	COMP_ID = #{templateId}
+			AND DELETE_DT IS NULL
+	</insert>
+	
+	<insert id="makeDefaultDataStep13" parameterType="clientMngVO">
+		/*	평가방법 관리	superMng.superMng.superMng.clientMng.makeDefaultDataStep13	*/
+		INSERT INTO	${targetDbId}.BSC_EVAL_METHOD	(
+				COMP_ID,	YEAR,	EVAL_METHOD_ID,	EVAL_METHOD_NM,
+				EVAL_METHOD_GUBUN,	DESCRIPTION,	SORT_ORDER,	CREATE_DT
+		)
+		SELECT	#{newCompId},	#{year},	EVAL_METHOD_ID,	EVAL_METHOD_NM,
+				EVAL_METHOD_GUBUN,	DESCRIPTION,	SORT_ORDER,	SYSDATE
+		FROM	BSC_EVAL_METHOD
+		WHERE	COMP_ID = #{templateId}
+			AND DELETE_DT IS NULL
+	</insert>
+	
+	<insert id="makeDefaultDataStep14" parameterType="clientMngVO">
+		/*	시퀀스	superMng.superMng.superMng.clientMng.makeDefaultDataStep14	*/
+		INSERT INTO	${targetDbId}.COM_SEQ	(
+				COMP_ID,		TABLE_NAME,	YEAR,	SEQ
+		)
+		SELECT	#{newCompId},	TABLE_NAME,	YEAR,	SEQ
+		FROM	COM_SEQ
+		WHERE	COMP_ID = #{templateId}
+	</insert>
+	
+	<update id="makeDefaultDataStep15" parameterType="clientMngVO">
+		/*	dashboard items update	superMng.superMng.superMng.clientMng.makeDefaultDataStep15	*/
+		INSERT INTO	${targetDbId}.BSC_DASHBOARD_ITEM	(
+				COMP_ID, ITEM_ID, URL, WIDTH, HEIGHT, CLASS_NM, ITEM_NM
+		)
+		SELECT	#{newCompId},	ITEM_ID, URL, WIDTH, HEIGHT, CLASS_NM, ITEM_NM
+		FROM	BSC_DASHBOARD_ITEM
+		WHERE	COMP_ID = #{templateId}
+	</update>
+	
+	<update id="makeDefaultDataStep16" parameterType="clientMngVO">
+		/*	게시판 설정	superMng.superMng.superMng.clientMng.makeDefaultDataStep16	*/
+		INSERT INTO	${targetDbId}.COM_BOARD_SETTING	(
+				COMP_ID,		BOARD_ID,		BOARD_NM,		USE_ATCH_FILE_YN,	MAX_UPLOAD_SIZE,
+				MAX_UPLOAD_CNT,	USE_REPLY_YN,	USE_COMMENT_YN,	PRIVATE_YN,			WRITE_AUTH,
+				REPLY_AUTH,		DUPL_LIMIT_MIN,	INSERT_USER_ID,	CREATE_DT
+		)
+		SELECT	#{newCompId},	BOARD_ID,		BOARD_NM,		USE_ATCH_FILE_YN,	MAX_UPLOAD_SIZE,
+				MAX_UPLOAD_CNT,	USE_REPLY_YN,	USE_COMMENT_YN,	PRIVATE_YN,			WRITE_AUTH,
+				REPLY_AUTH,		DUPL_LIMIT_MIN,	INSERT_USER_ID,	SYSDATE
+		FROM	COM_BOARD_SETTING
+		WHERE	COMP_ID = #{templateId}
+	</update>
+	
+	<insert id="makeDefaultDataStep17_1" parameterType="clientMngVO">
+		/*	프로세스 흐름도 데이터 복제	superMng.superMng.superMng.clientMng.makeDefaultDataStep17_1	*/
+		INSERT	INTO	${targetDbId}.COM_PROCESS	(
+			COMP_ID,	SERVICE_ID,	SERVICE_SUB_ID,	PGM_ID, SORT_ORDER, END_YN, END_DT
+		)
+		SELECT	#{newCompId},  SERVICE_ID,	SERVICE_SUB_ID,	PGM_ID, SORT_ORDER, END_YN, END_DT
+		FROM	COM_PROCESS
+		WHERE	COMP_ID = #{templateId}
+	</insert>
+	
+	<insert id="makeDefaultDataStep17_2" parameterType="clientMngVO">
+		/*	다국어 관련 테이블 복사	superMng.superMng.superMng.clientMng.makeDefaultDataStep17_2	*/
+		INSERT INTO	${targetDbId}.COM_PROCESS_NM	(
+				COMP_ID,	SERVICE_ID,	SERVICE_SUB_ID,	PGM_ID, LANG,	PROCESS_NM
+		)
+		SELECT	#{newCompId},	SERVICE_ID,	SERVICE_SUB_ID,	PGM_ID, LANG,	PROCESS_NM
+		FROM	COM_PROCESS_NM
+		WHERE	COMP_ID = #{templateId}
+		  AND	LANG IN (SELECT LANG FROM COM_COMP_LANG WHERE COMP_ID = #{newCompId})
+
+	</insert>
+	
+	<update id="makeDefaultDataStep20" parameterType="clientMngVO">
+		/*	기초 데이터 생성 여부 update	superMng.superMng.superMng.clientMng.makeDefaultDataStep20	*/
+		UPDATE	COM_COMPINFO
+			SET	HAS_DEFAULT_DATA_YN = 'Y'
+		WHERE	COMP_ID = #{newCompId}
+	</update>
+	
+	<!-- BSC_CLOUD의 SP_MAKE_LANG_DATA를 DB 호환을 위해 일반 쿼리로 컨버팅 -->
+	<delete id="makeLangDataStep1" parameterType="clientMngVO">
+		/*	사용하지 않는 언어의 메뉴 데이터 삭제	superMng.superMng.superMng.clientMng.makeLangDataStep1	*/
+		DELETE	FROM	${targetDbId}.COM_PGM_NM
+		WHERE	COMP_ID = #{newCompId}
+			AND	LANG NOT IN (
+								SELECT	LANG
+								FROM	COM_COMP_LANG
+								WHERE	COMP_ID = #{newCompId}
+							)
+	</delete>
+	
+	<insert id="makeLangDataStep2" parameterType="clientMngVO">
+		/*	추가된 언어의 메뉴 데이터 생성	superMng.superMng.superMng.clientMng.makeLangDataStep2	*/
+		INSERT	INTO	${targetDbId}.COM_PGM_NM	(
+			COMP_ID,		LANG,		PGM_ID,	PGM_NM,
+			FULL_PGM_NM,	CREATE_DT
+		)
+		SELECT	#{newCompId},	LANG,	PGM_ID,	PGM_NM,
+				FULL_PGM_NM,	SYSDATE
+		FROM	COM_PGM_NM
+		WHERE	COMP_ID = #{templateId}
+			AND	LANG IN (
+							SELECT	LANG
+							FROM	COM_COMP_LANG
+							WHERE	COMP_ID = #{newCompId}
+								AND	LANG NOT IN (
+									SELECT	DISTINCT LANG FROM ${targetDbId}.COM_PGM_NM
+									WHERE	COMP_ID = #{newCompId}
+							)
+						)
+			AND PGM_ID IN (
+				SELECT	PGM_ID FROM COM_PGM
+				WHERE	COMP_ID = #{newCompId}
+			)
+	</insert>
+	
+	<delete id="makeLangDataStep3" parameterType="clientMngVO">
+		/*	사용하지 않는 언어의 공통코드 그룹 데이터 삭제	superMng.superMng.superMng.clientMng.makeLangDataStep3	*/
+		DELETE	FROM	${targetDbId}.COM_CODE_GRP_NM
+		WHERE	COMP_ID = #{newCompId}
+			AND	LANG NOT IN (
+								SELECT	LANG
+								FROM	COM_COMP_LANG
+								WHERE	COMP_ID = #{newCompId}
+							)
+	</delete>
+	
+	<delete id="makeLangDataStep4" parameterType="clientMngVO">
+		/*	사용하지 않는 언어의 공통코드 데이터 삭제	superMng.superMng.superMng.clientMng.makeLangDataStep4	*/
+		DELETE	FROM	${targetDbId}.COM_CODE_NM
+		WHERE	COMP_ID = #{newCompId}
+			AND	LANG NOT IN (
+								SELECT	LANG
+								FROM	COM_COMP_LANG
+								WHERE	COMP_ID = #{newCompId}
+							)
+	</delete>
+	
+	<insert id="makeLangDataStep5" parameterType="clientMngVO">
+		/*	추가된 언어의 공통코드 그룹 데이터 생성	superMng.superMng.superMng.clientMng.makeLangDataStep5	*/
+		INSERT	INTO	${targetDbId}.COM_CODE_GRP_NM	(
+			COMP_ID,	LANG,	CODE_GRP_ID,	CODE_GRP_NM,
+			CREATE_DT
+		)
+		SELECT	#{newCompId},	LANG,	CODE_GRP_ID,	CODE_GRP_NM,
+				SYSDATE
+		FROM	COM_CODE_GRP_NM
+		WHERE	COMP_ID = #{templateId}
+			AND	LANG IN (
+							SELECT	LANG
+							FROM	COM_COMP_LANG
+							WHERE	COMP_ID = #{newCompId}
+								AND	LANG NOT IN (
+									SELECT	DISTINCT LANG FROM ${targetDbId}.COM_CODE_GRP_NM
+									WHERE	COMP_ID = #{newCompId}
+							)
+						)
+	</insert>
+	
+	<insert id="makeLangDataStep6" parameterType="clientMngVO">
+		/*	추가된 언어의 공통코드 데이터 생성	superMng.superMng.superMng.clientMng.makeLangDataStep6	*/
+		INSERT	INTO	${targetDbId}.COM_CODE_NM	(
+			COMP_ID,	LANG,	CODE_GRP_ID,	CODE_ID,	YEAR,
+			CODE_NM,	CREATE_DT
+		)
+		SELECT	#{newCompId},	LANG,	CODE_GRP_ID,	CODE_ID,	YEAR,
+				CODE_NM,		SYSDATE
+		FROM	COM_CODE_NM
+		WHERE	COMP_ID = #{templateId}
+			AND	LANG IN (
+							SELECT	LANG
+							FROM	COM_COMP_LANG
+							WHERE	COMP_ID = #{newCompId}
+								AND	LANG NOT IN (
+									SELECT	DISTINCT LANG FROM ${targetDbId}.COM_CODE_NM
+									WHERE	COMP_ID = #{newCompId}
+							)
+						)
+	</insert>
+	
+	<delete id="makeLangDataStep7" parameterType="clientMngVO">
+		/*	사용하지 않는 언어의 프로세스흐름도  데이터 삭제	superMng.superMng.superMng.clientMng.makeLangDataStep7	*/
+		DELETE	FROM	${targetDbId}.COM_PROCESS_NM
+		WHERE	COMP_ID = #{newCompId}
+		  AND	LANG NOT IN (
+								SELECT	LANG
+								FROM	COM_COMP_LANG
+								WHERE	COMP_ID = #{newCompId}
+							)
+	</delete>
+	
+	<insert id="makeLangDataStep8" parameterType="clientMngVO">
+		/*	프로세스 흐름도 명칭 데이터 복제 	superMng.superMng.superMng.clientMng.makeLangDataStep8	*/
+		INSERT	INTO	${targetDbId}.COM_PROCESS_NM	(
+			COMP_ID,	SERVICE_ID,	SERVICE_SUB_ID,	PGM_ID, LANG, PROCESS_NM
+		)
+		SELECT	#{newCompId},  SERVICE_ID,	SERVICE_SUB_ID,	PGM_ID, LANG, PROCESS_NM
+		FROM	COM_PROCESS_NM
+		WHERE	COMP_ID = #{templateId}
+		  AND	LANG IN (
+							SELECT	LANG
+							FROM	COM_COMP_LANG
+							WHERE	COMP_ID = #{newCompId}
+								AND	LANG NOT IN (
+									SELECT	DISTINCT LANG FROM ${targetDbId}.COM_PROCESS_NM
+									WHERE	COMP_ID = #{newCompId}
+							)
+						)
+	</insert>
+	
+	<select id="selectSourceDataBaseInfo" parameterType="clientMngVO" resultType="java.util.HashMap">
+		/*	소스 데이터베이스 정보  superMng.superMng.superMng.clientMng.selectSourceDataBaseInfo */
+		SELECT COMP_ID, 
+		       CONNECTION_ID,
+		       DB_ID,
+		       DB_DRIVER,
+		       DB_URL,
+		       DB_USER_ID,
+		       DB_USER_PASSWD
+		  FROM COM_COMP_DBINFO
+		 WHERE COMP_ID = #{compId}
+	
+	</select>
+	
+	<select id="selectTargetDataBaseInfo" parameterType="clientMngVO" resultType="java.util.HashMap">
+		/*	소스 데이터베이스 정보  superMng.superMng.superMng.clientMng.selectTargetDataBaseInfo */
+		SELECT COMP_ID, 
+		       CONNECTION_ID,
+		       DB_ID,
+		       DB_DRIVER,
+		       DB_URL,
+		       DB_USER_ID,
+		       DB_USER_PASSWD
+		  FROM COM_COMP_DBINFO
+		 WHERE COMP_ID = #{newCompId}
+	
+	</select>
+	
+	<!-- demo data 변경 쿼리 START -->
+	
+	<select id="selectTableList" parameterType="clientMngVO" resultType="java.lang.String">
+		/*	테이블 목록 조회 superMng.superMng.superMng.clientMng.selectTableList */
+		    SELECT TABLE_NAME
+  			  FROM DBA_TABLES
+			 WHERE OWNER = 'CUSTOM_ISPARK'
+			   AND TABLE_NAME NOT IN ('BSC_PROC_MASTER_NM','COM_CODE_UPDATE_LOG','COM_LANG','COM_COMP_DBINFO','COM_COMPINFO','COM_COMPINFO_DETAIL','COM_COMP_LANG')
+	</select>
+	
+	<delete id="deleteTableData" parameterType="clientMngVO">
+		/* 해당 고객사	테이블 데이터 삭제superMng.superMng.superMng.clientMng.deleteTableData */
+		DELETE FROM ${targetDbId}.${tableName}
+	</delete>
+	
+	<insert id="insertDemoTableData" parameterType="clientMngVO">
+		/* 해당 고객사	테이블 데이터 복사 superMng.superMng.superMng.clientMng.insertDemoTableData */
+		INSERT INTO ${targetDbId}.${tableName}
+		SELECT * FROM ${copyTargetDbId}.${tableName}
+	</insert>
+	
+	<update id="updateDemoTableData" parameterType="clientMngVO">
+		/* 해당 고객사	테이블 데이터 회사코드 업데이트 superMng.superMng.superMng.clientMng.updateDemoTableData */
+		UPDATE ${targetDbId}.${tableName}
+		   SET COMP_ID = #{newCompId}
+	</update>
+	
+	<update id="updateDemoData01" parameterType="clientMngVO">
+		/* 성과조직 최상위부서 명칭 superMng.superMng.superMng.clientMng.updateDemoData01 */
+		UPDATE ${targetDbId}.BSC_SC_DEPT
+		   SET SC_DEPT_NM = #{compNm},
+		       SC_DEPT_FULL_NM = #{compNm}
+		 WHERE SC_DEPT_ID = 'D000001'
+	</update>
+	
+	<update id="updateDemoData02" parameterType="clientMngVO">
+		/* 실조직 최상위부서 명칭 superMng.superMng.superMng.clientMng.updateDemoData02 */
+		UPDATE ${targetDbId}.COM_DEPTINFO
+		   SET DEPT_NM = #{compNm},
+		       DEPT_F_NM = #{compNm}
+		 WHERE DEPT_ID = 'D000001'
+	</update>
+	
+	<update id="updateDemoData03" parameterType="clientMngVO">
+		/* BSC_DEPTSCORE 부서명 UPDATE 실조직 최상위부서 명칭 superMng.superMng.superMng.clientMng.updateDemoData03 */
+		UPDATE ${targetDbId}.BSC_DEPTSCORE
+		   SET SC_DEPT_NM = #{compNm}
+		 WHERE SC_DEPT_ID = 'D000001'
+	</update>
+	
+	<update id="updateDemoData04" parameterType="clientMngVO">
+		/* BSC_METRICSCORE부서명 UPDATE superMng.superMng.superMng.clientMng.updateDemoData04 */
+		UPDATE ${targetDbId}.BSC_METRICSCORE
+		   SET SC_DEPT_NM = #{compNm}
+		 WHERE SC_DEPT_ID = 'D000001'
+	</update>
+	
+	<update id="updateDemoData05" parameterType="clientMngVO">
+		/* BSC_DASHBOARD_ITEM_USER 사용자id update superMng.superMng.superMng.clientMng.updateDemoData05 */
+		UPDATE ${targetDbId}.BSC_DASHBOARD_ITEM_USER
+		   SET USER_ID = #{userId}
+		 WHERE USER_ID = #{copyTargetCompId}||'_admin'
+	</update>
+	
+	<update id="updateDemoData06" parameterType="clientMngVO">
+		/* user_info 사용자id update superMng.superMng.superMng.clientMng.updateDemoData06 */
+		UPDATE ${targetDbId}.COM_USERINFO
+		   SET USER_ID = #{userId},
+		       PASSWD = #{adminPassword} 
+		 WHERE USER_ID = #{copyTargetCompId}||'_admin'
+	</update>
+	
+	<update id="updateDemoData07" parameterType="clientMngVO">
+		/* admin_gubun 사용자id update superMng.superMng.superMng.clientMng.updateDemoData07 */
+		UPDATE ${targetDbId}.COM_ADMIN
+		   SET USER_ID = #{userId}
+		 WHERE USER_ID = #{copyTargetCompId}||'_admin'
+	</update>
+	
+	<!-- demo data 변경 쿼리 END -->
+</mapper>

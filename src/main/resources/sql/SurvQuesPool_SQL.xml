@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.survey.survQuesPool">
+	<select id="selectList" parameterType="survQuesPoolVO" resultType="survQuesPoolVO">
+		/*	설문질문pool 조회	system.survey.survQuesPool.selectList */
+		SELECT
+			A.QUES_POOL_ID,
+			A.QUES_POOL_NM,
+			A.QUES_GBN_ID,
+			CB.CODE_NM AS QUES_GBN_NM,
+			A.ITEM_CNT_ID,
+			NVL(CA.CODE_NM,'-') AS ITEM_CNT_NM,
+			A.ITEM_CHECK_GBN_ID,
+			CASE WHEN A.QUES_GBN_ID = '002' THEN '주관식' ELSE CC.CODE_NM END AS ITEM_CHECK_GBN_NM,
+			A.SORT_ORDER,
+			A.CREATE_DT,
+			A.MODIFY_DT,
+			A.DELETE_DT
+		FROM SUR_QUES_POOL A
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'370'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="A.ITEM_CNT_ID"/>
+		</include>
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'371'"/>
+			<property name="pAlias" value="CB"/>
+			<property name="pCompareColumn" value="A.QUES_GBN_ID"/>
+		</include>
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'372'"/>
+			<property name="pAlias" value="CC"/>
+			<property name="pCompareColumn" value="A.ITEM_CHECK_GBN_ID"/>
+		</include>
+		WHERE 1=1
+		<if test='findUseYn != null and findUseYn == "Y"'>
+		AND A.DELETE_DT IS NULL
+		</if>
+		<if test='findUseYn != null and findUseYn == "N"'>
+		AND A.DELETE_DT IS NOT NULL
+		</if>
+		ORDER BY A.SORT_ORDER NULLS LAST
+
+	</select>
+
+	<select id="selectDetail" parameterType="survQuesPoolVO" resultType="survQuesPoolVO">
+		/*	설문질문pool 상세 조회	 	system.survey.survQuesPool.selectDetail	*/
+		SELECT
+			QUES_POOL_ID,
+			QUES_POOL_NM,
+			QUES_GBN_ID,
+			ITEM_CNT_ID,
+			ITEM_CHECK_GBN_ID,
+			SORT_ORDER,
+			CREATE_DT,
+			MODIFY_DT,
+			DELETE_DT,
+			CASE WHEN DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN
+		FROM SUR_QUES_POOL
+		WHERE 1=1
+			AND QUES_POOL_ID=#{quesPoolId}
+
+	</select>
+
+	<select id="selectItemList" parameterType="survQuesPoolVO" resultType="survQuesPoolVO">
+		/*	설문질문pool답변항목 목록조회	system.survey.survQuesPool.selectItemList */
+		SELECT
+			QUES_POOL_ID,
+			QUES_ITEM_ID,
+			ITEM_NUM,
+			ITEM_CONTENT
+		FROM SUR_QUES_POOL_ITEM
+		WHERE 1=1
+			AND QUES_POOL_ID=#{quesPoolId}
+		ORDER BY ITEM_NUM
+
+	</select>
+
+	<update id="deleteSurvQuesPool" parameterType="survQuesPoolVO">
+		/*	설문질문pool 삭제	system.survey.survQuesPool.deleteSurvQuesPool	*/
+		UPDATE SUR_QUES_POOL
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND QUES_POOL_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+	</update>
+
+	<insert id="insertData" parameterType="survQuesPoolVO">
+		/*	설문질문pool 저장	system.survey.survQuesPool.insertData	*/
+		INSERT INTO SUR_QUES_POOL(
+			QUES_POOL_ID,
+			QUES_POOL_NM,
+			QUES_GBN_ID,
+			ITEM_CNT_ID,
+			ITEM_CHECK_GBN_ID,
+			<if test='sortOrder != null and sortOrder != ""'>
+				SORT_ORDER,
+			</if>
+			CREATE_DT
+		) VALUES (
+			#{quesPoolId},
+			#{quesPoolNm},
+			#{quesGbnId},
+			#{itemCntId},
+			#{itemCheckGbnId},
+			<if test='sortOrder != null and sortOrder != ""'>
+				#{sortOrder},
+			</if>
+			SYSDATE
+		)
+
+	</insert>
+
+	<update id="updateData" parameterType="survQuesPoolVO">
+		/*	설문질문pool 수정	system.survey.survQuesPool.updateData	*/
+		UPDATE SUR_QUES_POOL
+		SET
+			QUES_POOL_NM=#{quesPoolNm},
+			QUES_GBN_ID=#{quesGbnId},
+			ITEM_CNT_ID=#{itemCntId},
+			ITEM_CHECK_GBN_ID=#{itemCheckGbnId},
+			<if test='sortOrder != null and sortOrder != ""'>
+				SORT_ORDER = #{sortOrder},
+			</if>
+			<if test='sortOrder == null or sortOrder == ""'>
+				SORT_ORDER = NULL,
+			</if>
+			MODIFY_DT=SYSDATE,
+			DELETE_DT = CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END
+		WHERE 1=1
+			AND QUES_POOL_ID=#{quesPoolId}
+
+	</update>
+
+	<update id="deleteQuesPoolItem" parameterType="survQuesPoolVO">
+		/*	설문질문pool답변항목 삭제	system.survey.survQuesPool.deleteQuesPoolItem	*/
+		DELETE SUR_QUES_POOL_ITEM
+		WHERE 1=1
+			AND QUES_POOL_ID=#{quesPoolId}
+	</update>
+
+	<insert id="insertQuesPoolItem" parameterType="survQuesPoolVO">
+		/*	설문질문pool답변항목 저장	system.survey.survQuesPool.insertQuesPoolItem	*/
+		INSERT INTO SUR_QUES_POOL_ITEM(
+			QUES_POOL_ID,
+			QUES_ITEM_ID,
+			ITEM_NUM,
+			ITEM_CONTENT
+		) VALUES (
+			#{quesPoolId},
+			#{quesItemId},
+			#{itemNum},
+			#{itemContent}
+		)
+
+	</insert>
+</mapper>
+

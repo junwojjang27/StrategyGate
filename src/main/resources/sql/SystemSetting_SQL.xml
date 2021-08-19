@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.comp.systemSetting">
+	
+	<select id="selectApproveDetail" parameterType="systemSettingVO" resultType="systemSettingVO">
+		/*	시스템설정 상세 조회	 	system.comp.systemSetting.selectApproveDetail	*/
+		<!-- 
+		SELECT
+			YEAR,
+			CASE WHEN METRIC_APPROVE_USE_YN = NULL THEN 'Y' ELSE METRIC_APPROVE_USE_YN END AS METRIC_APPROVE_USE_YN,
+			CASE WHEN ACT_APPROVE_USE_YN = NULL THEN 'Y' ELSE ACT_APPROVE_USE_YN END AS ACT_APPROVE_USE_YN,
+			CREATE_DT
+		FROM BSC_APPROVE_USE A
+		WHERE 1=1
+			AND YEAR=#{findYear}
+		-->	
+
+		SELECT #{findYear} AS YEAR,
+		       NVL((SELECT METRIC_APPROVE_USE_YN FROM BSC_APPROVE_USE A WHERE YEAR=#{findYear}),'Y') AS METRIC_APPROVE_USE_YN,
+		       NVL((SELECT ACT_APPROVE_USE_YN FROM BSC_APPROVE_USE A WHERE YEAR=#{findYear}),'Y') AS ACT_APPROVE_USE_YN
+		  FROM DUAL     
+		       
+
+	</select>	
+	
+	<select id="selectScoreDetail" parameterType="systemSettingVO" resultType="systemSettingVO">
+		/*	시스템설정 상세 조회	 	system.comp.systemSetting.selectScoreDetail	*/
+		<!-- 
+		SELECT
+			YEAR,
+			CASE WHEN MAX_SCORE_YN = NULL THEN 'Y' ELSE MAX_SCORE_YN END AS MAX_SCORE_YN,
+			CASE WHEN MAX_SCORE = NULL THEN 100 ELSE MAX_SCORE END AS MAX_SCORE,
+			CASE WHEN MIN_SCORE_YN = NULL THEN 'Y' ELSE MIN_SCORE_YN END AS MIN_SCORE_YN,
+			CASE WHEN MIN_SCORE = NULL THEN 0 ELSE MIN_SCORE END AS MIN_SCORE,
+			CREATE_DT
+		FROM BSC_MAX_MIN_SCORE A
+		WHERE 1=1
+			AND YEAR=#{findYear}
+		-->	
+			
+		SELECT #{findYear} AS YEAR,	
+		       NVL((SELECT MAX_SCORE_YN FROM BSC_MAX_MIN_SCORE A WHERE YEAR=#{findYear}),'Y') AS MAX_SCORE_YN,
+		       NVL((SELECT MAX_SCORE FROM BSC_MAX_MIN_SCORE A WHERE YEAR=#{findYear}),100) AS MAX_SCORE,
+		       NVL((SELECT MIN_SCORE_YN FROM BSC_MAX_MIN_SCORE A WHERE YEAR=#{findYear}),'Y') AS MIN_SCORE_YN,
+		       NVL((SELECT MIN_SCORE FROM BSC_MAX_MIN_SCORE A WHERE YEAR=#{findYear}),0) AS MIN_SCORE
+		  FROM DUAL
+
+	</select>
+	
+	<update id="deleteApproveData" parameterType="systemSettingVO">
+		/*	시스템설정 삭제	system.comp.systemSetting.deleteApproveData	*/
+		DELETE FROM BSC_APPROVE_USE
+		WHERE 1=1
+			AND YEAR=#{year}
+
+	</update>
+	
+	<update id="deleteScoreData" parameterType="systemSettingVO">
+		/*	시스템설정 삭제	system.comp.systemSetting.deleteScoreData	*/
+		DELETE FROM BSC_MAX_MIN_SCORE
+		WHERE 1=1
+			AND YEAR=#{year}
+
+	</update>
+
+	<insert id="insertApproveData" parameterType="systemSettingVO">
+		/*	시스템설정 저장	system.comp.systemSetting.insertApproveData	*/
+		INSERT INTO BSC_APPROVE_USE(
+			YEAR,
+			METRIC_APPROVE_USE_YN,
+			ACT_APPROVE_USE_YN,
+			CREATE_DT)
+		
+VALUES (
+			#{year},
+			#{metricApproveUseYn},
+			#{actApproveUseYn},
+			#{createDt})
+
+	</insert>
+	
+	<insert id="insertScoreData" parameterType="systemSettingVO">
+		/*	시스템설정 저장	system.comp.systemSetting.insertScoreData	*/
+		INSERT INTO BSC_MAX_MIN_SCORE(
+			YEAR,
+			MAX_SCORE_YN,
+			MAX_SCORE,
+			MIN_SCORE_YN,
+			MIN_SCORE,
+			CREATE_DT)
+		
+VALUES (
+			#{year},
+			#{maxScoreYn},
+			#{maxScore},
+			#{minScoreYn},
+			#{minScore},
+			#{createDt})
+
+	</insert>
+
+</mapper>
+

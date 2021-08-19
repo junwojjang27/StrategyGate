@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="codeGrpDeployVO">
+			<field property="codeGrpId" depends="maxlength">
+				<arg0 key="word.codeGrpId" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="codeGrpNmLang" depends="maxlength">
+				<arg0 key="word.codeGrpNm" resource="true"/>
+				<arg1 key="150" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>150</var-value>
+				</var>
+			</field>
+			<field property="codeDefId" depends="maxlength">
+				<arg0 key="word.codeDefId" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="yearYn" depends="maxlength">
+				<arg0 key="word.yearlyManageYn" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>1</var-value>
+				</var>
+			</field>
+			<field property="etc1" depends="maxlength">
+				<arg0 key="word.etc1" resource="true"/>
+				<arg1 key="4000" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>4000</var-value>
+				</var>
+			</field>
+			<field property="etc2" depends="maxlength">
+				<arg0 key="word.etc2" resource="true"/>
+				<arg1 key="4000" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>4000</var-value>
+				</var>
+			</field>
+		</form>
+	</formset>
+</form-validation>
+

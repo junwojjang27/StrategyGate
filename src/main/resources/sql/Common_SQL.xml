@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="common">
+	<!-- 페이징 쿼리 -->
+	<sql id="pagingHeader">
+		<![CDATA[
+		SELECT	TB_PAGE.ROWCNT AS "rowNum", TB_PAGE.*
+		FROM	(
+			SELECT	TA_PAGE.*, ROWNUM AS ROWCNT
+			FROM	(
+		]]>
+	</sql>
+	<sql id="pagingFooter">
+		<![CDATA[
+			) TA_PAGE
+			WHERE ROWNUM <= #{endRow}
+		) TB_PAGE
+		WHERE	ROWCNT >= #{startRow}
+		]]>
+	</sql>
+	
+	<select id="selectMonitoringRootScDeptId" parameterType="egovMap" resultType="String">
+		/*	모니터링 권한에 따른 최상위 성과조직ID 조회	common.selectMonitoringRootScDeptId	*/
+		SELECT	CASE	WHEN	C.USE_MONITORING_YN IS NULL	OR	C.USE_MONITORING_YN ='N'
+						THEN	#{rootScDeptId}
+						WHEN	COUNT(A.AUTH_GUBUN) <![CDATA[>]]> 0
+						THEN	#{rootScDeptId}
+						ELSE	M.SC_DEPT_ID
+				END	AS	MONITORING_ROOT_SC_DEPT_ID
+		FROM	COM_COMPINFO C
+				LEFT JOIN	V_ROLE_USER U
+					ON	U.USER_ID = #{userId}
+				LEFT JOIN	COM_ADMIN A
+					ON	U.USER_ID = A.USER_ID
+					AND	A.AUTH_GUBUN IN	('01', '60')	/* 관리자, 모니터링 권한자 */
+				LEFT JOIN	BSC_SC_DEPT_MAPPING M
+					ON	M.YEAR = #{findYear}
+					AND	M.DEPT_ID = U.DEPT_ID
+		GROUP BY	C.USE_MONITORING_YN, M.SC_DEPT_ID
+	</select>
+	
+	<select id="selectScDeptList" parameterType="commonVO" resultType="scDeptVO">
+		/*	성과조직 목록	common.selectScDeptList	*/
+		SELECT	A.SC_DEPT_ID,		A.SC_DEPT_NM,	A.SC_DEPT_FULL_NM,
+				A.UP_SC_DEPT_ID,	A.SC_DEPT_GRP_ID,	A.SORT_ORDER,	A.LEVEL_ID,		A.IS_LEAF,
+				C.APPROVE_STATUS_ID,	C1.CODE_NM	AS APPROVE_STATUS_NM
+		FROM	BSC_SC_DEPT A
+				LEFT JOIN	BSC_METRIC_APPROVE C
+						ON	A.YEAR = C.YEAR
+						AND A.SC_DEPT_ID = C.SC_DEPT_ID
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="'027'"/>
+					<property name="pAlias" value="C1"/>
+					<property name="pCompareColumn" value="C.APPROVE_STATUS_ID"/>
+				</include>
+		WHERE	A.YEAR = #{findYear}
+			AND	A.DELETE_DT IS NULL
+			AND A.REAL_SORT_ORDER IS NOT NULL
+		ORDER BY	A.REAL_SORT_ORDER
+	</select>
+	
+	<insert id="insertRootScDeptBySystem" parameterType="scDeptVO">
+		/*	최상위 성과조직 자동 생성	base.scDept.scDeptMng.insertRootScDeptBySystem	*/
+		INSERT	INTO	BSC_SC_DEPT	(
+			YEAR,			SC_DEPT_ID,			SC_DEPT_NM,
+			UP_SC_DEPT_ID,	LEVEL_ID,		SC_DEPT_FULL_NM,	FULL_DESC_SC_DEPT_NM,
+			FULL_ASC_SC_DEPT_NM,	FULL_SC_DEPT_ID,	SORT_ORDER,			REAL_SORT_ORDER,
+			IS_LEAF,		CREATE_DT
+		)
+		SELECT	#{year},		#{scDeptId},	COMP_NM,
+				NULL,		1,				COMP_NM,		COMP_NM,
+				COMP_NM,	#{scDeptId},	1,				1,
+				'Y',		SYSDATE
+		FROM	COM_COMPINFO
+		WHERE	1=1
+	</insert>
+
+	<select id="selectDeptList" parameterType="commonVO" resultType="deptVO">
+		/*	조직 목록	common.selectDeptList	*/
+		SELECT	DEPT_ID,	DEPT_NM,	DEPT_F_NM,
+				UP_DEPT_ID,	SORT_ORDER,	CHIEF_ID,
+				CHIEF_NM,	DEPT_LEVEL_ID	AS DEPT_LEVEL,	IS_LEAF
+		FROM	V_DEPTINFO
+		WHERE	YEAR = #{findYear}
+			AND REAL_SORT_ORDER IS NOT NULL
+		ORDER BY	REAL_SORT_ORDER
+	</select>
+	
+	<insert id="insertRootDeptBySystem" parameterType="scDeptVO">
+		/*	최상위 조직 자동 생성	base.scDept.scDeptMng.insertRootDeptBySystem	*/
+		INSERT	INTO	COM_DEPTINFO	(
+			YEAR,				DEPT_ID,	DEPT_NM,
+			DEPT_F_NM,	UP_DEPT_ID,			DEPT_LEVEL,	CHIEF_ID,
+			SORT_ORDER,	REAL_SORT_ORDER,	IS_LEAF,	CREATE_DT,
+			MODIFY_DT,	BEING_YN
+		)
+		SELECT	YEAR,				SC_DEPT_ID,	SC_DEPT_NM,
+				SC_DEPT_FULL_NM,	UP_SC_DEPT_ID,		LEVEL_ID,	MANAGER_USER_ID,	
+				SORT_ORDER,			REAL_SORT_ORDER,	IS_LEAF,	CREATE_DT,
+				MODIFY_DT,			'Y'
+		FROM	BSC_SC_DEPT
+		WHERE	YEAR = #{findYear}
+	</insert>
+	
+	<select id="selectUserList" parameterType="userVO" resultType="userVO">
+		/*	사용자 목록	common.selectUserList	*/
+		SELECT	U.USER_ID,		U.USER_NM,		U.DEPT_ID,	NVL(D.DEPT_NM, U.DEPT_NM)	AS DEPT_NM,
+				U.JIKGUB_ID,	C1.CODE_NM	AS JIKGUB_NM,	U.POS_ID,	C2.CODE_NM	AS POS_NM,
+				U.JOB_ID,		C3.CODE_NM	AS JOB_NM
+		FROM	V_ROLE_USER U
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="'345'"/>
+					<property name="pAlias" value="C1"/>
+					<property name="pCompareColumn" value="U.JIKGUB_ID"/>
+				</include>
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="'344'"/>
+					<property name="pAlias" value="C2"/>
+					<property name="pCompareColumn" value="U.POS_ID"/>
+				</include>
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="'343'"/>
+					<property name="pAlias" value="C3"/>
+					<property name="pCompareColumn" value="U.JOB_ID"/>
+				</include>
+				LEFT JOIN	V_DEPTINFO D
+					ON	U.DEPT_ID = D.DEPT_ID
+					AND	D.YEAR = #{findYear}
+		WHERE	1=1
+			<choose>
+				<when test='userNm != null and userNm != ""'>
+					AND	UPPER(U.USER_NM)	LIKE '%' || UPPER(#{userNm}) || '%'
+				</when>
+				<when test='deptId != null and deptId != ""'>
+					AND	U.DEPT_ID = #{deptId}
+				</when>
+				<otherwise>
+				</otherwise>
+			</choose>
+			<if test='findPosId != null and findPosId != ""'>
+				AND	U.POS_ID = #{findPosId}
+			</if>
+			<if test='findJikgubId != null and findJikgubId != ""'>
+				AND	U.JIKGUB_ID = #{findJikgubId}
+			</if>
+		ORDER BY	C1.SORT_ORDER,	U.USER_NM
+	</select>
+	
+	<!-- 즐겨찾기 관련 -->
+	<select id="selectBookmarkList" parameterType="menuVO" resultType="egovMap">
+		/*	즐겨찾기 목록	common.selectBookmarkList	*/
+		SELECT	A.PGM_ID,	A.PGM_NM,	A.UP_PGM_ID,	A.SORT_ORDER,
+				A.PGM_LEVEL_ID AS LEVEL_ID,	CASE WHEN A.IS_LEAF = 'Y' THEN '1' ELSE '0' END AS IS_LEAF
+		FROM 
+			(
+				SELECT DISTINCT  B.PGM_ID, B.PGM_NM, B.UP_PGM_ID,	B.URL,	B.URL_PATTERN,
+						B.PGM_LEVEL_ID,	B.SORT_ORDER, B.FULL_PGM_ID, B.REAL_ORDER, B.IS_LEAF
+				FROM 
+					( 
+						SELECT	PGM_ID,		PGM_NM,		UP_PGM_ID,	URL,	URL_PATTERN,
+								PGM_LEVEL_ID,	SORT_ORDER, FULL_PGM_ID, PGM_GBN_ID,
+								CASE WHEN INSTR(FULL_PGM_ID,'/',1,1) = 0 THEN NULL ELSE SUBSTR(FULL_PGM_ID,INSTR(FULL_PGM_ID,'/',1,1)+1,7) END AS LEV0,
+								CASE WHEN INSTR(FULL_PGM_ID,'/',1,2) = 0 THEN NULL ELSE SUBSTR(FULL_PGM_ID,INSTR(FULL_PGM_ID,'/',1,2)+1,7) END AS LEV1,
+								CASE WHEN INSTR(FULL_PGM_ID,'/',1,3) = 0 THEN NULL ELSE SUBSTR(FULL_PGM_ID,INSTR(FULL_PGM_ID,'/',1,3)+1,7) END AS LEV2,
+								CASE WHEN INSTR(FULL_PGM_ID,'/',1,4) = 0 THEN NULL ELSE SUBSTR(FULL_PGM_ID,INSTR(FULL_PGM_ID,'/',1,4)+1,7) END AS LEV3,
+								CASE WHEN INSTR(FULL_PGM_ID,'/',1,5) = 0 THEN NULL ELSE SUBSTR(FULL_PGM_ID,INSTR(FULL_PGM_ID,'/',1,5)+1,7) END AS LEV4
+						FROM	COM_PGM
+						WHERE	DELETE_DT IS NULL
+							AND PGM_ID IN	(
+												SELECT	DISTINCT	C.PGM_ID
+												FROM	COM_ADMIN A
+														JOIN	COM_PGM_AUTH B
+															ON	A.AUTH_GUBUN = B.AUTH_GUBUN
+														JOIN	COM_BOOKMARK C
+															ON	B.PGM_ID = C.PGM_ID
+															AND	A.USER_ID = C.USER_ID
+														JOIN 	COM_CODE D
+															ON	B.AUTH_GUBUN = D.CODE_ID
+															AND D.CODE_GRP_ID = '018'
+															AND D.DELETE_DT IS NULL
+												WHERE	A.USER_ID = #{userId}
+											) 
+					) A 
+				INNER JOIN COM_PGM B
+				ON B.DELETE_DT IS NULL
+				AND (B.PGM_ID = A.LEV0 OR B.PGM_ID = A.LEV1 OR B.PGM_ID = A.LEV2 OR B.PGM_ID = A.LEV3 OR B.PGM_ID = A.LEV4)
+				INNER JOIN (SELECT SERVICE_TYPE FROM COM_COMPINFO_DETAIL WHERE CURRENT_SEQ = 'Y') SERVICE
+				ON INSTR(SERVICE.SERVICE_TYPE,A.PGM_GBN_ID) > 0
+				ORDER BY B.REAL_ORDER
+			) A
+		LEFT JOIN	COM_PGM_NM B
+		ON	A.PGM_ID = B.PGM_ID
+		AND B.LANG = #{lang}
+		ORDER BY A.REAL_ORDER
+		
+	</select>
+	
+	<select id="selectCheckPgmId" parameterType="menuVO" resultType="int">
+		/*	즐겨찾기 설정 가능한 메뉴인지 확인	common.selectCheckPgmId	*/
+		SELECT	COUNT(1)
+		FROM	COM_ADMIN A,
+				COM_PGM_AUTH B
+		WHERE	A.AUTH_GUBUN = B.AUTH_GUBUN
+			AND	A.USER_ID = #{userId}
+			AND	B.PGM_ID = #{pgmId}
+	</select>
+
+	<delete id="deleteBookmark" parameterType="menuVO">
+		/*	즐겨찾기 삭제	common.deleteBookmark	*/
+		DELETE	FROM	COM_BOOKMARK
+		WHERE	USER_ID = #{userId}
+			AND	PGM_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+	</delete>
+
+	<insert id="insertBookmark" parameterType="menuVO">
+		/*	즐겨찾기 저장	common.insertBookmark	*/
+		INSERT	INTO	COM_BOOKMARK	(
+			USER_ID,	PGM_ID,		CREATE_DT
+		) VALUES (
+			#{userId},	#{pgmId},	SYSDATE
+		)
+	</insert>
+	
+	<select id="selectApproveUse" parameterType="commonVO" resultType="egovMap">
+		/*	승인사용설정 확인	common.selectApproveUse	*/
+		
+		SELECT NVL((SELECT	A.METRIC_APPROVE_USE_YN FROM BSC_APPROVE_USE A WHERE A.YEAR = #{findYear}),'Y') AS METRIC_APPROVE_USE_YN,
+			   NVL((SELECT	A.ACT_APPROVE_USE_YN FROM BSC_APPROVE_USE A WHERE  A.YEAR = #{findYear}),'Y') AS ACT_APPROVE_USE_YN
+		  FROM DUAL
+		
+	</select>
+	
+	<select id="selectScDeptByUser" parameterType="commonVO" resultType="scDeptVO">
+		/*	사용자의 성과조직 정보 조회	common.selectScDeptByUser	*/
+		SELECT	D.SC_DEPT_ID,	D.SC_DEPT_NM,	D.SC_DEPT_FULL_NM,	D.SC_DEPT_GRP_ID
+		FROM	V_ROLE_USER U
+				JOIN	BSC_SC_DEPT_MAPPING M
+					ON	M.YEAR = #{findYear}
+					AND	U.DEPT_ID = M.DEPT_ID
+				JOIN	BSC_SC_DEPT D
+					ON	M.YEAR = D.YEAR
+					AND	M.SC_DEPT_ID = D.SC_DEPT_ID
+		WHERE	U.USER_ID = #{userId}
+	</select>
+	
+	<select id="selectScDeptGrpId" parameterType="commonVO" resultType="String">
+		/*	성과조직 평가군ID 조회	common.selectScDeptGrpId	*/
+		SELECT	D.SC_DEPT_GRP_ID
+		FROM	BSC_SC_DEPT D
+		WHERE	D.YEAR = #{findYear}
+			AND	D.SC_DEPT_ID = #{findScDeptId}
+	</select>
+	
+	<select id="selectActualCloseYn" parameterType="commonVO" resultType="java.lang.String">
+		/*	실적월마감	common.selectActualCloseYn	*/
+		SELECT CASE WHEN NVL(MAX(CLOSING_YN),'N') = 'Y' THEN 'Y' ELSE 'N' END AS CLOSE_YN  
+		  FROM BSC_ACTUAL_CLOSE A
+		 WHERE A.YEAR = #{findYear}
+		   AND A.MON = #{findMon}
+	
+	</select>
+	
+	<select id="selectTopScDeptInfo" parameterType="java.lang.String" resultType="scDeptVO">
+		/*	최상위조직정보 조회	common.selectTopScDeptInfo	*/
+		SELECT YEAR, SC_DEPT_ID, SC_DEPT_NM, UP_SC_DEPT_ID, LEVEL_ID,
+		       SC_DEPT_GRP_ID, BSC_USER_ID, MANAGER_USER_ID, DEPT_KIND, SC_DEPT_FULL_NM
+		  FROM BSC_SC_DEPT
+		 WHERE YEAR = #{findYear}
+		   AND UP_SC_DEPT_ID IS NULL
+	</select>
+	
+	<select id="selectUserEmail" parameterType="commonVO" resultType="String">
+		/*	사용자 email 조회	common.selectUserEmail	*/
+		SELECT	EMAIL
+		FROM	V_ROLE_USER
+		WHERE	USER_ID = #{userId}
+	</select>
+	
+	<select id="selectUserEmailList" parameterType="map" resultType="String">
+		/*	복수의 사용자 email 조회	common.selectUserEmailList	*/
+		SELECT	EMAIL
+		FROM	V_ROLE_USER
+		WHERE	USER_ID IN
+			<foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+				#{userId}
+			</foreach>
+			AND	EMAIL IS NOT NULL
+	</select>
+	
+	<select id="selectTheme" parameterType="commonVO" resultType="String">
+		/*	디자인 테마 조회	common.selectTheme	*/
+		SELECT	THEME	FROM COM_COMPINFO
+		WHERE	1=1
+	</select>
+	
+	<select id="selectProcessList" parameterType="menuVO" resultType="menuVO">
+		/*	도움말 조회	menu.selectProcessList	*/
+			SELECT A.SERVICE_ID, A.SERVICE_SUB_ID, A.PGM_ID, B.PROCESS_NM, S.END_YN, C.SUB_CNT, D.SERVICE_CNT, CD.CODE_NM AS SERVICE_NM
+			  FROM COM_PROCESS A
+			       LEFT OUTER JOIN COM_PROCESS_NM B
+			       ON A.SERVICE_ID = B.SERVICE_ID
+			       AND A.SERVICE_SUB_ID = B.SERVICE_SUB_ID
+			       AND A.PGM_ID = B.PGM_ID
+			       AND B.LANG = #{lang}
+			       LEFT OUTER JOIN (SELECT A.SERVICE_ID, A.SERVICE_SUB_ID, COUNT(1) AS SUB_CNT
+			                          FROM COM_PROCESS A
+			                         WHERE 1=1
+			                         GROUP BY A.SERVICE_ID, A.SERVICE_SUB_ID) C
+			       ON A.SERVICE_ID = C.SERVICE_ID
+			       AND A.SERVICE_SUB_ID = C.SERVICE_SUB_ID
+			       LEFT OUTER JOIN (SELECT A.SERVICE_ID, COUNT(1) AS SERVICE_CNT
+			                          FROM COM_PROCESS A
+			                         WHERE 1=1
+			                         GROUP BY A.SERVICE_ID) D
+			       ON A.SERVICE_ID = D.SERVICE_ID
+			       LEFT OUTER JOIN COM_PROCESS_STATUS S
+			       ON  S.YEAR = #{findYear}
+			       AND A.SERVICE_ID = S.SERVICE_ID
+			       AND A.SERVICE_SUB_ID = S.SERVICE_SUB_ID
+			       AND A.PGM_ID = S.PGM_ID
+			       INNER JOIN COM_COMPINFO_DETAIL E
+			       ON E.CURRENT_SEQ = 'Y'
+			       AND INSTR(E.SERVICE_TYPE,A.SERVICE_ID) > 0
+			       <include refid="common.func.getCodeJoin">
+			        <property name="pYear" value="#{findYear}"/>
+			       	<property name="pCodeGrpId" value="'002'"/>
+			       	<property name="pAlias" value="CD"/>
+			       	<property name="pCompareColumn" value="A.SERVICE_ID"/>
+			     </include>
+			 WHERE 1=1
+			 ORDER BY A.SERVICE_ID, A.SERVICE_SUB_ID, A.SORT_ORDER
+	</select>
+	
+	<update id="updateProcessData" parameterType="menuVO">
+		/*	프로세스 흐름도 완료상태 엡데이트 common.updateProcessData	*/
+		UPDATE COM_PROCESS
+		   SET END_YN = #{endYn},
+		       END_DT = CASE WHEN #{endYn} = 'Y' THEN NOW() ELSE NULL END
+	 	 WHERE PGM_ID = #{pgmId}
+	</update>
+	
+	<insert id="insertProcessData" parameterType="menuVO">
+		/*	프로세스 흐름도 완료상태 엡데이트 common.deleteProcessData	*/
+		INSERT INTO COM_PROCESS_STATUS
+		SELECT #{findYear}, SERVICE_ID, SERVICE_SUB_ID, PGM_ID, #{endYn}, CASE WHEN #{endYn} = 'Y' THEN NOW() ELSE NULL END
+	 	 WHERE PGM_ID = #{pgmId}
+	</insert>
+	
+	<delete id="deleteProcessData" parameterType="menuVO">
+		/*	프로세스 흐름도 완료상태 엡데이트 common.deleteProcessData	*/
+		DELETE FROM COM_PROCESS_STATUS
+	 	 WHERE YEAR = #{findYear}
+		   AND PGM_ID = #{pgmId}
+	</delete>
+	
+	<select id="selectDbList" resultType="commonVO">
+		/* common.getDbIdList */
+		SELECT A.DB_ID
+		  FROM COM_COMP_DBINFO A
+		       INNER JOIN COM_COMPINFO B
+		       ON B.USE_YN = 'Y'
+		       AND B.HAS_DEFAULT_DATA_YN = 'Y'
+		       
+	</select>
+	
+	<select id="selectDbResetList" parameterType="egovMap" resultType="commonVO">
+		/* common.selectDbResetList */
+		SELECT A.DB_ID,
+		       <![CDATA[CONCAT_WS('&&',A.CONNECTION_ID,A.DB_ID,A.DB_DRIVER,A.DB_URL,A.DB_USER_ID,A.DB_USER_PASSWD) AS DB_INFO_TEXT]]>
+		  FROM COM_COMP_DBINFO A
+		       INNER JOIN COM_COMPINFO B
+		       ON B.USE_YN = 'Y'
+		       <!-- 
+		       AND B.HAS_DEFAULT_DATA_YN = 'Y'
+		       -->
+		       
+	</select>
+	
+	<select id="selectDbId" parameterType="egovMap" resultType="String">
+		/* common.getDbIdList */
+		SELECT DB_ID
+		  FROM COM_COMP_DBINFO A
+		 WHERE 1=1  
+	</select>
+</mapper>

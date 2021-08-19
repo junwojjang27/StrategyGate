@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.menu.menuMng">
+
+	<select id="selectList" parameterType="menuMngVO" resultType="menuMngVO"  useCache="false">
+		/*	메뉴관리 조회	system.menu.menuMng.selectList */
+		  
+		SELECT X.PGM_ID,
+			   X.PGM_NM AS MAIN_PGM_NM,
+		       X.PGM_NM,
+		       X.PGM_LEVEL_ID,
+		       TO_NUMBER(X.PGM_LEVEL_ID) AS LEVEL_ID,
+		       X.URL,
+		       X.PGM_GBN_ID,
+		       X.SORT_ORDER,
+		       X.URL_PATTERN,
+		       X.UP_PGM_ID,
+		       X.UP_PGM_NM,
+		       X.USE_YN,
+		       X.PGM_NM_LANG,
+		       CASE WHEN X.PGM_ID = '1' THEN '1' 
+		       <foreach collection="pgmAuthMap" index="key" item="value" separator="">
+     				WHEN X.PGM_ID = #{key} THEN #{value}  
+     		   </foreach>
+     		   END AS AUTH_GUBUNS,
+     		    CASE WHEN X.PGM_ID = '1' THEN '1' 
+		       <foreach collection="pgmAuthNmMap" index="key" item="value" separator="">
+     				WHEN X.PGM_ID = #{key} THEN #{value}  
+     		   </foreach>
+     		   END AS AUTH_GUBUN_NMS,
+     		   X.AUTH_CNT,
+		       CASE WHEN X.IS_LEAF = 'N' THEN 'false' ELSE 'true' END AS HAS_LEAF,
+		       CASE WHEN X.IS_LEAF = 'N' THEN 'true' ELSE 'false' END AS EXPANDED,
+		       X.GUIDE_CNT
+		FROM
+		(
+		  SELECT A.PGM_ID,
+		         CASE WHEN B.PGM_NM IS NULL THEN A.PGM_NM ELSE B.PGM_NM END AS PGM_NM,
+		         A.PGM_GBN_ID, 
+		         A.PGM_LEVEL_ID,
+		         A.IS_LEAF,
+		         A.URL,
+		         A.SORT_ORDER,
+		         A.REAL_ORDER,
+		         A.URL_PATTERN,
+		         A.UP_PGM_ID,
+		         D.PGM_NM AS UP_PGM_NM,
+		         X.PGM_NM_LANG,
+		         Y.AUTH_CNT,
+		         CASE WHEN A.DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN,
+		         CASE	WHEN	A.GUIDE_COMMENT IS NULL
+						THEN	0
+						ELSE	1
+				END	AS GUIDE_CNT
+		    FROM COM_PGM A
+		         LEFT JOIN	COM_PGM_NM B
+						ON	A.PGM_ID = B.PGM_ID
+						AND	B.LANG = #{lang}		
+		         LEFT OUTER JOIN COM_PGM C
+		         ON A.UP_PGM_ID = C.PGM_ID
+		         AND C.SORT_ORDER IS NOT NULL
+		         LEFT JOIN	COM_PGM_NM D
+						ON	C.PGM_ID = D.PGM_ID
+						AND	D.LANG = #{lang}
+				 LEFT OUTER JOIN (  SELECT A.PGM_ID,
+									       <choose>
+										     	<when test="langList.size != 0">
+										           <foreach collection="langList" item="langList" separator="||" close="AS PGM_NM_LANG">
+												       #{langList.lang}||'#$%'||MAX(CASE WHEN B.LANG = #{langList.lang} THEN B.PGM_NM END)||'$%^'
+												   </foreach>
+										     	</when>
+										     	<otherwise>
+										           '' AS PGM_NM_LANG
+										     	</otherwise>
+										    </choose>
+									  FROM COM_PGM A
+									       INNER JOIN COM_PGM_NM B
+									       ON A.PGM_ID = B.PGM_ID
+									 WHERE 1=1
+									 GROUP BY A.PGM_ID
+									 ORDER BY A.PGM_ID
+				 				 ) X
+			      ON A.PGM_ID = X.PGM_ID
+			      LEFT OUTER JOIN (SELECT A.PGM_ID, COUNT(1) AS AUTH_CNT
+			                         FROM COM_PGM_AUTH A
+			                        WHERE 1=1
+			                        GROUP BY A.PGM_ID) Y
+			      ON A.PGM_ID = Y.PGM_ID
+		   WHERE A.SORT_ORDER IS NOT NULL
+		     <if test='findUseYn == "Y"'>
+		     	AND A.DELETE_DT IS NULL
+		     </if>
+		     <if test='findUseYn == "N"'>
+		     	AND A.DELETE_DT IS NOT NULL
+		     </if>
+		  ) X
+		  ORDER BY X.REAL_ORDER
+		   
+	</select>
+	
+	<select id="selectReSortList" parameterType="menuMngVO" resultType="menuMngVO">
+		/*	메뉴관리 정렬순서 재정렬 조회	menuMng.selectReSortList */
+		 
+		  SELECT A.PGM_ID,
+		         A.PGM_NM,
+		         A.FULL_PGM_ID,     
+		         A.UP_PGM_ID,
+		         A.URL,
+		         A.URL_PATTERN,
+		         A.PGM_LEVEL_ID,
+		         A.SORT_ORDER,
+		         A.IS_LEAF,
+		         ROWNUM AS REAL_ORDER,
+		         A.DELETE_DT
+		  FROM 
+		  (
+		  SELECT A.PGM_ID,
+		         A.PGM_NM,
+		         SYS_CONNECT_BY_PATH(A.PGM_NM, '>') AS FULL_PGM_NM,
+		         SYS_CONNECT_BY_PATH(A.PGM_ID, '/') AS FULL_PGM_ID,    
+		         A.UP_PGM_ID,
+		         A.URL,
+		         A.URL_PATTERN,
+		         LEVEL AS PGM_LEVEL_ID,
+		         A.SORT_ORDER,
+		         CASE WHEN CONNECT_BY_ISLEAF = 0 THEN 'N' ELSE 'Y' END AS IS_LEAF,
+		         A.DELETE_DT
+		    FROM COM_PGM A
+		   WHERE 1=1
+		   START WITH A.UP_PGM_ID IS NULL
+		   CONNECT BY PRIOR A.PGM_ID = A.UP_PGM_ID 
+		   ORDER SIBLINGS BY A.SORT_ORDER
+		   ) A
+		 
+
+	</select>
+	
+	<select id="selectFullNameList" parameterType="menuMngVO" resultType="menuMngVO">
+		/*	메뉴관리 정렬순서 재정렬 조회	menuMng.selectFullNameList */
+		
+		SELECT A.PGM_ID,
+		       SUBSTR(CASE WHEN LEVEL > 1 THEN SUBSTR(SYS_CONNECT_BY_PATH(B.PGM_NM,'>'),INSTR(SYS_CONNECT_BY_PATH(B.PGM_NM,'>'),'>',2)) 
+					                    ELSE SYS_CONNECT_BY_PATH(B.PGM_NM,'>') END
+					                    ,2) AS FULL_PGM_NM,
+		       B.LANG AS INPUT_LANG
+		  FROM COM_PGM A
+		       INNER JOIN COM_PGM_NM B
+		       ON A.PGM_ID = B.PGM_ID
+		 WHERE 1=1
+		 START WITH A.UP_PGM_ID IS NULL
+		 CONNECT BY PRIOR A.PGM_ID = A.UP_PGM_ID
+		            AND PRIOR B.LANG = B.LANG
+		 ORDER SIBLINGS BY A.SORT_ORDER
+		
+	</select>
+	
+	
+	<select id="selectAuthPgmList" parameterType="menuMngVO" resultType="menuMngVO">
+		/*	메뉴권한 조회	 	menuMng.selectAuthPgmList	*/
+	    SELECT A.PGM_ID,
+	           A.AUTH_GUBUN,
+	           CASE WHEN C.CODE_NM IS NULL THEN B.CODE_NM ELSE C.CODE_NM END AS AUTH_GUBUN_NM
+	      FROM COM_PGM_AUTH A
+	           LEFT OUTER JOIN COM_CODE B
+	           ON A.AUTH_GUBUN = B.CODE_ID
+               AND B.CODE_GRP_ID = '018'
+	           AND B.DELETE_DT IS NULL
+	           LEFT OUTER JOIN COM_CODE_NM C
+	           ON B.CODE_GRP_ID = C.CODE_GRP_ID
+			   AND B.CODE_ID = C.CODE_ID
+	           AND B.YEAR = C.YEAR
+	           AND C.LANG = #{lang}
+	     WHERE 1=1
+	     ORDER BY A.PGM_ID, A.AUTH_GUBUN	
+	</select>
+	
+	<select id="selectLangList" parameterType="menuMngVO" resultType="menuMngVO">
+		/*	표준언어조회	 	menuMng.selectLangList	*/
+		SELECT	L.LANG, L.LANG_NM
+		FROM	COM_COMP_LANG  CL
+				LEFT JOIN	COM_LANG L
+					ON	CL.LANG = L.LANG
+		WHERE	1=1
+		ORDER BY	L.LANG
+	</select>
+	
+	<select id="selectDetail" parameterType="menuMngVO" resultType="menuMngVO">
+		/*	메뉴관리 상세 조회	menuMng.selectDetail	*/
+		SELECT 
+			 PGM_ID
+			,PGM_NM
+			,FULL_PGM_NM
+			,UP_PGM_ID
+			,PGM_LEVEL_ID
+			,URL
+			,SORT_ORDER
+			,REAL_ORDER
+			,CONTENT
+			,PARAM
+			,URL_PATTERN
+			,CREATE_DT
+			,DELETE_DT
+			,IS_LEAF
+			,FULL_PGM_ID
+			,GUIDE_COMMENT
+		FROM COM_PGM
+		WHERE 1=1
+			AND PGM_ID=#{pgmId}
+	</select>
+	
+	<select id="selectRoleList" parameterType="menuMngVO" resultType="menuMngVO">
+		/*	메뉴관리 상세 조회	 	menuMng.selectRoleList	*/
+		SELECT A.CODE_ID AS AUTH_GUBUN,
+		       A.CODE_NM AS AUTH_GUBUN_NM,
+		       CASE WHEN B.PGM_ID IS NULL THEN 'N' ELSE 'Y' END AS CHECK_YN 
+		  FROM (SELECT	XX.CODE_ID, NVL(YY.CODE_NM,XX.CODE_NM) AS CODE_NM,
+						XX.SORT_ORDER
+				   FROM COM_CODE XX
+				        LEFT OUTER JOIN COM_CODE_NM YY
+				        ON XX.YEAR = YY.YEAR
+				        AND XX.CODE_GRP_ID = YY.CODE_GRP_ID
+				        AND XX.CODE_ID = YY.CODE_ID
+				        AND XX.YEAR = YY.YEAR
+				        AND YY.LANG = #{lang}
+				  WHERE XX.CODE_GRP_ID = '018'
+				    AND XX.YEAR = CASE WHEN (SELECT YEAR_YN FROM COM_CODE_GRP WHERE CODE_GRP_ID = '018') = 'Y' THEN #{findYear}
+				                  ELSE '9999' END
+				    AND XX.DELETE_DT IS NULL
+				 ) A 
+				 LEFT OUTER JOIN COM_PGM_AUTH B
+				 ON B.AUTH_GUBUN = A.CODE_ID
+				 AND B.PGM_ID = #{pgmId}
+		  WHERE 1=1
+		  ORDER BY A.SORT_ORDER
+		 
+	
+	</select>
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="menuMngVO">
+	    /*	메뉴관리 정렬순서저장	 menuMng.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteMenuMng" parameterType="menuMngVO">
+		/*	메뉴관리 삭제	menuMng.deleteMenuMng	*/
+		UPDATE COM_PGM
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND PGM_ID=#{pgmId}
+
+	</update>
+
+	<insert id="insertData" parameterType="menuMngVO">
+		/*	메뉴관리 저장	menuMng.insertData	*/
+		INSERT INTO COM_PGM(
+			PGM_ID,
+			PGM_NM,
+			UP_PGM_ID,
+			PGM_LEVEL_ID,
+			URL,
+			PGM_GBN_ID,
+			SORT_ORDER,
+			CONTENT,
+			PARAM,
+			<!-- 
+			URL_PATTERN,
+			-->
+			CREATE_DT,
+			DELETE_DT)
+		
+    VALUES (
+			#{pgmId},
+			#{pgmNm},
+			#{upPgmId},
+			#{pgmLevelId},
+			#{url},
+			#{pgmGbnId},
+			#{sortOrder},
+			#{content},
+			#{param},
+			<!-- 
+			#{urlPattern},
+			-->
+			SYSDATE,
+			CASE WHEN #{useYn} = 'Y' THEN NULL ELSE SYSDATE END
+			)
+
+	</insert>
+	
+	<insert id="insertPgmNmData" parameterType="menuMngVO">
+		/*	메뉴관리 메뉴명저장	menuMng.insertPgmNmData	*/
+		INSERT INTO COM_PGM_NM(
+			LANG,
+			PGM_ID,
+			PGM_NM,
+			CREATE_DT)
+    VALUES (
+			#{inputLang},
+			#{pgmId},
+			#{pgmNm},
+			SYSDATE
+			)
+
+	</insert>
+
+	<update id="updateData" parameterType="menuMngVO">
+		/*	메뉴관리 수정	menuMng.updateData	*/
+		UPDATE COM_PGM
+		SET
+			PGM_NM=#{pgmNm},
+			UP_PGM_ID=#{upPgmId},
+			PGM_LEVEL_ID=#{pgmLevelId},
+			URL=#{url},
+			PGM_GBN_ID=#{pgmGbnId},
+			SORT_ORDER=#{sortOrder},
+			CONTENT=#{content},
+			PARAM=#{param},
+			<!-- 
+			URL_PATTERN=#{urlPattern},
+			-->
+			DELETE_DT = CASE WHEN #{useYn} = 'Y' THEN NULL ELSE SYSDATE END
+		WHERE 1=1
+			AND PGM_ID=#{pgmId}
+
+	</update>
+	
+	<delete id="deletePgmNmData" parameterType="menuMngVO">
+		/*	메뉴관리 메뉴명 삭제	menuMng.deletePgmNmData	*/
+		DELETE FROM COM_PGM_NM
+	    WHERE PGM_ID = #{pgmId}
+
+	</delete>
+	
+	<delete id="deletePgmAuthData" parameterType="menuMngVO">
+		/*	메뉴관리 메뉴권한 삭제	menuMng.deletePgmAuthData	*/
+		DELETE FROM COM_PGM_AUTH
+	    WHERE PGM_ID = #{pgmId}
+
+	</delete>
+	
+	<insert id="insertPgmAuthData" parameterType="menuMngVO">
+		/*	메뉴관리 메뉴권한 생성	menuMng.insertPgmAuthData	*/
+		INSERT INTO COM_PGM_AUTH(
+			PGM_ID,
+			AUTH_GUBUN,
+			CREATE_DT)
+    VALUES (
+			#{pgmId},
+			#{authGubun},
+			SYSDATE
+			)
+
+	</insert>
+	
+	<update id="updateReSortOrder" parameterType="menuMngVO">
+		/*	메뉴관리 정렬순서 resort 수정	menuMng.updateReSortOrder	*/
+		UPDATE COM_PGM
+		SET REAL_ORDER = #{realOrder},
+		    IS_LEAF = #{isLeaf},
+		    PGM_LEVEL_ID = #{pgmLevelId},
+		    FULL_PGM_ID = #{fullPgmId}
+		WHERE 1=1
+			AND PGM_ID=#{pgmId}
+
+	</update>
+	
+	<update id="updateFullName" parameterType="menuMngVO">
+		/*	메뉴관리 full 명 resort 수정	menuMng.updateFullName	*/
+		UPDATE COM_PGM_NM
+		SET FULL_PGM_NM = #{fullPgmNm}
+		WHERE 1=1
+			AND PGM_ID=#{pgmId}
+			AND LANG=#{inputLang}
+
+	</update>
+	
+	<update id="updateGuideComment" parameterType="menuMngVO">
+		/*	메뉴 도움말 저장	menuMng.updateGuideComment	*/
+		UPDATE COM_PGM
+		SET
+			GUIDE_COMMENT = #{guideComment}
+		WHERE 1=1
+			AND PGM_ID=#{pgmId}
+	</update>
+	
+</mapper>
+

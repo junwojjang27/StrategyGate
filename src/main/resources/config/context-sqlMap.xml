@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+	<!-- 환경설정 기본정보를 globals.properties 에서 참조하도록 propertyConfigurer 설정 -->
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:/egovframework/egovProps/globals.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 실행환경에서 빈이름 참조(EgovAbstractDAO) -->
+	<bean id="egov.lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="true"/>
+	
+	<!-- SqlSession setup for MyBatis Database Layer -->
+	<!-- <bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean"> -->
+	<!-- 
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+	-->
+	<bean id="sqlSession" class="kr.ispark.common.util.RefreshableSqlSessionFactoryBean">
+		<property name="dataSource" ref="egov.dataSource"/>
+		<property name="interval" value="30000"/>
+		<property name="configLocation" value="classpath:/sql/config/mybatis-config.xml"></property>
+		<!-- 아래에 선언된 경로에 존재하는 모든 쿼리 xml파일을 사용함 -->
+		<property name="mapperLocations">
+			<array>
+				<value>classpath:/sql/${Globals.SqlFolder}*_${Globals.SqlFilePrefix}.xml</value>
+				<value>classpath:/sql/${Globals.SqlFolder}egovframework/*_${Globals.SqlFilePrefix}.xml</value>
+			</array>
+		</property>
+	</bean>
+	
+	<!-- 
+	<bean id="sqlSessionTest" class="kr.ispark.common.util.RefreshableSqlSessionFactoryBean">
+		<property name="dataSource" ref="egov.dataSource"/>
+		<property name="interval" value="10000"/>
+		<property name="configLocation" value="classpath:/sql/config/mybatis-config.xml"></property>
+		<property name="mapperLocations">
+			<array>
+				<value>classpath:/sql/${Globals.SqlFolder}*_${Globals.SqlFilePrefix}.xml</value>
+				<value>classpath:/sql/${Globals.SqlFolder}egovframework/*_${Globals.SqlFilePrefix}.xml</value>
+			</array>
+		</property>
+	</bean>
+	-->
+
+	<bean id="egovConnectionFactory" class="egovframework.rte.fdl.logging.db.EgovConnectionFactory">
+		<property name="dataSource" ref="egov.dataSource"/>
+	</bean>
+</beans>

@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="superMng.superMng.deployData">
+	<select id="selectList" parameterType="deployDataVO" resultType="deployDataVO">
+		/* 전년 데이터 목록 보기	superMng.superMng.deployData.selectList */
+		
+		SELECT	A.COMP_ID,	A.COMP_NM,
+				DECODE(NVL((SELECT	COUNT(1)	FROM	BSC_SC_DEPT	WHERE	COMP_ID = A.COMP_ID	AND	YEAR = #{findYear} - 1	AND	DELETE_DT IS NULL), 0), 0, 'N', 'Y')	AS	HAS_PAST_DATA_YN,
+				DECODE(NVL((SELECT	COUNT(1)	FROM	BSC_SC_DEPT	WHERE	COMP_ID = A.COMP_ID	AND	YEAR = #{findYear}	AND	DELETE_DT IS NULL), 0), 0, 'N', 'Y')	AS	HAS_NEW_DATA_YN
+		FROM	COM_COMPINFO A
+		WHERE	A.USE_YN = 'Y'
+			AND	A.HAS_DEFAULT_DATA_YN = 'Y'
+		ORDER BY	A.COMP_NM
+
+	</select>
+	
+	<!--공통코드 START -->
+	<delete id="deleteComCode" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 공통코드 삭제	superMng.superMng.deployData.deleteComCode */
+		DELETE FROM COM_CODE
+		WHERE COMP_ID = #{targetCompId}
+		AND CODE_GRP_ID IN ( SELECT CODE_GRP_ID FROM COM_CODE_GRP WHERE YEAR_YN = 'Y' )
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertComCode" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 공통코드 등록	superMng.superMng.deployData.insertComCode */
+		INSERT INTO COM_CODE(COMP_ID,CODE_GRP_ID,CODE_ID,CODE_NM,YEAR,SORT_ORDER,CONTENT,ETC1,ETC2,CREATE_DT,DELETE_DT)
+		SELECT A.COMP_ID,A.CODE_GRP_ID,A.CODE_ID,A.CODE_NM,#{findYear},A.SORT_ORDER,A.CONTENT,A.ETC1,A.ETC2,SYSDATE,NULL
+		FROM COM_CODE A
+		INNER JOIN COM_CODE_GRP B
+		ON A.COMP_ID = B.COMP_ID
+		AND A.CODE_GRP_ID = B.CODE_GRP_ID
+		AND B.DELETE_DT IS NULL
+		AND B.YEAR_YN = 'Y'
+		WHERE A.COMP_ID = #{targetCompId}
+		AND A.YEAR = #{pastYear}
+	</insert>
+
+	<delete id="deleteComCodeNm" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 공통코드 삭제	superMng.superMng.deployData.deleteComCode */
+		DELETE FROM COM_CODE_NM
+		WHERE COMP_ID = #{targetCompId}
+		AND CODE_GRP_ID IN ( SELECT CODE_GRP_ID FROM COM_CODE_GRP WHERE YEAR_YN = 'Y' )
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertComCodeNm" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 공통코드 등록	superMng.superMng.deployData.insertComCode */
+		INSERT INTO COM_CODE_NM(COMP_ID,LANG,CODE_GRP_ID,CODE_ID,YEAR,CODE_NM,CREATE_DT)
+		SELECT A.COMP_ID,A.LANG,A.CODE_GRP_ID,A.CODE_ID,#{findYear},A.CODE_NM,SYSDATE
+		FROM COM_CODE_NM A
+		INNER JOIN COM_CODE_GRP B
+		ON A.COMP_ID = B.COMP_ID
+		AND A.CODE_GRP_ID = B.CODE_GRP_ID
+		AND B.DELETE_DT IS NULL
+		AND B.YEAR_YN = 'Y'
+		WHERE A.COMP_ID = #{targetCompId}
+		AND A.YEAR = #{pastYear}
+	</insert>
+	
+	<!--공통코드 END -->
+	
+	<!--신호등 START-->
+	<delete id="deleteComSignal" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 신호등 삭제	superMng.superMng.deployData.deleteComSignal */
+		DELETE FROM COM_SIGNAL_STATUS
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+		
+	<insert id="insertComSignal" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 신호등 등록	superMng.superMng.deployData.insertComSignal */
+		INSERT INTO COM_SIGNAL_STATUS (COMP_ID,YEAR,STATUS_ID,FROM_VALUE,TO_VALUE,COLOR,CREATE_DT)
+		SELECT COMP_ID,#{findYear},STATUS_ID,FROM_VALUE,TO_VALUE,COLOR,SYSDATE
+		FROM COM_SIGNAL_STATUS
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+	</insert>
+	<!--신호등 END-->
+	
+	<!--평가등급 START-->
+	<delete id="deleteEvalGradeCnt" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 평가등급-배분표 삭제	superMng.superMng.deployData.deleteEvalGradeCnt */
+		DELETE FROM BSC_EVAL_GRADE_CNT
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertEvalGradeCnt" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 평가등급-배분표 등록	superMng.superMng.deployData.insertEvalGradeCnt */
+		INSERT INTO BSC_EVAL_GRADE_CNT (COMP_ID,YEAR,EVAL_METHOD_ID,GRADE_ID,ITEM_CNT,ITEM_DISTRI_CNT,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},EVAL_METHOD_ID,GRADE_ID,ITEM_CNT,ITEM_DISTRI_CNT,SYSDATE,'',''
+		FROM BSC_EVAL_GRADE_CNT
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteEvalGrade" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 평가등급-등급 삭제	superMng.superMng.deployData.deleteEvalGrade */
+		DELETE FROM BSC_EVAL_GRADE
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertEvalGrade" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 평가등급-등급 등록	superMng.superMng.deployData.insertEvalGrade */
+		INSERT INTO BSC_EVAL_GRADE(COMP_ID,YEAR,EVAL_METHOD_ID,GRADE_ID,GRADE_NM,GRADE_RATE,GRADE_SCORE,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},EVAL_METHOD_ID,GRADE_ID,GRADE_NM,GRADE_RATE,GRADE_SCORE,SORT_ORDER,SYSDATE,'',''
+		FROM BSC_EVAL_GRADE
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteEvalMethod" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 평가등급 삭제	superMng.superMng.deployData.deleteEvalMethod */
+		DELETE FROM BSC_EVAL_METHOD 
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertEvalMethod" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 평가등급 등록	superMng.superMng.deployData.insertEvalMethod */
+		INSERT INTO BSC_EVAL_METHOD(COMP_ID,YEAR,EVAL_METHOD_ID,EVAL_METHOD_NM,EVAL_METHOD_GUBUN,DESCRIPTION,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},EVAL_METHOD_ID,EVAL_METHOD_NM,EVAL_METHOD_GUBUN,DESCRIPTION,SORT_ORDER,SYSDATE,'',''
+		FROM BSC_EVAL_METHOD
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--평가등급 END-->
+	
+	<!--시스템연계항목 START-->
+	<delete id="deleteBscSystemItem" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 시스템연계항목 삭제	superMng.superMng.deployData.deleteBscSystemItem */
+		DELETE FROM BSC_SYSTEM_ITEM
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscSystemItem" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 시스템연계항목 등록	superMng.superMng.deployData.insertBscSystemItem */
+		INSERT INTO BSC_SYSTEM_ITEM(COMP_ID,YEAR,ITEM_ID,ITEM_NM,ITEM_LOAD_GBN_ID,EXEC_YN,CONTENT,CHARGE_USER_ID,CREATE_DT,MODIFY_DT,DELETE_DT,ATCH_FILE_ID)
+		SELECT COMP_ID,#{findYear},ITEM_ID,ITEM_NM,ITEM_LOAD_GBN_ID,EXEC_YN,CONTENT,CHARGE_USER_ID,SYSDATE,'','',ATCH_FILE_ID
+		FROM BSC_SYSTEM_ITEM
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--시스템연계항목 END-->
+	
+	<!--관점 START-->
+	<delete id="deleteBscPerspective" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 관점 삭제	superMng.superMng.deployData.deleteBscPerspective */
+		DELETE FROM BSC_PERSPECTIVE
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscPerspective" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 관점 등록	superMng.superMng.deployData.insertBscPerspective */
+		INSERT INTO BSC_PERSPECTIVE(COMP_ID,YEAR,PERSPECTIVE_ID,PERSPECTIVE_NM,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},PERSPECTIVE_ID,PERSPECTIVE_NM,SORT_ORDER,SYSDATE,'',''
+		FROM BSC_PERSPECTIVE
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--관점 END-->
+	
+	<!--전략목표 START-->
+	<delete id="deleteBscStrategyMap" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 전략목표체계도 삭제	superMng.superMng.deployData.deleteBscStrategyMap */
+		DELETE FROM BSC_STRATEGY_MAP
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscStrategyMap" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 전략목표체계도 등록	superMng.superMng.deployData.insertBscStrategyMap */
+		INSERT INTO BSC_STRATEGY_MAP(COMP_ID,YEAR,SC_DEPT_ID,STRATEGY_ID,KIND,X1,Y1,X2,Y2,X3,Y3,X4,Y4,CREATE_DT)
+		SELECT COMP_ID,#{findYear},SC_DEPT_ID,STRATEGY_ID,KIND,X1,Y1,X2,Y2,X3,Y3,X4,Y4,SYSDATE
+		FROM BSC_STRATEGY_MAP
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteBscStrategy" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 전략목표 삭제	superMng.superMng.deployData.deleteBscStrategy */
+		DELETE FROM BSC_STRATEGY
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscStrategy" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 전략목표 등록	superMng.superMng.deployData.insertBscStrategy */
+		INSERT INTO BSC_STRATEGY(COMP_ID,YEAR,STRATEGY_ID,STRATEGY_NM,UP_STRATEGY_ID,PERSPECTIVE_ID,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},STRATEGY_ID,STRATEGY_NM,UP_STRATEGY_ID,PERSPECTIVE_ID,SORT_ORDER,SYSDATE,'',''
+		FROM BSC_STRATEGY
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--전략목표 END-->
+	
+	<!--성과조직 START-->
+	<delete id="deleteBscScDeptMap" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 성과조직도 삭제	superMng.superMng.deployData.deleteBscScDeptMap */
+		DELETE FROM BSC_SC_DEPT_MAP
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscScDeptMap" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 성과조직도 등록	superMng.superMng.deployData.insertBscScDeptMap */
+		INSERT INTO BSC_SC_DEPT_MAP(COMP_ID,YEAR,SC_DEPT_ID,DW_DEPT_ID,DW_DEPT_X_POS,DW_DEPT_Y_POS,CREATE_DT)
+		SELECT COMP_ID,#{findYear},SC_DEPT_ID,DW_DEPT_ID,DW_DEPT_X_POS,DW_DEPT_Y_POS,SYSDATE
+		FROM BSC_SC_DEPT_MAP
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteBscScDeptMapping" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 성과조직매핑 삭제	superMng.superMng.deployData.deleteBscScDeptMapping */
+		DELETE FROM BSC_SC_DEPT_MAPPING
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscScDeptMapping" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 성과조직매핑 등록	superMng.superMng.deployData.insertBscScDeptMapping */
+		INSERT INTO BSC_SC_DEPT_MAPPING(COMP_ID,YEAR,SC_DEPT_ID,DEPT_ID,CREATE_DT)
+		SELECT COMP_ID,#{findYear},SC_DEPT_ID,DEPT_ID,SYSDATE
+		FROM BSC_SC_DEPT_MAPPING
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteBscScDept" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 성과조직 삭제	superMng.superMng.deployData.deleteBscScDept */
+		DELETE FROM BSC_SC_DEPT
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscScDept" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 성과조직 등록	superMng.superMng.deployData.insertBscScDept */
+		INSERT INTO BSC_SC_DEPT(COMP_ID,YEAR,SC_DEPT_ID,SC_DEPT_NM,UP_SC_DEPT_ID,LEVEL_ID,SC_DEPT_GRP_ID,BSC_USER_ID,MANAGER_USER_ID,DEPT_KIND,SC_DEPT_FULL_NM,FULL_DESC_SC_DEPT_NM
+								,FULL_ASC_SC_DEPT_NM,FULL_SC_DEPT_ID,SORT_ORDER,REAL_SORT_ORDER,IS_LEAF,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},SC_DEPT_ID,SC_DEPT_NM,UP_SC_DEPT_ID,LEVEL_ID,SC_DEPT_GRP_ID,BSC_USER_ID,MANAGER_USER_ID,DEPT_KIND,SC_DEPT_FULL_NM,FULL_DESC_SC_DEPT_NM
+				,FULL_ASC_SC_DEPT_NM,FULL_SC_DEPT_ID,SORT_ORDER,REAL_SORT_ORDER,IS_LEAF,SYSDATE,'',''
+		FROM BSC_SC_DEPT
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+	</insert>
+	
+	
+	<delete id="deleteDept" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 성과조직 삭제	superMng.superMng.deployData.deleteDept */
+		DELETE FROM COM_DEPTINFO
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertDept" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 성과조직 등록	superMng.superMng.deployData.insertDept */
+		INSERT INTO COM_DEPTINFO(COMP_ID,YEAR,DEPT_ID,DEPT_NM,DEPT_F_NM,UP_DEPT_ID,UP_DEPT_NM,SORT_ORDER,DEPT_LEVEL,BONSA_YN,CHIEF_ID,CHIEF_NM,BEING_YN,DEPT_LEVEL_NM,REAL_SORT_ORDER,IS_LEAF,CREATE_DT,FULL_DEPT_ID)
+		SELECT COMP_ID,#{findYear},DEPT_ID,DEPT_NM,DEPT_F_NM,UP_DEPT_ID,UP_DEPT_NM,SORT_ORDER,DEPT_LEVEL,BONSA_YN,CHIEF_ID,CHIEF_NM,BEING_YN,DEPT_LEVEL_NM,REAL_SORT_ORDER,IS_LEAF,SYSDATE,FULL_DEPT_ID
+		FROM COM_DEPTINFO
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+	</insert>
+	
+	<!--성과조직 END-->
+	
+	<!--지표POOL START-->
+	<delete id="deleteBscMetricGrpSection" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표POOL구간대 삭제	superMng.superMng.deployData.deleteBscMetricGrpSection */
+		DELETE FROM BSC_METRIC_GRP_SECTION
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricGrpSection" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표POOL구간대 등록	superMng.superMng.deployData.insertBscMetricGrpSection */
+		INSERT INTO BSC_METRIC_GRP_SECTION(COMP_ID,YEAR,METRIC_GRP_ID,EVAL_SECTION_ID,FROM_VALUE,TO_VALUE,CONVERSION_SCORE,CREATE_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},METRIC_GRP_ID,EVAL_SECTION_ID,FROM_VALUE,TO_VALUE,CONVERSION_SCORE,SYSDATE,''
+		FROM BSC_METRIC_GRP_SECTION
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetricGrpCol" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표POOL산식항목 삭제	superMng.superMng.deployData.deleteBscMetricGrpCol */
+		DELETE FROM BSC_METRIC_GRP_COL
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricGrpCol" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표POOL산식항목 등록	superMng.superMng.deployData.insertBscMetricGrpCol */
+		INSERT INTO BSC_METRIC_GRP_COL(COMP_ID,YEAR,METRIC_GRP_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,INSERT_GUBUN,UNIT,ITEM_ID,TIME_ROLLUP,CREATE_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},METRIC_GRP_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,INSERT_GUBUN,UNIT,ITEM_ID,TIME_ROLLUP,SYSDATE,''
+		FROM BSC_METRIC_GRP_COL
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetricGrpMon" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표POOL실적월 삭제	superMng.superMng.deployData.deleteBscMetricGrpMon */
+		DELETE FROM BSC_METRIC_GRP_MON
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricGrpMon" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표POOL실적월 등록	superMng.superMng.deployData.insertBscMetricGrpMon */
+		INSERT INTO BSC_METRIC_GRP_MON(COMP_ID,YEAR,METRIC_GRP_ID,MON,CREATE_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},METRIC_GRP_ID,MON,SYSDATE,''
+		FROM BSC_METRIC_GRP_MON
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetricGrp" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표POOL 삭제	superMng.superMng.deployData.deleteBscMetricGrp */
+		DELETE FROM BSC_METRIC_GRP
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricGrp" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표POOL 등록	superMng.superMng.deployData.insertBscMetricGrp */
+		INSERT INTO BSC_METRIC_GRP(COMP_ID,YEAR,METRIC_GRP_ID,METRIC_GRP_NM,TYPE_ID,PROPERTY_ID,EVAL_CYCLE,UNIT,ACT_CAL_TYPE,SCORE_CAL_TYPE_GUBUN
+									,SCORE_CAL_TYPE_ID,CONTENT,DESCRIPTION,CREATE_DT,MODIFY_DT,DELETE_DT,GUBUN)
+		SELECT COMP_ID,#{findYear},METRIC_GRP_ID,METRIC_GRP_NM,TYPE_ID,PROPERTY_ID,EVAL_CYCLE,UNIT,ACT_CAL_TYPE,SCORE_CAL_TYPE_GUBUN
+				,SCORE_CAL_TYPE_ID,CONTENT,DESCRIPTION,SYSDATE,'','',GUBUN
+		FROM BSC_METRIC_GRP
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--지표POOL END-->
+	
+	<!--지표 START-->
+	<delete id="deleteBscMetricSection" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표구간대 삭제	superMng.superMng.deployData.deleteBscMetricSection */
+		DELETE FROM BSC_METRIC_SECTION
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricSection" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표구간대 등록	superMng.superMng.deployData.insertBscMetricSection */
+		INSERT INTO BSC_METRIC_SECTION(COMP_ID,YEAR,METRIC_ID,EVAL_SECTION_ID,FROM_VALUE,TO_VALUE,CONVERSION_SCORE,CREATE_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},METRIC_ID,EVAL_SECTION_ID,FROM_VALUE,TO_VALUE,CONVERSION_SCORE,SYSDATE,''
+		FROM BSC_METRIC_SECTION
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetricCol" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표산식항목 삭제	superMng.superMng.deployData.deleteBscMetricCol */
+		DELETE FROM BSC_METRIC_COL
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricCol" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표산식항목 등록	superMng.superMng.deployData.insertBscMetricCol */
+		INSERT INTO BSC_METRIC_COL(COMP_ID,YEAR,METRIC_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,INSERT_GUBUN,UNIT,ITEM_ID,TIME_ROLLUP,CAL_METRIC_ID,CAL_GUBUN,CREATE_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},METRIC_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,INSERT_GUBUN,UNIT,ITEM_ID,TIME_ROLLUP,CAL_METRIC_ID,CAL_GUBUN,SYSDATE,''
+		FROM BSC_METRIC_COL
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetricMon" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표실적월 삭제	superMng.superMng.deployData.deleteBscMetricMon */
+		DELETE FROM BSC_METRIC_MON
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricMon" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표실적월 등록	superMng.superMng.deployData.insertBscMetricMon */
+		INSERT INTO BSC_METRIC_MON(COMP_ID,YEAR,METRIC_ID,MON,CREATE_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},METRIC_ID,MON,SYSDATE,''
+		FROM BSC_METRIC_MON
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetric" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표 삭제	superMng.superMng.deployData.deleteBscMetric */
+		DELETE FROM BSC_METRIC
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetric" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 지표 등록	superMng.superMng.deployData.insertBscMetric */
+		INSERT INTO BSC_METRIC(COMP_ID,YEAR,METRIC_ID,METRIC_NM,METRIC_GRP_ID,SC_DEPT_ID,TYPE_ID,STRATEGY_ID,GUBUN,UP_METRIC_ID,PROPERTY_ID,TAM_SHARE_YN,EVAL_CYCLE,DEPT_ROLLUP,ACT_CAL_TYPE,WEIGHT
+								,SCORE_CAL_TYPE_GUBUN,SCORE_CAL_TYPE_ID,UNIT,SORT_ORDER,ACT_INSERT_USER_ID,ACT_APPROVE_USER_ID,CONTENT,DESCRIPTION,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},METRIC_ID,METRIC_NM,METRIC_GRP_ID,SC_DEPT_ID,TYPE_ID,STRATEGY_ID,GUBUN,UP_METRIC_ID,PROPERTY_ID,TAM_SHARE_YN,EVAL_CYCLE,DEPT_ROLLUP,ACT_CAL_TYPE,WEIGHT
+				,SCORE_CAL_TYPE_GUBUN,SCORE_CAL_TYPE_ID,UNIT,SORT_ORDER,ACT_INSERT_USER_ID,ACT_APPROVE_USER_ID,CONTENT,DESCRIPTION,SYSDATE,'',''
+		FROM BSC_METRIC
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--지표 END-->
+	
+	<!--경영평가범주 START-->
+	<delete id="deleteGovEvalCatGrp" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 경영평가범주 삭제	superMng.superMng.deployData.deleteGovEvalCatGrp */
+		DELETE FROM GOV_EVAL_CAT_GRP
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGovEvalCatGrp" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 경영평가범주 등록	superMng.superMng.deployData.insertGovEvalCatGrp */
+		INSERT INTO GOV_EVAL_CAT_GRP(COMP_ID,YEAR,EVAL_CAT_GRP_ID,EVAL_CAT_GRP_NM,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},EVAL_CAT_GRP_ID,EVAL_CAT_GRP_NM,SORT_ORDER,SYSDATE,'',''
+		FROM GOV_EVAL_CAT_GRP
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--경영평가범주 END-->
+	
+	<!--경영평가부문 START-->
+	<delete id="deleteGovEvalCat" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 경영평가부문 삭제	superMng.superMng.deployData.deleteGovEvalCat */
+		DELETE FROM GOV_EVAL_CAT
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGovEvalCat" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 경영평가부문 등록	superMng.superMng.deployData.insertGovEvalCat */
+		INSERT INTO GOV_EVAL_CAT(COMP_ID,YEAR,EVAL_CAT_GRP_ID,EVAL_CAT_ID,EVAL_CAT_NM,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},EVAL_CAT_GRP_ID,EVAL_CAT_ID,EVAL_CAT_NM,SORT_ORDER,SYSDATE,'',''
+		FROM GOV_EVAL_CAT
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--경영평가부문 END-->
+	
+	<!--경영평가지표 START
+	<delete id="deleteGovMetricEvalItem" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 경영평가지표착안사항 삭제	superMng.superMng.deployData.deleteGovMetricEvalItem */
+		DELETE FROM GOV_METRIC_EVAL_ITEM
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGovMetricEvalItem" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 경영평가지표착안사항 등록	superMng.superMng.deployData.insertGovMetricEvalItem */
+		INSERT INTO GOV_METRIC_EVAL_ITEM(COMP_ID,YEAR,GOV_METRIC_ID,DETAIL_EVAL_ID,DETAIL_EVAL_DESC,EVAL_ITEM_DESC,CREATE_DT)
+		SELECT COMP_ID,#{findYear},GOV_METRIC_ID,DETAIL_EVAL_ID,DETAIL_EVAL_DESC,EVAL_ITEM_DESC,SYSDATE
+		FROM GOV_METRIC_EVAL_ITEM
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteGovCalTypeCol" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 경영평가지표산식항목 삭제	superMng.superMng.deployData.deleteGovCalTypeCol */
+		DELETE FROM GOV_CAL_TYPE_COL
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGovCalTypeCol" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 경영평가지표산식항목 등록	superMng.superMng.deployData.insertGovCalTypeCol */
+		INSERT INTO GOV_CAL_TYPE_COL(COMP_ID,YEAR,GOV_METRIC_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,UNIT_ID,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT COMP_ID,#{findYear},GOV_METRIC_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,UNIT_ID,SYSDATE,'',''
+		FROM GOV_CAL_TYPE_COL
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteGovMetric" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 경영평가지표 삭제	superMng.superMng.deployData.deleteGovMetric */
+		DELETE FROM GOV_METRIC
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGovMetric" parameterType="deployDataVO">
+		/*	전년데이터일괄적용 경영평가지표 등록	superMng.superMng.deployData.insertGovMetric */
+		INSERT INTO GOV_METRIC(COMP_ID,YEAR,GOV_METRIC_ID,GOV_METRIC_NM,EVAL_CAT_GRP_ID,EVAL_CAT_ID,EVAL_METHOD,TYPE_ID,UNIT_ID,SC_DEPT_ID,UP_GOV_METRIC_ID
+								,WEIGHT,CONTENT,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT,ACT_CAL_TYPE,MAX_TARGET_VALUE,MIN_TARGET_VALUE,STAD_VALUE,DEVIATION_VALUE,SCORE_CAL_TYPE_ID)
+		SELECT COMP_ID,#{findYear},GOV_METRIC_ID,GOV_METRIC_NM,EVAL_CAT_GRP_ID,EVAL_CAT_ID,EVAL_METHOD,TYPE_ID,UNIT_ID,SC_DEPT_ID,UP_GOV_METRIC_ID
+				,WEIGHT,CONTENT,SORT_ORDER,SYSDATE,'','',ACT_CAL_TYPE,MAX_TARGET_VALUE,MIN_TARGET_VALUE,STAD_VALUE,DEVIATION_VALUE,SCORE_CAL_TYPE_ID
+		FROM GOV_METRIC
+		WHERE COMP_ID = #{targetCompId}
+		AND YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	경영평가지표 END-->
+	
+</mapper>
+

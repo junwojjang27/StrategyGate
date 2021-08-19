@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.menu.userAuthGrp">
+	<select id="selectList" parameterType="userAuthGrpVO" resultType="userAuthGrpVO">
+		/*	사용자권한그룹설정 조회	userAuthGrp.selectList */
+		SELECT
+			AUTH_GUBUN,
+			USER_ID,
+			DEPT_ID
+		FROM COM_ADMIN
+		WHERE 1=1
+
+	</select>
+	
+	<select id="selectDeptList" parameterType="userAuthGrpVO" resultType="userAuthGrpVO">
+		/*	사용자권한그룹설정 실조직 조회	userAuthGrp.selectList */
+		SELECT	A.DEPT_ID,		A.DEPT_NM,
+				A.UP_DEPT_ID,	A.SORT_ORDER,	A.CHIEF_ID,
+				A.CHIEF_NM,		A.DEPT_LEVEL_ID AS DEPT_LEVEL, 
+		 		A.IS_LEAF
+		FROM	V_DEPTINFO A
+		WHERE	A.YEAR = (SELECT MAX(YEAR)	FROM	V_DEPTINFO)
+		ORDER BY	A.REAL_SORT_ORDER
+	</select>
+	
+	<select id="selectUserList" parameterType="userAuthGrpVO" resultType="userAuthGrpVO">
+		/*	사용자권한그룹설정 직원 조회	userAuthGrp.selectUserList */
+		
+		SELECT A.USER_ID,
+		       A.USER_NM,
+		       A.DEPT_ID,
+		       A.DEPT_NM,
+		       A.POS_ID,
+		       A.POS_NM,
+		       A.JIKGUB_ID,
+		       A.JIKGUB_NM
+		  FROM V_ROLE_USER A
+		 WHERE A.DEPT_ID = #{baseDeptId}
+		   AND A.USER_ID NOT IN (SELECT USER_ID 
+		                           FROM COM_ADMIN
+		                          WHERE AUTH_GUBUN = #{findAuthGubun}) 
+		 ORDER BY A.USER_NM ASC
+
+	</select>
+	<select id="selectSelectedUserList" parameterType="userAuthGrpVO" resultType="userAuthGrpVO">
+		/*	사용자권한그룹설정 등록된직원 조회	userAuthGrp.selectSelectedUserList */
+		
+		SELECT A.USER_ID,
+		       A.USER_NM,
+		       A.DEPT_ID,
+		       A.DEPT_NM,
+		       A.POS_ID,
+		       A.POS_NM,
+		       A.JIKGUB_ID,
+		       A.JIKGUB_NM
+		  FROM V_ROLE_USER A
+		       INNER JOIN COM_ADMIN B
+		       ON A.USER_ID = B.USER_ID
+		       AND B.AUTH_GUBUN = #{findAuthGubun}
+		 WHERE 1=1
+		 ORDER BY A.USER_NM ASC
+
+	</select>
+	
+	<select id="selectDetail" parameterType="userAuthGrpVO" resultType="userAuthGrpVO">
+		/*	사용자권한그룹설정 상세 조회	 	userAuthGrp.selectDetail	*/
+		SELECT
+			AUTH_GUBUN,
+			USER_ID,
+			DEPT_ID
+		FROM COM_ADMIN
+		WHERE 1=1
+			AND AUTH_GUBUN=#{authGubun}
+			AND USER_ID=#{userId}
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="userAuthGrpVO">
+	    /*	사용자권한그룹설정 정렬순서저장	 userAuthGrp.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteUserAuthGrp" parameterType="userAuthGrpVO">
+		/*	사용자권한그룹설정 삭제	userAuthGrp.deleteUserAuthGrp	*/
+		DELETE FROM COM_ADMIN
+		WHERE 1=1
+			AND AUTH_GUBUN=#{findAuthGubun}
+	</update>
+
+	<insert id="insertData" parameterType="userAuthGrpVO">
+		/*	사용자권한그룹설정 저장	userAuthGrp.insertData	*/
+		INSERT INTO COM_ADMIN(
+			   AUTH_GUBUN,
+			   USER_ID,
+			   DEPT_ID)
+	    VALUES (
+			   #{findAuthGubun},
+			   #{userId},
+			   #{deptId})
+	</insert>
+
+	<update id="updateData" parameterType="userAuthGrpVO">
+		/*	사용자권한그룹설정 수정	userAuthGrp.updateData	*/
+		UPDATE COM_ADMIN
+		SET
+			DEPT_ID=deptId}
+		WHERE 1=1
+			AND AUTH_GUBUN=#{authGubun}
+			AND USER_ID=#{userId}
+
+	</update>
+	
+</mapper>
+

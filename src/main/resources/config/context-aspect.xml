@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+						http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+	<aop:aspectj-autoproxy/>
+	<aop:config>
+		<aop:pointcut id="egov.serviceMethod" expression="execution(* egovframework.com..impl.*Impl.*(..))"/>
+
+		<aop:aspect ref="egov.exceptionTransfer">
+			<aop:after-throwing throwing="exception" pointcut-ref="egov.serviceMethod" method="transfer"/>
+		</aop:aspect>
+	</aop:config>
+	<bean id="egov.exceptionTransfer" class="egovframework.rte.fdl.cmmn.aspect.ExceptionTransfer">
+		<property name="exceptionHandlerService">
+			<list>
+				<ref bean="defaultExceptionHandleManager"/>
+				<ref bean="otherExceptionHandleManager"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="defaultExceptionHandleManager" class="egovframework.rte.fdl.cmmn.exception.manager.DefaultExceptionHandleManager">
+		<property name="reqExpMatcher">
+			<ref bean="egov.antPathMater"/>
+		</property>
+		<property name="patterns">
+			<list>
+				<value>**service.impl.*</value>
+			</list>
+		</property>
+		<property name="handlers">
+			<list>
+				<ref bean="egovHandler"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="otherExceptionHandleManager" class="egovframework.rte.fdl.cmmn.exception.manager.DefaultExceptionHandleManager">
+		<property name="reqExpMatcher">
+			<ref bean="egov.antPathMater"/>
+		</property>
+		<property name="patterns">
+			<list>
+				<value>**service.impl.*</value>
+			</list>
+		</property>
+		<property name="handlers">
+			<list>
+				<ref bean="otherHandler"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="egovHandler" class="egovframework.com.cmm.EgovComExcepHndlr"/>
+	<bean id="otherHandler" class="egovframework.com.cmm.EgovComOthersExcepHndlr"/>
+	
+	<!-- compId 세팅 AOP -->
+	<bean id="compIdAspect" class="kr.ispark.common.aspect.CompIdAspect"/>
+	<aop:config>
+		<aop:aspect ref="compIdAspect">
+			<aop:before method="setCompId" pointcut="execution(* *..*DAO.*(..))"/>
+		</aop:aspect>
+	</aop:config>
+	
+	<!-- compId 세팅 AOP -->
+	
+	<!-- >
+	<bean id="dbInfoAspect" class="kr.ispark.common.aspect.DbInfoAspect"/>
+	<aop:config>
+		<aop:aspect ref="dbInfoAspect">
+			<aop:before method="setDbInfo" pointcut="execution(* *..*DAO.*(..))"/>
+			<aop:after method="destroyDbInfo" pointcut="execution(* *..*DAO.*(..))"/>
+		</aop:aspect>
+	</aop:config>
+	-->
+	
+	<!-- 
+	<bean id="dbInfoAspect" class="kr.ispark.common.aspect.DbInfoAspect"/>
+	<aop:config>
+		<aop:aspect ref="dbInfoAspect">
+			<aop:before method="setDbInfo" pointcut="execution(* egovframework.com..*Impl.*(..)) or
+													execution(* egovframework.rte.fdl.excel.impl.*Impl.*(..)) or
+													execution(* kr.ispark..impl.*Impl.*(..))
+													"/>
+			
+			<aop:after method="destroyDbInfo" pointcut="execution(* egovframework.com..*Impl.*(..)) or
+													execution(* egovframework.rte.fdl.excel.impl.*Impl.*(..)) or
+													execution(* kr.ispark..impl.*Impl.*(..))
+													"/>
+													
+			
+		</aop:aspect>
+	</aop:config>
+	-->
+	
+	<!-- 
+	<bean id="doubleClickAspect" class="kr.ispark.common.aspect.DoubleClickAspect"/>
+	<aop:config>
+		<aop:aspect ref="doubleClickAspect">
+			<aop:around method="processMethod" pointcut="execution(* kr.ispark.bsc..impl.*Impl.insert*(..)) or
+														 execution(* kr.ispark.bsc..impl.*Impl.update*(..)) or
+														 execution(* kr.ispark.bsc..impl.*Impl.delete*(..)) or
+														 execution(* kr.ispark.bsc..impl.*Impl.save*(..)) or
+														 execution(* kr.ispark.gov..impl.*Impl.insert*(..)) or
+														 execution(* kr.ispark.gov..impl.*Impl.update*(..)) or
+														 execution(* kr.ispark.gov..impl.*Impl.delete*(..)) or
+														 execution(* kr.ispark.gov..impl.*Impl.save*(..)) or
+														 execution(* kr.ispark.prs..impl.*Impl.insert*(..)) or
+														 execution(* kr.ispark.prs..impl.*Impl.update*(..)) or
+														 execution(* kr.ispark.prs..impl.*Impl.delete*(..)) or
+														 execution(* kr.ispark.prs..impl.*Impl.save*(..)) or
+														 execution(* kr.ispark.system..impl.*Impl.insert*(..)) or
+														 execution(* kr.ispark.system..impl.*Impl.update*(..)) or
+														 execution(* kr.ispark.system..impl.*Impl.delete*(..)) or
+														 execution(* kr.ispark.system..impl.*Impl.save*(..))
+														 "/>
+		</aop:aspect>
+	</aop:config>
+	-->
+	
+</beans>

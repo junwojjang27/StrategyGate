@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="compMenuMngVO">
+			<field property="pgmNmLang" depends="required,maxlength">
+				<arg0 key="word.menu" resource="true"/>
+				<arg1 key="150" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>150</var-value>
+				</var>
+			</field>
+			<field property="sortOrder" depends="maxlength">
+				<arg0 key="word.sortOder" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="content" depends="maxlength">
+				<arg0 key="word.note" resource="true"/>
+				<arg1 key="4000" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>4000</var-value>
+				</var>
+			</field>
+		</form>
+	</formset>
+</form-validation>
+

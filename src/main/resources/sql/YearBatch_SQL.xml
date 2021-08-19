@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.batch.yearBatch">
+	<select id="selectList" parameterType="yearBatchVO" resultType="yearBatchVO">
+		/*	년배치 조회	system.batch.yearBatch.selectList */
+		SELECT	X.PROC_ID,
+				NVL(N.PROC_NM, X.PROC_NM)	AS PROC_NM,
+				X.PROC_GBN,
+				Y.SEQ,
+				Y.YEAR,
+				Y.EXEC_YN,
+				Y.ERROR_ID,
+				TO_CHAR(Y.EXEC_DATE, 'YYYY.MM.DD HH24:MI:SS') EXEC_DATE,
+				(SELECT COUNT (PROC_ID)	FROM BSC_PROC_MASTER	WHERE	PROC_GBN = X.PROC_GBN) CNT
+		FROM	BSC_PROC_MASTER X
+				LEFT OUTER JOIN	(
+									SELECT	A.SEQ,
+											A.PROC_ID,
+											A.YEAR,
+											A.EXEC_YN,
+											A.ERROR_ID,
+											A.EXEC_DATE
+									FROM	BSC_PROC_ADMIN A
+									WHERE	(A.YEAR = #{findYear} AND A.MON = #{findMon})
+										AND A.SEQ = (
+														SELECT	MAX(B.SEQ)
+														FROM	BSC_PROC_ADMIN B
+														WHERE	A.PROC_ID = B.PROC_ID
+															AND B.YEAR = #{findYear}
+															AND B.MON =	#{findMon}
+														GROUP BY	B.PROC_ID
+													)
+								) Y
+					ON	X.PROC_ID = Y.PROC_ID
+				LEFT JOIN	BSC_PROC_MASTER_NM N
+					ON	X.PROC_ID = N.PROC_ID
+					AND	N.LANG = #{lang}
+		WHERE	1=1
+		ORDER BY	X.PROC_GBN, X.SORT_ORDER, X.PROC_ID
+
+	</select>
+
+</mapper>
+

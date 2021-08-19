@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.comp.compUserMng">
+	<select id="selectList" parameterType="compUserMngVO" resultType="compUserMngVO">
+		/*	사용자관리 조회	system.comp.compUserMng.selectList */
+		SELECT
+			A.USER_ID
+			,A.USER_NM
+			,A.DEPT_ID
+			,A.DEPT_NM
+			,A.JIKGUB_ID
+			,A.JIKGUB_NM
+			,A.POS_ID
+			,A.POS_NM
+			,A.EMAIL
+			,A.BEING_YN
+			,A.JOIN_DT
+			,A.RETIRE_DT
+			,A.BIRTH_DT
+			,A.LANG
+			,A.PW_CHANGE_DT
+			,A.HIDDEN_YN
+			,A.CREATE_DT
+			,A.MODIFY_DT
+			,A.JOB_ID
+			,A.JOB_NM
+		FROM COM_USERINFO A
+		WHERE 1=1
+			<if test="findBeingYn !=null and findBeingYn != ''" >
+				AND A.BEING_YN = #{findBeingYn}
+			</if>
+			<if test="findPosId !=null and findPosId != ''" >
+				AND A.POS_ID = #{findPosId}
+			</if>
+			<if test="findJikgubId !=null and findJikgubId != ''" >
+				AND A.JIKGUB_ID = #{findJikgubId}
+			</if>
+			<if test="findJobId !=null and findJobId != ''" >
+				AND A.JOB_ID = #{findJobId}
+			</if>
+			<if test="findUserNm !=null and findUserNm != ''" >
+				AND A.USER_NM LIKE '%' || #{findUserNm} || '%'
+			</if>
+		ORDER BY A.USER_NM
+	</select>
+	
+	<select id="selectDetail" parameterType="compUserMngVO" resultType="compUserMngVO">
+		/*	사용자관리 상세 조회	 	system.comp.compUserMng.selectDetail	*/
+		SELECT
+			USER_ID
+			,USER_NM
+			,DEPT_ID
+			,DEPT_NM
+			,JIKGUB_ID
+			,JIKGUB_NM
+			,POS_ID
+			,POS_NM
+			,EMAIL
+			,BEING_YN
+			,JOIN_DT
+			,RETIRE_DT
+			,BIRTH_DT
+			,LANG
+			,PW_CHANGE_DT
+			,HIDDEN_YN
+			,CREATE_DT
+			,MODIFY_DT
+			,JOB_ID
+			,JOB_NM
+		FROM COM_USERINFO
+		WHERE USER_ID=#{userId}
+	</select>	
+	
+	<update id="deleteCompUserMng" parameterType="compUserMngVO">
+		/*	사용자관리 삭제	system.comp.compUserMng.deleteCompUserMng	*/
+		DELETE FROM COM_USERINFO
+		WHERE USER_ID IN 
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+	</update>
+
+	<insert id="insertData" parameterType="compUserMngVO">
+		/*	사용자관리 저장	system.comp.compUserMng.insertData	*/
+		INSERT INTO COM_USERINFO(
+			USER_ID
+			,USER_NM
+			,PASSWD
+			,POS_ID
+			,POS_NM
+			,JIKGUB_ID
+			,JIKGUB_NM
+			,JOB_ID
+			,JOB_NM
+			,DEPT_ID
+			,DEPT_NM
+			,EMAIL
+			,BEING_YN
+			,CREATE_DT
+			,HIDDEN_YN
+			,LANG
+		)
+		VALUES (
+			#{userId}
+			,#{userNm}
+			,#{passwd}
+			,#{posId}
+			,#{posNm}
+			,#{jikgubId}
+			,#{jikgubNm}
+			,#{jobId}
+			,#{jobNm}
+			,#{deptId}
+			,#{deptNm}
+			,#{email}
+			,#{beingYn}
+			,SYSDATE
+			,'N'
+			,(SELECT COMP_LANG FROM COM_COMPINFO WHERE 1=1)
+		)
+	</insert>
+	
+	<insert id="insertAuth" parameterType="compUserMngVO">
+		/*	일반사용자 권한 부여	system.comp.compUserMng.insertAuth	*/
+		INSERT	INTO	COM_ADMIN	(
+			AUTH_GUBUN,	USER_ID,	DEPT_ID
+		)	VALUES	(
+			'99',		#{userId},	#{deptId}
+		)
+	</insert>
+
+	<delete id="deleteAuth" parameterType="compUserMngVO">
+		/*	일반사용자 권한 삭제	system.comp.compUserMng.deleteAuth	*/
+		DELETE FROM COM_ADMIN	
+		WHERE 1=1
+		AND USER_ID IN 
+		<foreach collection="keys" item="key" open="(" close=")" separator=",">
+			#{key}
+		</foreach>
+	</delete>
+	
+	<update id="updateData" parameterType="compUserMngVO">
+		/*	사용자관리 수정	system.comp.compUserMng.updateData	*/
+		UPDATE COM_USERINFO
+		SET
+			USER_NM		=	#{userNm}
+			,POS_ID		=	#{posId}
+			,POS_NM		=	#{posNm}
+			,JIKGUB_ID	=	#{jikgubId}
+			,JIKGUB_NM	=	#{jikgubNm}
+			,JOB_ID		=	#{jobId}
+			,JOB_NM		=	#{jobNm}
+			,DEPT_ID	=	#{deptId}
+			,DEPT_NM	=	#{deptNm}
+			,EMAIL		=	#{email}
+			,BEING_YN	=	#{beingYn}
+			,MODIFY_DT	=	SYSDATE
+			,HIDDEN_YN	=	(SELECT NVL(HIDDEN_YN,'N') FROM COM_USERINFO WHERE USER_ID = #{userId} )
+		WHERE USER_ID = #{userId}
+	</update>
+
+	<update id="updatePasswordReset" parameterType="compUserMngVO">
+		/*	패스워드 초기화	system.comp.compUserMng.updatePasswordReset	*/
+		UPDATE	COM_USERINFO
+			SET	PASSWD = #{passwd},
+				PW_CHANGE_DT = NULL
+		WHERE	USER_ID = #{userId}
+	</update>
+	
+	<update id="updatePassword" parameterType="compUserMngVO">
+		/*	패스워드 변경	system.comp.compUserMng.updatePassword	*/
+		UPDATE	COM_USERINFO
+			SET	PASSWD = #{passwd},
+				PW_CHANGE_DT = SYSDATE
+		WHERE	USER_ID = #{userId}
+	</update>
+
+	<select id="selectIdCnt" parameterType="compUserMngVO" resultType="int">
+		/*	ID 중복 체크	system.comp.compUserMng.selectIdCnt	*/
+		SELECT	COUNT(1)
+		FROM	COM_USERINFO
+		WHERE	USER_ID = #{userId}
+	</select>
+
+	<update id="updateUserLang"	parameterType="userVO">
+		/*	사용자 언어 설정 수정	system.comp.compUserMng.updateUserLang	*/
+		UPDATE	COM_USERINFO
+			SET	LANG = #{lang}
+		WHERE	USER_ID = #{userId}
+	</update>
+	
+	<select id="selectListForExcelForm" parameterType="compUserMngVO" resultType="compUserMngVO">
+		/*	사용자관리 조회	system.comp.compUserMng.selectList */
+		SELECT	A.USER_ID,	A.USER_NM,	A.DEPT_ID,
+				CASE	WHEN	A.POS_ID IS NOT NULL
+						THEN	A.POS_ID	|| ':' ||	NVL(CN1.CODE_NM, C1.CODE_NM)
+						ELSE	NULL
+				END	AS POS_ID,
+				CASE	WHEN	A.JIKGUB_ID IS NOT NULL
+						THEN	A.JIKGUB_ID	|| ':' ||	NVL(CN2.CODE_NM, C2.CODE_NM)
+						ELSE	NULL
+				END	AS JIKGUB_ID,
+				CASE	WHEN	A.JOB_ID IS NOT NULL
+						THEN	A.JOB_ID	|| ':' ||	NVL(CN3.CODE_NM, C3.CODE_NM)
+						ELSE	NULL
+				END	AS JOB_ID,
+				EMAIL,
+				A.BEING_YN	|| ':' ||	NVL(CN4.CODE_NM, C4.CODE_NM)	AS BEING_YN
+		FROM	COM_USERINFO A
+				LEFT JOIN	COM_CODE C1
+					ON	C1.CODE_GRP_ID = '344'	AND	C1.YEAR = '9999'	AND	A.POS_ID = C1.CODE_ID
+				LEFT JOIN	COM_CODE_NM CN1
+					ON	C1.YEAR = CN1.YEAR	AND	C1.CODE_GRP_ID = CN1.CODE_GRP_ID	AND	C1.CODE_ID = CN1.CODE_ID	AND	CN1.LANG = #{lang}
+				LEFT JOIN	COM_CODE C2
+					ON	C2.CODE_GRP_ID = '345'	AND	C2.YEAR = '9999'	AND	A.JIKGUB_ID = C2.CODE_ID
+				LEFT JOIN	COM_CODE_NM CN2
+					ON	C2.YEAR = CN2.YEAR	AND	C2.CODE_GRP_ID = CN2.CODE_GRP_ID	AND	C2.CODE_ID = CN2.CODE_ID	AND	CN2.LANG = #{lang}
+				LEFT JOIN	COM_CODE C3
+					ON	C3.CODE_GRP_ID = '343'	AND	C3.YEAR = '9999'	AND	A.JOB_ID = C3.CODE_ID
+				LEFT JOIN	COM_CODE_NM CN3
+					ON	AND	C3.YEAR = CN3.YEAR	AND	C3.CODE_GRP_ID = CN3.CODE_GRP_ID	AND	C3.CODE_ID = CN3.CODE_ID	AND	CN3.LANG = #{lang}
+				LEFT JOIN	COM_CODE C4
+					ON	C4.CODE_GRP_ID = '368'	AND	C4.YEAR = '9999'	AND	A.BEING_YN = C4.CODE_ID
+				LEFT JOIN	COM_CODE_NM CN4
+					ON		C4.YEAR = CN4.YEAR	AND	C4.CODE_GRP_ID = CN4.CODE_GRP_ID	AND	C4.CODE_ID = CN4.CODE_ID	AND	CN4.LANG = #{lang}
+		WHERE	1=1
+		ORDER BY	A.USER_NM
+	</select>
+	
+	<update id="updateExcelData" parameterType="compUserMngVO">
+		/*	사용자관리 수정 (Excel)	system.comp.compUserMng.updateExcelData	*/
+		UPDATE	COM_USERINFO
+			SET	USER_NM	=	#{userNm},
+				POS_ID	=	#{posId},
+				POS_NM	=	#{posNm},
+				JIKGUB_ID	=	#{jikgubId},
+				JIKGUB_NM	=	#{jikgubNm},
+				JOB_ID		=	#{jobId},
+				JOB_NM		=	#{jobNm},
+				DEPT_ID		=	#{deptId},
+				DEPT_NM		=	(SELECT	DEPT_NM	FROM	V_DEPTINFO	WHERE	YEAR = #{findYear} AND	DEPT_id = #{deptId}),
+				EMAIL		=	#{email},
+				BEING_YN	=	#{beingYn},
+				MODIFY_DT	=	SYSDATE
+		WHERE	USER_ID = #{userId}
+	</update>
+	
+	<insert id="insertExcelData" parameterType="compUserMngVO">
+		/*	사용자관리 저장 (Excel)	system.comp.compUserMng.insertExcelData	*/
+		INSERT INTO COM_USERINFO (
+			USER_ID,	USER_NM,	PASSWD,
+			POS_ID,		POS_NM,		JIKGUB_ID,	JIKGUB_NM,
+			JOB_ID,		JOB_NM,		DEPT_ID,	DEPT_NM,
+			EMAIL,		BEING_YN,	CREATE_DT,	HIDDEN_YN,
+			LANG
+		)
+		VALUES (
+			#{userId},	#{userNm},		#{passwd},
+			#{posId},	#{posNm},	#{jikgubId},	#{jikgubNm},
+			#{jobId},	#{jobNm},	#{deptId},		(SELECT	DEPT_NM	FROM	V_DEPTINFO	WHERE	YEAR = #{findYear}	AND	DEPT_id = #{deptId}),
+			#{email},	#{beingYn},	SYSDATE,		'N',
+			(SELECT COMP_LANG FROM COM_COMPINFO WHERE 1=1)
+		)
+	</insert>
+</mapper>

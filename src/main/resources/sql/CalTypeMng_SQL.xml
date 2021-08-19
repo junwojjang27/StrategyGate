@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.code.calTypeMng">
+	<select id="selectList" parameterType="calTypeMngVO" resultType="calTypeMngVO">
+		/*	산식관리 조회	calTypeMng.selectList */
+		 SELECT A.CAL_TYPE_ID,
+				A.CAL_TYPE_NM,
+				A.CAL_TYPE,
+				A.CONTENT,
+	       		B.METRIC_CNT
+	  	   FROM COM_CAL_TYPE A
+	       		LEFT OUTER JOIN (SELECT A.SCORE_CAL_TYPE_ID, COUNT(1) AS METRIC_CNT
+					       		   FROM BSC_METRIC A
+					       		  WHERE A.DELETE_DT IS NULL
+					       		  GROUP BY A.SCORE_CAL_TYPE_ID
+					       		
+			    )B
+			    ON A.CAL_TYPE_ID = B.SCORE_CAL_TYPE_ID
+	 	  WHERE 1=1
+	 	    <if test='findUseYn != null and findUseYn == "Y"'>
+	 	    	AND A.DELETE_DT IS NULL
+	 	    </if>
+	 	    <if test='findUseYn != null and findUseYn == "N"'>
+	 	    	AND A.DELETE_DT IS NOT NULL
+	 	    </if>
+	   		
+		  ORDER BY A.CAL_TYPE_ID
+
+	</select>
+	
+	<select id="selectDetail" parameterType="calTypeMngVO" resultType="calTypeMngVO">
+		/*	산식관리 상세 조회	 	calTypeMng.selectDetail	*/
+		SELECT
+			A.CAL_TYPE_ID,
+			A.CAL_TYPE_NM,
+			A.CAL_TYPE,
+			A.CONTENT,
+			CASE WHEN A.DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN 
+		FROM COM_CAL_TYPE A
+		WHERE 1=1
+		  AND A.CAL_TYPE_ID=#{calTypeId}
+
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="calTypeMngVO">
+	    /*	산식관리 정렬순서저장	 calTypeMng.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteCalTypeMng" parameterType="calTypeMngVO">
+		/*	산식관리 삭제	calTypeMng.deleteCalTypeMng	*/
+		UPDATE COM_CAL_TYPE
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND CAL_TYPE_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+
+	</update>
+
+	<insert id="insertData" parameterType="calTypeMngVO">
+		/*	산식관리 저장	calTypeMng.insertData	*/
+		INSERT INTO COM_CAL_TYPE(
+			CAL_TYPE_ID,
+			CAL_TYPE_NM,
+			CAL_TYPE,
+			CONTENT,
+			CREATE_DT,
+			MODIFY_DT,
+			DELETE_DT)
+		
+VALUES (
+			#{calTypeId},
+			#{calTypeNm},
+			#{calType},
+			#{content},
+			SYSDATE,
+			NULL,
+			CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END)
+
+	</insert>
+
+	<update id="updateData" parameterType="calTypeMngVO">
+		/*	산식관리 수정	calTypeMng.updateData	*/
+		UPDATE COM_CAL_TYPE
+		SET
+			CAL_TYPE_NM=#{calTypeNm},
+			CAL_TYPE=#{calType},
+			CONTENT=#{content},
+			MODIFY_DT=SYSDATE,
+			DELETE_DT=CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END
+		WHERE 1=1
+			AND CAL_TYPE_ID=#{calTypeId}
+
+	</update>
+</mapper>
+

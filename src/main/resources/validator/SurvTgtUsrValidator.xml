@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="survTgtUsrVO">
+			<field property="surveyUserNm" depends="required, maxByteLength">
+				<arg0 key="word.survTgtUsr" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="deptNm" depends="required, maxByteLength">
+				<arg0 key="word.belongDept" resource="true"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+			<field property="posNm" depends="maxByteLength">
+				<arg0 key="word.pos" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="jikgubNm" depends="maxByteLength">
+				<arg0 key="word.jikgub" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+
+		</form>
+	</formset>
+</form-validation>
+

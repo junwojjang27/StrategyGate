@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<properties>
+	</properties>
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+		<setting name="jdbcTypeForNull" value="NULL"/>
+	</settings>
+	<typeAliases>
+		<!--공통부분 -->
+		<typeAlias alias="commonVO"	type="kr.ispark.common.CommonVO"/>
+		<typeAlias alias="egovMap"	type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+		<typeAlias alias="fileVO"	type="egovframework.com.cmm.service.FileVO"/>
+		<typeAlias alias="webLogVO"	type="egovframework.com.sym.log.wlg.service.WebLog"/>
+		<typeAlias alias="userLogVO"	type="egovframework.com.sym.log.ulg.service.UserLog"/>
+		<typeAlias alias="sysLogVO"		type="egovframework.com.sym.log.lgm.service.SysLog"/>
+		<typeAlias alias="loginLogVO"	type="egovframework.com.sym.log.clg.service.LoginLog"/>
+		<typeAlias alias="codeVO"	type="kr.ispark.common.util.service.CodeVO"/>
+		<typeAlias alias="menuVO"	type="kr.ispark.common.system.service.MenuVO"/>
+		<typeAlias alias="userVO"	type="kr.ispark.common.security.service.UserVO"/>
+		<typeAlias alias="langVO"	type="kr.ispark.common.system.service.LangVO"/>
+		<typeAlias alias="calculationVO"	type="kr.ispark.common.calculation.service.CalculationVO"/>
+		<typeAlias alias="idGenVO"			type="kr.ispark.common.system.service.IdGenVO"/>
+		<typeAlias alias="scDeptDiagMngVO"	type="kr.ispark.bsc.base.scDept.scDeptDiagMng.service.ScDeptDiagMngVO"/>
+		<typeAlias alias="scDeptVO"			type="kr.ispark.common.system.service.ScDeptVO"/>
+		<typeAlias alias="deptVO"			type="kr.ispark.common.system.service.DeptVO"/>
+		<typeAlias alias="strategyMapVO"	type="kr.ispark.bsc.base.strategy.strategyMapMng.service.StrategyMapVO"/>
+		<typeAlias alias="boardVO"			type="kr.ispark.system.system.board.service.BoardVO"/>
+
+
+		<typeAlias alias="exampleVO"		type="kr.ispark.example.service.ExampleVO"/>
+		<typeAlias alias="exampleBoardVO"	type="kr.ispark.example.service.ExampleBoardVO"/>
+
+		<!-- 관점및전략 -->
+		<typeAlias alias="perspectiveVO"	type="kr.ispark.bsc.base.strategy.perspective.service.PerspectiveVO"/>
+		<typeAlias alias="strategyVO"	type="kr.ispark.bsc.base.strategy.strategy.service.StrategyVO"/>
+		<typeAlias alias="menuMngVO"	type="kr.ispark.system.system.menu.menuMng.service.MenuMngVO"/>
+		<typeAlias alias="authGrpVO"	type="kr.ispark.system.system.menu.authGrp.service.AuthGrpVO"/>
+		<typeAlias alias="userAuthGrpVO"	type="kr.ispark.system.system.menu.userAuthGrp.service.UserAuthGrpVO"/>
+		<typeAlias alias="userMngVO"	type="kr.ispark.system.system.menu.userMng.service.UserMngVO"/>
+		<typeAlias alias="codeGrpVO"	type="kr.ispark.system.system.code.codeGrp.service.CodeGrpVO"/>
+		<typeAlias alias="calTypeMngVO"	type="kr.ispark.system.system.code.calTypeMng.service.CalTypeMngVO"/>
+		<typeAlias alias="signalMngVO"	type="kr.ispark.system.system.code.signalMng.service.SignalMngVO"/>
+
+		<typeAlias alias="noticeVO"	type="kr.ispark.bsc.system.system.notice.service.NoticeVO"/>
+		<typeAlias alias="yearBatchVO"	type="kr.ispark.system.system.batch.yearBatch.service.YearBatchVO"/>
+
+	
+		<!-- 모니터링 -->
+		<typeAlias alias="compareScDeptGrpVO"	type="kr.ispark.bsc.mon.compare.compareScDeptGrp.service.CompareScDeptGrpVO"/>
+		<typeAlias alias="compareMetricGrpVO"	type="kr.ispark.bsc.mon.compare.compareMetricGrp.service.CompareMetricGrpVO"/>
+		<typeAlias alias="scDeptDiagVO"		type="kr.ispark.bsc.mon.org.scDeptDiag.service.ScDeptDiagVO"/>
+		<typeAlias alias="strategyDiagVO"	type="kr.ispark.bsc.mon.orgOutput.strategyDiag.service.StrategyDiagVO"/>
+		<typeAlias alias="strategyTableVO"	type="kr.ispark.bsc.mon.orgOutput.strategyTable.service.StrategyTableVO"/>
+		<typeAlias alias="dashboardVO"	type="kr.ispark.bsc.mon.dashboard.dashboard.service.DashboardVO"/>
+
+
+		<typeAlias alias="pastYearCopyVO"	type="kr.ispark.system.system.batch.pastYearCopy.service.PastYearCopyVO"/>
+		<typeAlias alias="compUserMngVO"	type="kr.ispark.system.system.comp.compUserMng.service.CompUserMngVO"/>
+		<typeAlias alias="compCodeGrpVO"	type="kr.ispark.system.system.comp.compCodeGrp.service.CompCodeGrpVO"/>
+		<typeAlias alias="compMenuMngVO"	type="kr.ispark.system.system.comp.compMenuMng.service.CompMenuMngVO"/>
+		
+		<typeAlias alias="survAnsPoolVO"			type="kr.ispark.system.system.survey.survAnsPool.service.SurvAnsPoolVO"/>
+		<typeAlias alias="survQuesPoolVO"			type="kr.ispark.system.system.survey.survQuesPool.service.SurvQuesPoolVO"/>
+		<typeAlias alias="survRegVO"				type="kr.ispark.system.system.survey.survReg.service.SurvRegVO"/>
+		<typeAlias alias="survQuesVO"				type="kr.ispark.system.system.survey.survQues.service.SurvQuesVO"/>
+		<typeAlias alias="survQuesGrpVO"			type="kr.ispark.system.system.survey.survQuesGrp.service.SurvQuesGrpVO"/>
+		<typeAlias alias="survTgtUsrVO"				type="kr.ispark.system.system.survey.survTgtUsr.service.SurvTgtUsrVO"/>
+		<typeAlias alias="survActionVO"				type="kr.ispark.system.system.survey.survAction.service.SurvActionVO"/>
+		<typeAlias alias="survProgStatVO"			type="kr.ispark.system.system.survey.survProgStat.service.SurvProgStatVO"/>
+		<typeAlias alias="survResultVO"				type="kr.ispark.system.system.survey.survResult.service.SurvResultVO"/>
+		
+		<!-- 슈퍼관리자용 메뉴 -->
+		<typeAlias alias="clientMngVO"	type="kr.ispark.superMng.superMng.superMng.clientMng.service.ClientMngVO"/>
+		<typeAlias alias="codeGrpDeployVO"	type="kr.ispark.superMng.superMng.superMng.codeGrpDeploy.service.CodeGrpDeployVO"/>
+		<typeAlias alias="userAdminMngVO"	type="kr.ispark.superMng.superMng.superMng.userAdminMng.service.UserAdminMngVO"/>
+		<typeAlias alias="menuDeployMngVO"	type="kr.ispark.superMng.superMng.superMng.menuDeployMng.service.MenuDeployMngVO"/>
+		<typeAlias alias="deployDataVO"	type="kr.ispark.superMng.superMng.superMng.deployData.service.DeployDataVO"/>
+		<typeAlias alias="systemSettingVO"	type="kr.ispark.system.system.comp.systemSetting.service.SystemSettingVO"/>
+
+	</typeAliases>
+</configuration>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

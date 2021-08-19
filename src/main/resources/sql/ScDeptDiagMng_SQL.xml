@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="base.scDept.scDeptDiagMng">
+	<select id="selectList" parameterType="scDeptDiagMngVO" resultType="scDeptDiagMngVO">
+		/*	성과조직 목록 조회	base.scDept.scDeptDiagMng.selectList	*/
+		SELECT	D.SC_DEPT_ID,	D.SC_DEPT_NM,	D.UP_SC_DEPT_ID,
+				D.LEVEL_ID,		C.CODE_NM	AS STATUS_NM
+		FROM	BSC_SC_DEPT D
+				LEFT JOIN	BSC_DEPTSCORE DS
+						ON	D.YEAR = DS.YEAR
+						AND	D.SC_DEPT_ID = DS.SC_DEPT_ID
+						AND	DS.MON = #{findMon}
+						AND	DS.ANAL_CYCLE = #{findAnalCycle}
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="'021'"/>
+					<property name="pAlias" value="C"/>
+					<property name="pCompareColumn" value="DS.STATUS"/>
+				</include>
+		WHERE	D.YEAR = #{findYear}
+			AND	D.DELETE_DT IS NULL
+			AND	D.FULL_SC_DEPT_ID LIKE '%' || #{findScDeptId} || '%'
+		ORDER BY	D.LEVEL_ID,	D.REAL_SORT_ORDER
+	</select>
+	
+	<select id="selectSignalList" parameterType="scDeptDiagMngVO" resultType="scDeptDiagMngVO">
+		/*	신호등 조회	base.scDept.scDeptDiagMng.selectSignalList	*/
+		SELECT	NVL(D.CODE_NM, A.CODE_NM)	AS CODE_NM,
+				B.COLOR
+		FROM	COM_CODE A
+				LEFT JOIN	COM_SIGNAL_STATUS B
+						ON	A.CODE_ID = B.STATUS_ID
+						AND	B.YEAR = A.YEAR
+				LEFT JOIN	COM_CODE_NM D
+						ON	A.CODE_GRP_ID = D.CODE_GRP_ID
+						AND A.CODE_ID = D.CODE_ID
+						AND A.YEAR = D.YEAR
+						AND D.LANG = #{lang}
+		WHERE	A.CODE_GRP_ID = '021'
+			AND A.DELETE_DT IS NULL
+			AND A.YEAR = (SELECT CASE YEAR_YN WHEN 'Y' THEN #{findYear} ELSE '9999' END
+								FROM COM_CODE_GRP
+							WHERE	CODE_GRP_ID = '021')
+		ORDER BY	A.SORT_ORDER, A.CODE_ID
+	</select>
+
+	<select id="getList" parameterType="scDeptDiagMngVO" resultType="scDeptDiagMngVO">
+		/*	성과조직도 조회	scDept.scDept.scDeptDiagMng.getList	*/
+		SELECT	A.YEAR,		A.SC_DEPT_ID,		A.SC_DEPT_NM,	A.UP_SC_DEPT_ID,
+				A.LEVEL_ID,	A.SC_DEPT_GRP_ID,	C1.CODE_NM	AS SC_DEPT_GRP_NM,	A.DEPT_KIND,
+				C2.CODE_NM	AS DEPT_KIND_NM,	NVL(B.DW_DEPT_X_POS, 0)	AS SUB_DEPT_X_POS,	NVL(B.DW_DEPT_Y_POS, 0)	AS SUB_DEPT_Y_POS,
+				DS.SCORE	AS SCORE,	DS.STATUS	AS STATUS,	C3.CODE_NM	AS STATUS_NM
+		FROM	(
+					SELECT	YEAR,				SC_DEPT_ID,	SC_DEPT_NM,
+							UP_SC_DEPT_ID,	SC_DEPT_GRP_ID,		DEPT_KIND,	LEVEL_ID
+					FROM	BSC_SC_DEPT
+					WHERE	YEAR = #{findYear}
+						AND	DELETE_DT IS NULL
+						AND	FULL_SC_DEPT_ID LIKE '%' || #{findScDeptId} || '%'
+					ORDER BY	REAL_SORT_ORDER
+				) A
+				LEFT JOIN	BSC_SC_DEPT_MAP B
+						ON	A.YEAR = B.YEAR
+						AND A.SC_DEPT_ID = B.DW_DEPT_ID
+						AND B.SC_DEPT_ID = #{findScDeptId}
+				LEFT JOIN	BSC_DEPTSCORE DS
+						ON	A.YEAR = DS.YEAR
+						AND	A.SC_DEPT_ID = DS.SC_DEPT_ID
+						AND	DS.MON = #{findMon}
+						AND	DS.ANAL_CYCLE = #{findAnalCycle}
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="'003'"/>
+					<property name="pAlias" value="C1"/>
+					<property name="pCompareColumn" value="SC_DEPT_GRP_ID"/>
+				</include>
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="'025'"/>
+					<property name="pAlias" value="C2"/>
+					<property name="pCompareColumn" value="A.DEPT_KIND"/>
+				</include>
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="'021'"/>
+					<property name="pAlias" value="C3"/>
+					<property name="pCompareColumn" value="DS.STATUS"/>
+				</include>
+	</select>
+	
+	<select id="getSignal" parameterType="scDeptDiagMngVO" resultType="scDeptDiagMngVO">
+		/*	신호등 조회	base.scDept.scDeptDiagMng.getSignal	*/
+		SELECT	A.CODE_ID,
+				B.FROM_VALUE,
+				B.TO_VALUE,
+				NVL(D.CODE_NM, A.CODE_NM)	AS CODE_NM,
+				REPLACE(B.COLOR, '#', '0x') AS COLOR
+		FROM	COM_CODE A
+				LEFT JOIN	COM_SIGNAL_STATUS B
+						ON	A.CODE_ID = B.STATUS_ID
+						AND	B.YEAR = A.YEAR
+				LEFT JOIN	COM_CODE_NM D
+						ON	A.CODE_GRP_ID = D.CODE_GRP_ID
+						AND A.CODE_ID = D.CODE_ID
+						AND A.YEAR = D.YEAR
+						AND D.LANG = #{lang}
+		WHERE	A.CODE_GRP_ID = '021'
+			AND A.DELETE_DT IS NULL
+			AND A.YEAR = (SELECT CASE YEAR_YN WHEN 'Y' THEN #{findYear} ELSE '9999' END
+								FROM COM_CODE_GRP
+							WHERE	CODE_GRP_ID = '021')
+		ORDER BY	A.SORT_ORDER, A.CODE_ID
+	</select>
+	
+	<select id="selectOrgChartCnt" parameterType="scDeptDiagMngVO" resultType="int">
+		/*	좌표 등록 여부 확인 base.scDept.scDeptDiagMng.selectOrgChartCnt	*/
+		SELECT	COUNT(*)	AS CNT
+		FROM	BSC_SC_DEPT_MAP
+		WHERE	YEAR = #{findYear}
+			AND	SC_DEPT_ID = #{findScDeptId}
+	</select>
+	
+	<insert id="insertData" parameterType="scDeptDiagMngVO">
+		/*	성과조직도 등록	base.scDept.scDeptDiagMng.insertData	*/
+		INSERT INTO	BSC_SC_DEPT_MAP
+					(YEAR
+					, SC_DEPT_ID
+					, DW_DEPT_ID
+					, DW_DEPT_X_POS
+					, DW_DEPT_Y_POS
+					, CREATE_DT
+					)
+			VALUES (#{findYear}
+					, #{findScDeptId}
+					, #{dwDeptId}
+					, #{subDeptXPos}
+					, #{subDeptYPos}
+					, SYSDATE
+					)
+	</insert>
+
+	<update id="deleteData" parameterType="scDeptDiagMngVO">
+		/* 성과조직도 삭제	base.scDept.scDeptDiagMng.deleteData */
+		DELETE	FROM	BSC_SC_DEPT_MAP
+		WHERE	YEAR = #{findYear}
+			AND	SC_DEPT_ID = #{findScDeptId}
+	</update>
+</mapper>

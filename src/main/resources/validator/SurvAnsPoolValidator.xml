@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="survAnsPoolVO">
+			<field property="itemPoolNm" depends="required, maxByteLength">
+				<arg0 key="word.survAnsItemNm" resource="true"/>
+				<arg1 key="300" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>300</var-value>
+				</var>
+			</field>
+			<field property="itemCntId" depends="maxByteLength">
+				<arg0 key="word.ansItemCnt" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="useYn" depends="maxByteLength">
+				<arg0 key="word.useYn" resource="true"/>
+				<arg1 key="1" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>1</var-value>
+				</var>
+			</field>
+
+		</form>
+	</formset>
+</form-validation>
+

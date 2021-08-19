@@ -1,0 +1,99 @@
+@CHARSET "EUC-KR";
+
+#genBodyArea {
+    width:1200px;
+    height:100%;
+}
+#genBodyArea div.genSrcArea {
+    background-color: black;
+    color: white;
+    margin: 20px 0 20px 0;
+    padding: 20px;
+    float: left;
+    width:500px;
+    height:100%;
+}
+#genBodyArea div.genDbArea {
+    background-color: black;
+    color: white;
+    margin: 20px 0 20px 0;
+    padding: 20px;
+    float: right;
+    width:600px;
+    height:100%;
+}
+
+#genBodyArea2 {
+    width:1600px;
+    height:600px;
+}
+#genBodyArea2 div.genSrcArea {
+    background-color: black;
+    color: white;
+    margin: 20px 0 20px 0;
+    padding: 20px;
+    float: left;
+    width:500px;
+    height:600px;
+}
+#genBodyArea2 div.genDbArea {
+    background-color: black;
+    color: white;
+    margin: 20px 0 20px 20px;
+    padding: 20px;
+    float: left;
+    width:400px;
+    height:600px;
+}
+
+#genBodyArea .w80px {width:80px;}
+#genBodyArea .w100px {width:100px;}
+#genBodyArea .w200px {width:200px;}
+#genBodyArea .w300px {width:300px;}
+#genBodyArea .w350px {width:350px;}
+#genBodyArea .w400px {width:400px;}
+#genBodyArea .w80p {width:80%;}
+#genBodyArea .w85p {width:85%;}
+#genBodyArea .w90p {width:90%;}
+#genBodyArea .w100p {width:100%;}
+#genBodyArea .positionRight {float: right;}
+
+#genBodyArea2 .w80px {width:80px;}
+#genBodyArea2 .w100px {width:100px;}
+#genBodyArea2 .w200px {width:200px;}
+#genBodyArea2 .w300px {width:300px;}
+#genBodyArea2 .w350px {width:350px;}
+#genBodyArea2 .w400px {width:400px;}
+#genBodyArea2 .w80p {width:80%;}
+#genBodyArea2 .w85p {width:85%;}
+#genBodyArea2 .w90p {width:90%;}
+#genBodyArea2 .w100p {width:100%;}
+#genBodyArea2 .positionRight {float: right;}
+
+/* 로딩*/
+#loadingBar {
+	height: 100%;
+	left: 0px;
+	position: fixed;
+	_position:absolute; 
+	top: 0px;
+	width: 100%;
+	filter:alpha(opacity=50);
+	-moz-opacity:0.5;
+	opacity : 0.5;
+}
+
+.loading {
+	background-color: white;
+	z-index: 199;
+}
+
+#loading_img{
+	position:absolute; 
+	top:50%;
+	left:50%;
+	height:35px;
+	margin-top:-75px;	//	이미지크기
+	margin-left:-75px;	//	이미지크기
+	z-index: 200;
+}

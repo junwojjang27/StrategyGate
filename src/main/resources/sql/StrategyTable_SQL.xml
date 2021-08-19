@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mon.orgOutput.strategyTable">
+	<select id="selectList" parameterType="strategyTableVO" resultType="strategyTableVO">
+		/*	전략연계표 조회	mon.orgOutput.strategyTable.selectList */
+		SELECT A.SC_DEPT_ID,
+		       A.SC_DEPT_NM,
+		       A.STRATEGY_ID,
+		       A.STRATEGY_NM,
+		       MA.STATUS,
+		       SA.COLOR,
+		       A.FIR_SC_DEPT_ID,
+		       A.FIR_SC_DEPT_NM,
+		       A.FIR_STRATEGY_ID,
+		       A.FIR_STRATEGY_NM,
+		       MB.STATUS AS FIR_STATUS,
+		       SB.COLOR AS FIR_COLOR,
+		       A.SEC_SC_DEPT_ID,
+		       A.SEC_SC_DEPT_NM,
+		       A.SEC_STRATEGY_ID,
+		       A.SEC_STRATEGY_NM,
+		       MC.STATUS AS SEC_STATUS,
+		       SC.COLOR AS SEC_COLOR,
+		       A.THI_SC_DEPT_ID,
+		       A.THI_SC_DEPT_NM,
+		       A.THI_STRATEGY_ID,
+		       A.THI_STRATEGY_NM,
+		       MD.STATUS AS THI_STATUS,
+		       SD.COLOR AS THI_COLOR
+		  FROM (SELECT A.YEAR,
+				       A.SC_DEPT_ID,
+				       A.SC_DEPT_NM,
+				       SA.STRATEGY_ID,
+				       SA.STRATEGY_NM,
+				       A.SORT_ORDER,
+				       B.SC_DEPT_ID AS FIR_SC_DEPT_ID,
+				       B.SC_DEPT_NM AS FIR_SC_DEPT_NM,
+				       SB.STRATEGY_ID AS FIR_STRATEGY_ID,
+				       SB.STRATEGY_NM AS FIR_STRATEGY_NM,
+				       B.SORT_ORDER AS FIR_SORT_ORDER,
+				       C.SC_DEPT_ID AS SEC_SC_DEPT_ID,
+				       C.SC_DEPT_NM AS SEC_SC_DEPT_NM,
+				       SC.STRATEGY_ID AS SEC_STRATEGY_ID,
+				       SC.STRATEGY_NM AS SEC_STRATEGY_NM,
+				       C.SORT_ORDER AS SEC_SORT_ORDER,
+				       D.SC_DEPT_ID AS THI_SC_DEPT_ID,
+				       D.SC_DEPT_NM AS THI_SC_DEPT_NM,
+				       SD.STRATEGY_ID AS THI_STRATEGY_ID,
+				       SD.STRATEGY_NM AS THI_STRATEGY_NM,
+				       D.SORT_ORDER AS THI_SORT_ORDER,
+				       CASE WHEN SA.STRATEGY_ID IS NOT NULL AND (SB.STRATEGY_ID IS NOT NULL OR SC.STRATEGY_ID IS NOT NULL OR SD.STRATEGY_ID IS NOT NULL) THEN 'Y'
+				            WHEN (SELECT COUNT(DISTINCT SC_DEPT_ID) FROM BSC_METRIC WHERE YEAR = #{findYear} AND STRATEGY_ID = #{findStrategyId} AND DELETE_DT IS NULL) = 1
+				                 AND (SELECT DISTINCT SC_DEPT_ID FROM BSC_METRIC WHERE YEAR = #{findYear} AND STRATEGY_ID = #{findStrategyId} AND DELETE_DT IS NULL AND SC_DEPT_ID = A.SC_DEPT_ID) = A.SC_DEPT_ID
+				                 THEN 'Y'
+				            ELSE 'N' END AS FLAG 
+				  FROM BSC_SC_DEPT A
+				       LEFT OUTER JOIN BSC_SC_DEPT B
+				       ON A.YEAR = B.YEAR
+				       AND A.SC_DEPT_ID = B.UP_SC_DEPT_ID
+				       AND B.DELETE_DT IS NULL
+				       LEFT OUTER JOIN BSC_SC_DEPT C
+				       ON B.YEAR = C.YEAR
+				       AND B.SC_DEPT_ID = C.UP_SC_DEPT_ID
+				       AND C.DELETE_DT IS NULL
+				       LEFT OUTER JOIN BSC_SC_DEPT D
+				       ON C.YEAR = D.YEAR
+				       AND C.SC_DEPT_ID = D.UP_SC_DEPT_ID
+				       AND D.DELETE_DT IS NULL
+				       LEFT OUTER JOIN (SELECT DISTINCT A.SC_DEPT_ID, A.STRATEGY_ID, B.STRATEGY_NM
+				                          FROM BSC_METRIC A 
+				                               INNER JOIN BSC_STRATEGY B ON A.YEAR = B.YEAR AND A.STRATEGY_ID = B.STRATEGY_ID AND B.DELETE_DT IS NULL
+				                         WHERE A.YEAR = #{findYear} AND A.STRATEGY_ID = #{findStrategyId} AND A.DELETE_DT IS NULL) SA
+				       ON A.SC_DEPT_ID = SA.SC_DEPT_ID
+				       LEFT OUTER JOIN (SELECT DISTINCT A.SC_DEPT_ID, A.STRATEGY_ID, B.STRATEGY_NM 
+				                          FROM BSC_METRIC A 
+				                               INNER JOIN BSC_STRATEGY B ON A.YEAR = B.YEAR AND A.STRATEGY_ID = B.STRATEGY_ID AND B.DELETE_DT IS NULL
+				                         WHERE A.YEAR = #{findYear} AND A.STRATEGY_ID = #{findStrategyId} AND A.DELETE_DT IS NULL) SB
+				       ON B.SC_DEPT_ID = SB.SC_DEPT_ID
+				       LEFT OUTER JOIN (SELECT DISTINCT A.SC_DEPT_ID, A.STRATEGY_ID, B.STRATEGY_NM
+				                          FROM BSC_METRIC A 
+				                               INNER JOIN BSC_STRATEGY B ON A.YEAR = B.YEAR AND A.STRATEGY_ID = B.STRATEGY_ID AND B.DELETE_DT IS NULL
+				                         WHERE A.YEAR = #{findYear} AND A.STRATEGY_ID = #{findStrategyId} AND A.DELETE_DT IS NULL) SC
+				       ON C.SC_DEPT_ID = SC.SC_DEPT_ID
+				       LEFT OUTER JOIN (SELECT DISTINCT A.SC_DEPT_ID, A.STRATEGY_ID, B.STRATEGY_NM 
+				                          FROM BSC_METRIC A 
+				                               INNER JOIN BSC_STRATEGY B ON A.YEAR = B.YEAR AND A.STRATEGY_ID = B.STRATEGY_ID AND B.DELETE_DT IS NULL
+				                         WHERE A.YEAR = #{findYear} AND A.STRATEGY_ID = #{findStrategyId} AND A.DELETE_DT IS NULL) SD
+				       ON D.SC_DEPT_ID = SD.SC_DEPT_ID
+				 WHERE A.YEAR = #{findYear}
+				   AND A.UP_SC_DEPT_ID IS NULL
+				   AND A.DELETE_DT IS NULL
+				) A
+				LEFT OUTER JOIN BSC_STRATEGYSCORE MA
+				ON A.YEAR = MA.YEAR
+				AND MA.MON = #{findMon}
+				AND MA.ANAL_CYCLE = #{findAnalCycle}
+				AND A.SC_DEPT_ID = MA.SC_DEPT_ID
+				AND A.STRATEGY_ID = MA.STRATEGY_ID
+				LEFT OUTER JOIN COM_SIGNAL_STATUS SA ON MA.YEAR = SA.YEAR AND MA.STATUS = SA.STATUS_ID
+				LEFT OUTER JOIN BSC_STRATEGYSCORE MB
+				ON A.YEAR = MB.YEAR
+				AND MB.MON = #{findMon}
+				AND MB.ANAL_CYCLE = #{findAnalCycle}
+				AND A.FIR_SC_DEPT_ID = MB.SC_DEPT_ID
+				AND A.FIR_STRATEGY_ID = MB.STRATEGY_ID
+				LEFT OUTER JOIN COM_SIGNAL_STATUS SB ON MB.YEAR = SB.YEAR AND MB.STATUS = SB.STATUS_ID
+				LEFT OUTER JOIN BSC_STRATEGYSCORE MC
+				ON A.YEAR = MC.YEAR
+				AND MC.MON = #{findMon}
+				AND MC.ANAL_CYCLE = #{findAnalCycle}
+				AND A.SEC_SC_DEPT_ID = MC.SC_DEPT_ID
+				AND A.SEC_STRATEGY_ID = MC.STRATEGY_ID
+				LEFT OUTER JOIN COM_SIGNAL_STATUS SC ON MC.YEAR = SC.YEAR AND MC.STATUS = SC.STATUS_ID
+				LEFT OUTER JOIN BSC_STRATEGYSCORE MD
+				ON A.YEAR = MD.YEAR
+				AND MD.MON = #{findMon}
+				AND MD.ANAL_CYCLE = #{findAnalCycle}
+				AND A.THI_SC_DEPT_ID = MD.SC_DEPT_ID
+				AND A.THI_STRATEGY_ID = MD.STRATEGY_ID
+				LEFT OUTER JOIN COM_SIGNAL_STATUS SD ON MD.YEAR = SD.YEAR AND MD.STATUS = SD.STATUS_ID
+		  WHERE A.FLAG = 'Y'
+		  ORDER BY A.SORT_ORDER, A.FIR_SORT_ORDER, A.SEC_SORT_ORDER, A.THI_SORT_ORDER
+
+	</select>
+	
+	<select id="selectStrategyList" parameterType="strategyTableVO" resultType="strategyTableVO">
+		/*	전략연계표 상세 조회	 	mon.orgOutput.strategyTable.selectStrategyList	*/
+		SELECT STRATEGY_ID, STRATEGY_NM
+		  FROM BSC_STRATEGY
+		 WHERE YEAR = #{findYear}
+		   AND DELETE_DT IS NULL
+		 ORDER BY SORT_ORDER
+
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="strategyTableVO">
+	    /*	전략연계표 정렬순서저장	 strategyTable.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteStrategyTable" parameterType="strategyTableVO">
+		/*	전략연계표 삭제	mon.orgOutput.strategyTable.deleteStrategyTable	*/
+		DELETE FROM BSC_STRATEGYSCORE
+		WHERE 1=1
+			AND YEAR=#{year}
+			AND MON=#{mon}
+			AND ANAL_CYCLE=#{analCycle}
+			AND SC_DEPT_ID=#{scDeptId}
+			AND STRATEGY_ID=#{strategyId}
+
+	</update>
+
+	<insert id="insertData" parameterType="strategyTableVO">
+		/*	전략연계표 저장	mon.orgOutput.strategyTable.insertData	*/
+		INSERT INTO BSC_STRATEGYSCORE(
+			YEAR,
+			MON,
+			ANAL_CYCLE,
+			SC_DEPT_ID,
+			STRATEGY_ID,
+			STRATEGY_NM,
+			SCORE,
+			STATUS,
+			CONVERSION_SCORE,
+			CREATE_DT)
+		
+VALUES (
+			#{year},
+			#{mon},
+			#{analCycle},
+			#{scDeptId},
+			#{strategyId},
+			#{strategyNm},
+			#{score},
+			#{status},
+			#{conversionScore},
+			#{createDt})
+
+	</insert>
+
+	<update id="updateData" parameterType="strategyTableVO">
+		/*	전략연계표 수정	mon.orgOutput.strategyTable.updateData	*/
+		UPDATE BSC_STRATEGYSCORE
+		SET
+			STRATEGY_NM=#{strategyNm},
+			SCORE=#{score},
+			STATUS=#{status},
+			CONVERSION_SCORE=#{conversionScore},
+			CREATE_DT=#{createDt}
+		WHERE 1=1
+			AND YEAR=#{year}
+			AND MON=#{mon}
+			AND ANAL_CYCLE=#{analCycle}
+			AND SC_DEPT_ID=#{scDeptId}
+			AND STRATEGY_ID=#{strategyId}
+
+	</update>
+</mapper>
+

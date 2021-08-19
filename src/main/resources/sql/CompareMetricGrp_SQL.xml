@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mon.compare.compareMetricGrp">
+	<select id="selectMetricGrpList" parameterType="compareMetricGrpVO" resultType="compareMetricGrpVO">
+		/*	지표POOL 조회	mon.compare.compareMetricGrp.selectMetricGrpList	*/
+		SELECT	METRIC_GRP_ID,	METRIC_GRP_NM
+		FROM	BSC_METRIC_GRP M
+		WHERE	M.YEAR = #{findYear}
+			AND	M.DELETE_DT IS NULL
+		ORDER BY	M.METRIC_GRP_NM
+	</select>
+	
+	<select id="selectList" parameterType="compareMetricGrpVO" resultType="compareMetricGrpVO">
+		/*	평가군별 비교 조회	mon.compare.compareMetricGrp.selectList */
+		SELECT	ROWNUM	AS RNK,
+				R.*
+		FROM	(
+					SELECT	MS.SC_DEPT_ID,	SD.SC_DEPT_FULL_NM AS SC_DEPT_NM,	MS.METRIC_NM,	MS.UNIT,	C1.CODE_NM	AS UNIT_NM,
+							MS.ACTUAL,	MS.SCORE,	MS.WEIGHT_SCORE,	MS.FINAL_SCORE,	MS.STATUS,
+							S.COLOR
+					FROM	BSC_METRICSCORE MS
+							<if test='findMonitoringRootScDeptId != null'>
+								JOIN	BSC_SC_DEPT	SD
+									ON	MS.YEAR = SD.YEAR
+									AND	MS.SC_DEPT_ID = SD.SC_DEPT_ID
+									AND	SD.FULL_SC_DEPT_ID LIKE '%' || #{findMonitoringRootScDeptId} || '%'
+							</if>
+							<if test='findMonitoringRootScDeptId == null or findMonitoringRootScDeptId == ""'>
+								JOIN	BSC_SC_DEPT	SD
+									ON	MS.YEAR = SD.YEAR
+									AND	MS.SC_DEPT_ID = SD.SC_DEPT_ID
+							</if>
+							<include refid="common.func.getCodeJoin">
+								<property name="pYear" value="#{findYear}"/>
+								<property name="pCodeGrpId" value="'013'"/>
+								<property name="pAlias" value="C1"/>
+								<property name="pCompareColumn" value="MS.UNIT"/>
+							</include>
+							LEFT JOIN	COM_SIGNAL_STATUS S
+								ON	MS.YEAR = S.YEAR
+								AND	MS.STATUS = S.STATUS_ID
+					WHERE	MS.YEAR = #{findYear}
+						AND MS.MON = #{findMon}
+						AND	MS.ANAL_CYCLE = #{findAnalCycle}
+						AND	MS.METRIC_GRP_ID = #{findMetricGrpId}
+					ORDER BY	MS.FINAL_SCORE DESC
+				) R
+	</select>
+	
+	<select id="selectScoreAnalysis" parameterType="compareMetricGrpVO" resultType="compareMetricGrpVO">
+		/*	선택한 부서 점수 분석	mon.compare.compareMetricGrp.selectScoreAnalysis */
+		SELECT	DEPT_SCORE,	STD_SCORE,
+				AVG_SCORE,	DEPT_SCORE - AVG_SCORE	AS	DEPT_AVG_SCORE,
+				MAX_SCORE,	DEPT_SCORE - MAX_SCORE	AS	DEPT_MAX_SCORE,
+				MIN_SCORE,	DEPT_SCORE - MIN_SCORE	AS	DEPT_MIN_SCORE,
+				MAX_SCORE - MIN_SCORE	AS MAX_MIN_SCORE
+		FROM	(
+					SELECT	NVL(SUM(NVL(CASE	WHEN	MS.SC_DEPT_ID = #{findScDeptId}	THEN	MS.FINAL_SCORE	ELSE	0	END, 0)), 0)	AS DEPT_SCORE,
+							NVL(MAX(NVL(MS.FINAL_SCORE, 0)), 0)	AS MAX_SCORE,
+							NVL(MIN(NVL(MS.FINAL_SCORE, 0)), 0)	AS MIN_SCORE,
+							NVL(AVG(NVL(MS.FINAL_SCORE, 0)), 0)	AS AVG_SCORE,
+							NVL(STDDEV(NVL(MS.FINAL_SCORE, 0)), 0)	AS STD_SCORE
+					FROM	BSC_METRICSCORE MS
+							<if test='findMonitoringRootScDeptId != null'>
+								JOIN	BSC_SC_DEPT	SD
+									ON	MS.YEAR = SD.YEAR
+									AND	MS.SC_DEPT_ID = SD.SC_DEPT_ID
+									AND	SD.FULL_SC_DEPT_ID LIKE '%' || #{findMonitoringRootScDeptId} || '%'
+							</if>
+					WHERE	MS.YEAR = #{findYear}
+						AND	MS.MON = #{findMon}
+						AND	MS.ANAL_CYCLE = #{findAnalCycle}
+						AND	MS.METRIC_GRP_ID = #{findMetricGrpId}
+				)
+	</select>
+	
+	<select id="selectMonthlyTrend" parameterType="compareMetricGrpVO" resultType="compareMetricGrpVO">
+		/*	조직별 월별 추이	mon.compare.compareMetricGrp.selectMonthlyTrend */
+		SELECT	ORD,	TYPE,
+				SUM(CASE	WHEN	MON = '01'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON01,
+				SUM(CASE	WHEN	MON = '02'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON02,
+				SUM(CASE	WHEN	MON = '03'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON03,
+				SUM(CASE	WHEN	MON = '04'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON04,
+				SUM(CASE	WHEN	MON = '05'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON05,
+				SUM(CASE	WHEN	MON = '06'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON06,
+				SUM(CASE	WHEN	MON = '07'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON07,
+				SUM(CASE	WHEN	MON = '08'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON08,
+				SUM(CASE	WHEN	MON = '09'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON09,
+				SUM(CASE	WHEN	MON = '10'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON10,
+				SUM(CASE	WHEN	MON = '11'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON11,
+				SUM(CASE	WHEN	MON = '12'
+							THEN	(
+										CASE	WHEN	TYPE = 'DEPT_SCORE'	THEN	DEPT_SCORE
+												WHEN	TYPE = 'MAX_SCORE'	THEN	MAX_SCORE
+												WHEN	TYPE = 'MIN_SCORE'	THEN	MIN_SCORE
+												WHEN	TYPE = 'AVG_SCORE'	THEN	AVG_SCORE
+												ELSE	0
+										END
+									)
+							ELSE	0	END)	MON12
+		FROM	(
+					SELECT	1	AS	ORD,	'DEPT_SCORE'	AS TYPE	FROM DUAL
+					UNION
+					SELECT	2	AS	ORD,	'MAX_SCORE'	AS TYPE	FROM DUAL
+					/*
+					UNION
+					SELECT	3	AS	ORD,	'MIN_SCORE'	AS TYPE	FROM DUAL
+					*/
+					UNION
+					SELECT	4	AS	ORD,	'AVG_SCORE'	AS TYPE	FROM DUAL
+				) A
+				LEFT JOIN	(
+					SELECT	MS.MON,	SUM(NVL(CASE	WHEN	MS.SC_DEPT_ID = #{findScDeptId}	THEN	MS.FINAL_SCORE	ELSE	0	END, 0))	AS DEPT_SCORE,
+							MAX(MS.FINAL_SCORE)	AS MAX_SCORE,
+							MIN(MS.FINAL_SCORE)	AS MIN_SCORE,
+							AVG(MS.FINAL_SCORE)	AS AVG_SCORE
+					FROM	BSC_METRICSCORE MS
+							<if test='findMonitoringRootScDeptId != null'>
+								JOIN	BSC_SC_DEPT	SD
+									ON	MS.YEAR = SD.YEAR
+									AND	MS.SC_DEPT_ID = SD.SC_DEPT_ID
+									AND	SD.FULL_SC_DEPT_ID LIKE '%' || #{findMonitoringRootScDeptId} || '%'
+							</if>
+					WHERE	MS.YEAR = #{findYear}
+						AND	MS.ANAL_CYCLE = #{findAnalCycle}
+						AND	MS.METRIC_GRP_ID = #{findMetricGrpId}
+					GROUP BY	MS.MON
+					ORDER BY	MS.MON
+				) B
+				ON	1 = 1
+		GROUP BY	ORD,	TYPE
+		ORDER BY	ORD
+	</select>
+</mapper>

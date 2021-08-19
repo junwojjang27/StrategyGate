@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.survey.survAnsPool">
+	<select id="selectList" parameterType="survAnsPoolVO" resultType="survAnsPoolVO">
+		/*	설문답변pool 조회	system.survey.survAnsPool.selectList */
+		SELECT
+			A.ITEM_POOL_ID,
+			A.ITEM_POOL_NM,
+			A.ITEM_CNT_ID,
+			CA.CODE_NM AS ITEM_CNT_NM,
+			A.MAIN_ITEM_YN,
+			A.SORT_ORDER,
+			A.CREATE_DT,
+			A.MODIFY_DT,
+			A.DELETE_DT,
+			A.USE_YN
+		FROM (
+				SELECT
+					ITEM_POOL_ID,
+					ITEM_POOL_NM,
+					ITEM_CNT_ID,
+					MAIN_ITEM_YN,
+					SORT_ORDER,
+					CREATE_DT,
+					MODIFY_DT,
+					DELETE_DT,
+					CASE WHEN DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN
+				FROM SUR_ITEM_POOL
+		) A
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'370'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="A.ITEM_CNT_ID"/>
+		</include>
+		WHERE 1=1
+		<if test='findUseYn != null and findUseYn == "Y"'>
+		AND A.DELETE_DT IS NULL
+		</if>
+		<if test='findUseYn != null and findUseYn == "N"'>
+		AND A.DELETE_DT IS NOT NULL
+		</if>
+		ORDER BY A.SORT_ORDER
+
+	</select>
+
+	<select id="selectDetail" parameterType="survAnsPoolVO" resultType="survAnsPoolVO">
+		/*	설문답변pool 상세 조회	 	system.survey.survAnsPool.selectDetail	*/
+		SELECT
+			ITEM_POOL_ID,
+			ITEM_POOL_NM,
+			ITEM_CNT_ID,
+			MAIN_ITEM_YN,
+			SORT_ORDER,
+			CREATE_DT,
+			MODIFY_DT,
+			DELETE_DT,
+			CASE WHEN DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN
+		FROM SUR_ITEM_POOL
+		WHERE 1=1
+			AND ITEM_POOL_ID=#{itemPoolId}
+
+	</select>
+
+	<select id="selectItemList" parameterType="survAnsPoolVO" resultType="survAnsPoolVO">
+		/*	설문답변pool상세 목록조회	system.survey.survAnsPool.selectItemList */
+		SELECT
+			ITEM_POOL_ID,
+			ITEM_ID,
+			ITEM_NUM,
+			ITEM_CONTENT
+		FROM SUR_ITEM_DETAIL
+		WHERE 1=1
+			AND ITEM_POOL_ID=#{itemPoolId}
+		ORDER BY ITEM_NUM
+
+	</select>
+
+	<select id="selectPopList" parameterType="survAnsPoolVO" resultType="survAnsPoolVO">
+		/*	설문답변pool 팝업 목록조회	system.survey.survAnsPool.selectPopList */
+		SELECT
+			A.ITEM_POOL_ID,
+			A.ITEM_POOL_NM,
+			A.ITEM_CNT_ID,
+			CA.CODE_NM AS ITEM_CNT_NM,
+			A.MAIN_ITEM_YN,
+			A.SORT_ORDER,
+			A.CREATE_DT,
+			A.MODIFY_DT,
+			A.DELETE_DT,
+			B.ITEM_CONTENT
+		FROM SUR_ITEM_POOL A
+		INNER JOIN (
+					SELECT ITEM_POOL_ID, SUBSTR(XMLAGG(XMLELEMENT(ITEM_POOL_ID, '/' || ITEM_CONTENT)ORDER BY ITEM_NUM).EXTRACT('//text()'), 2) AS ITEM_CONTENT
+					FROM SUR_ITEM_DETAIL
+					GROUP BY ITEM_POOL_ID
+		) B
+		ON A.ITEM_POOL_ID = B.ITEM_POOL_ID
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'370'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="A.ITEM_CNT_ID"/>
+		</include>
+		WHERE 1=1
+		AND A.DELETE_DT IS NULL
+		ORDER BY A.SORT_ORDER
+
+	</select>
+
+	<update id="saveAllSurvAnsPool" parameterType="survAnsPoolVO">
+	    /*	설문답변pool 일괄저장	 system.survey.survAnsPool.saveAllSurvAnsPool	*/
+		UPDATE SUR_ITEM_POOL
+		SET
+			MAIN_ITEM_YN=#{mainItemYn},
+			SORT_ORDER=#{sortOrder},
+			MODIFY_DT=SYSDATE
+		WHERE 1=1
+			AND ITEM_POOL_ID=#{itemPoolId}
+	</update>
+
+	<update id="deleteSurvAnsPool" parameterType="survAnsPoolVO">
+		/*	설문답변pool 삭제	system.survey.survAnsPool.deleteSurvAnsPool	*/
+		UPDATE SUR_ITEM_POOL
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND ITEM_POOL_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+	</update>
+
+	<insert id="insertData" parameterType="survAnsPoolVO">
+		/*	설문답변pool 저장	system.survey.survAnsPool.insertData	*/
+		INSERT INTO SUR_ITEM_POOL(
+			ITEM_POOL_ID,
+			ITEM_POOL_NM,
+			ITEM_CNT_ID,
+			MAIN_ITEM_YN,
+			SORT_ORDER,
+			CREATE_DT,
+			DELETE_DT
+		) VALUES (
+			#{itemPoolId},
+			#{itemPoolNm},
+			#{itemCntId},
+			'N',
+			#{sortOrder},
+			SYSDATE,
+			CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE() END
+		)
+
+	</insert>
+
+	<update id="updateData" parameterType="survAnsPoolVO">
+		/*	설문답변pool 수정	system.survey.survAnsPool.updateData	*/
+		UPDATE SUR_ITEM_POOL
+		SET
+			ITEM_POOL_NM=#{itemPoolNm},
+			ITEM_CNT_ID=#{itemCntId},
+			MODIFY_DT=SYSDATE,
+			DELETE_DT = CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END
+		WHERE 1=1
+			AND ITEM_POOL_ID=#{itemPoolId}
+
+	</update>
+
+	<update id="deleteItemDetail" parameterType="survAnsPoolVO">
+		/*	설문답변pool상세 삭제	system.survey.survAnsPool.deleteItemDetail	*/
+		DELETE SUR_ITEM_DETAIL
+		WHERE 1=1
+			AND ITEM_POOL_ID=#{itemPoolId}
+	</update>
+
+	<insert id="insertItemDetail" parameterType="survAnsPoolVO">
+		/*	설문답변pool상세 저장	system.survey.survAnsPool.insertItemDetail	*/
+		INSERT INTO SUR_ITEM_DETAIL(
+			ITEM_POOL_ID,
+			ITEM_ID,
+			ITEM_NUM,
+			ITEM_CONTENT
+		) VALUES (
+			#{itemPoolId},
+			#{itemId},
+			#{itemNum},
+			#{itemContent}
+		)
+
+	</insert>
+	
+	<select id="mainItemCnt" parameterType="survAnsPoolVO" resultType="survAnsPoolVO">
+		/*	답변항목대표여부 카운트		system.survey.survAnsPool.mainItemCnt	*/
+		SELECT COUNT(MAIN_ITEM_YN) AS MAIN_ITEM_CNT
+		FROM SUR_ITEM_POOL
+		WHERE 1=1
+			AND ITEM_CNT_ID=#{itemCntId}
+			AND MAIN_ITEM_YN='Y'
+			AND DELETE_DT IS NULL 
+	</select>
+</mapper>
+

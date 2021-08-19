@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.survey.survAction">
+	<select id="selectList" parameterType="survActionVO" resultType="survActionVO">
+		/*	설문실시 조회	system.survey.survAction.selectList */
+		SELECT
+			  A.SURVEY_ID
+			, A.SURVEY_NM
+			, A.SURVEY_TYPE_ID
+			, CA.CODE_NM AS SURVEY_TYPE_NM
+			, TO_CHAR(TO_DATE(A.START_DT,'YYYYMMDD'),'YYYY.MM.DD') AS START_DT
+			, TO_CHAR(TO_DATE(A.END_DT,'YYYYMMDD'),'YYYY.MM.DD') AS END_DT
+			, CASE WHEN C.SURVEY_END_YN IS NULL THEN 'N' ELSE 'Y' END AS SURVEY_END_YN
+			, CASE WHEN C.SURVEY_END_YN IS NULL THEN '미참여' ELSE '참여' END AS SURVEY_END_YN_NM
+		FROM SUR_SURVEY A
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'373'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="A.SURVEY_TYPE_ID"/>
+		</include>
+		LEFT OUTER JOIN SUR_TARGET_USER B
+		    ON A.SURVEY_ID = B.SURVEY_ID
+	    LEFT OUTER JOIN SUR_TARGET_USER_STATE C
+		    ON A.SURVEY_ID = C.SURVEY_ID
+		    AND B.SURVEY_USER_ID = C.SURVEY_USER_ID
+		WHERE 1=1
+		AND A.DELETE_DT IS NULL
+		AND B.SURVEY_USER_ID = #{surveyUserId}
+		ORDER BY A.START_DT DESC, A.END_DT DESC
+
+	</select>
+
+	<select id="selectDetail" parameterType="survActionVO" resultType="survActionVO">
+		/*	설문 상세 조회	 	system.survey.survAction.selectDetail	*/
+		SELECT
+			A.SURVEY_ID,
+			A.SURVEY_NM,
+			A.SURVEY_TYPE_ID,
+			CA.CODE_NM AS SURVEY_TYPE_NM,
+			REPLACE(A.START_CONTENT,CHR(13)||CHR(10),'<![CDATA[<br />]]>') AS START_CONTENT,
+			REPLACE(A.END_CONTENT,CHR(13)||CHR(10),'<![CDATA[<br />]]>') AS END_CONTENT,
+			TO_CHAR(TO_DATE(A.START_DT,'YYYYMMDD'),'YYYY.MM.DD') AS START_DT,
+			TO_CHAR(TO_DATE(A.END_DT,'YYYYMMDD'),'YYYY.MM.DD') AS END_DT,
+			A.CLOSE_YN,
+			A.SURVEY_YEAR,
+			CB.CODE_NM AS SURVEY_YEAR_NM,
+			A.CREATE_DT,
+			A.MODIFY_DT,
+			A.DELETE_DT,
+			CASE WHEN A.DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN,
+			CASE WHEN B.SURVEY_END_YN IS NULL THEN 'N' ELSE 'Y' END AS SURVEY_END_YN
+		FROM SUR_SURVEY A
+		LEFT OUTER JOIN SUR_TARGET_USER_STATE B
+			ON A.SURVEY_ID = B.SURVEY_ID
+			AND B.SURVEY_USER_ID = #{surveyUserId}
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'373'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="A.SURVEY_TYPE_ID"/>
+		</include>
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'017'"/>
+			<property name="pAlias" value="CB"/>
+			<property name="pCompareColumn" value="A.SURVEY_YEAR"/>
+		</include>
+		WHERE 1=1
+		AND A.SURVEY_ID=#{surveyId}
+
+	</select>
+
+	<select id="selectResultList" parameterType="survActionVO" resultType="survActionVO">
+		/*	설문결과 조회	system.survey.survAction.selectResultList */
+		SELECT
+			A.SURVEY_ID ,
+			A.SURVEY_USER_ID ,
+			A.QUES_ID ,
+			A.QUES_ITEM_ID ,
+			A.ANSWER_CONTENT,
+			B.QUES_GBN_ID
+		FROM SUR_RESULT A
+		LEFT OUTER JOIN SUR_SURVEY_QUES B
+		ON A.SURVEY_ID = B.SURVEY_ID
+		AND A.QUES_ID = B.QUES_ID
+		WHERE 1=1
+		AND A.SURVEY_ID=#{surveyId}
+		AND A.SURVEY_USER_ID=#{surveyUserId}
+
+	</select>
+
+	<select id="selectBonbuList" parameterType="survActionVO" resultType="scDeptVO">
+		/*	성과조직 본부 목록 조회	system.survey.survAction.selectBonbuList */
+		SELECT
+			  YEAR
+			, SC_DEPT_ID
+			, SC_DEPT_NM
+			, REAL_SORT_ORDER
+		FROM BSC_SC_DEPT
+		WHERE 1=1
+		AND YEAR = #{surveyYear}
+		AND DEPT_KIND = '03'
+		ORDER BY REAL_SORT_ORDER
+	</select>
+
+	<update id="deleteSurResult" parameterType="survActionVO">
+		/*	설문답변결과 삭제	system.survey.survAction.deleteSurResult	*/
+		DELETE FROM SUR_RESULT
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+			AND SURVEY_USER_ID=#{surveyUserId}
+
+	</update>
+
+	<update id="deleteSurTargetUserState" parameterType="survActionVO">
+		/*	설문차수별대상자완료 삭제	system.survey.survAction.deleteSurTargetUserState	*/
+		DELETE FROM SUR_TARGET_USER_STATE
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+			AND SURVEY_USER_ID=#{surveyUserId}
+
+	</update>
+
+	<insert id="insertData" parameterType="survActionVO">
+		/*	설문실시 저장	system.survey.survAction.insertData	*/
+		INSERT INTO SUR_RESULT(
+			SURVEY_ID,
+			SURVEY_USER_ID,
+			QUES_ID,
+			QUES_ITEM_ID,
+			ANSWER_CONTENT,
+			CREATE_DT
+		) VALUES (
+			#{surveyId},
+			#{surveyUserId},
+			#{quesId},
+			#{quesItemId},
+			#{answerContent},
+			SYSDATE
+		)
+
+	</insert>
+
+	<insert id="insertSurTargetUserState" parameterType="survActionVO">
+		/*	설문차수별대상자완료여부 저장	system.survey.survAction.insertSurTargetUserState	*/
+		INSERT INTO SUR_TARGET_USER_STATE(
+			SURVEY_ID,
+			SURVEY_USER_ID,
+			SURVEY_END_YN,
+			END_DT
+		) VALUES (
+			#{surveyId},
+			#{surveyUserId},
+			'Y',
+			SYSDATE
+		)
+
+	</insert>
+</mapper>
+

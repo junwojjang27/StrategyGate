@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mon.orgOutput.strategyDiag">
+	<select id="selectList" parameterType="strategyDiagVO" resultType="strategyDiagVO">
+		/*	전략연계도 조회	mon.orgOutput.strategyDiag.selectList */
+		SELECT A.*, E.STATUS, E.SCORE
+		  FROM    (  SELECT B.YEAR,
+		                    C.SC_DEPT_ID,
+		                    C.FULL_SC_DEPT_ID,
+		                    C.SC_DEPT_NM,
+		                    C.SC_DEPT_FULL_NM,
+		                    C.FULL_SC_DEPT_NM,
+		                    C.UP_SC_DEPT_ID,
+		                    A.STRATEGY_ID,
+		                    B.FULL_STRATEGY_ID,
+		                    B.STRATEGY_NM,
+		                    C.SC_DEPT_LEVEL_ID AS LEVEL_NUM,
+		                    B.STRATEGY_LEVEL_ID,
+		                    C.SORT_ORDER AS SORT_ORDER1,
+		                    B.SORT_ORDER AS SORT_ORDER2
+		               FROM BSC_METRIC A
+		                    INNER JOIN (    SELECT A.YEAR,
+		                                           STRATEGY_ID,
+		                                           SYS_CONNECT_BY_PATH (STRATEGY_ID, '>')
+		                                              AS FULL_STRATEGY_ID,
+		                                           STRATEGY_NM,
+		                                           UP_STRATEGY_ID,
+		                                           PERSPECTIVE_ID,
+		                                           LEVEL AS STRATEGY_LEVEL_ID,
+		                                           SYS_CONNECT_BY_PATH (SORT_ORDER, '>')
+		                                              AS SORT_ORDER
+		                                      FROM (SELECT *
+		                                              FROM BSC_STRATEGY
+		                                             WHERE YEAR = #{findYear}
+		                                               AND DELETE_DT IS NULL) A
+		                                START WITH UP_STRATEGY_ID IS NULL
+		                                CONNECT BY PRIOR STRATEGY_ID = UP_STRATEGY_ID) B
+		                       ON A.YEAR = B.YEAR AND A.STRATEGY_ID = B.STRATEGY_ID
+		                    INNER JOIN (    SELECT YEAR,
+		                                           SC_DEPT_ID,
+		                                           SYS_CONNECT_BY_PATH (SC_DEPT_ID, '>')
+		                                              AS FULL_SC_DEPT_ID,
+		                                           SC_DEPT_NM,
+		                                           UP_SC_DEPT_ID,
+		                                           SC_DEPT_FULL_NM,
+		                                           SUBSTR (
+		                                              SYS_CONNECT_BY_PATH (SC_DEPT_NM, '>'),
+		                                              2)
+		                                              AS FULL_SC_DEPT_NM,
+		                                           LEVEL AS SC_DEPT_LEVEL_ID,
+		                                           SYS_CONNECT_BY_PATH (SORT_ORDER, '>')
+		                                              AS SORT_ORDER
+		                                      FROM (SELECT *
+		                                              FROM BSC_SC_DEPT
+		                                             WHERE YEAR = #{findYear}
+		                                                   AND DELETE_DT IS NULL)
+		                                START WITH UP_SC_DEPT_ID IS NULL
+		                                CONNECT BY PRIOR SC_DEPT_ID = UP_SC_DEPT_ID) C
+		                       ON A.YEAR = C.YEAR AND C.SC_DEPT_ID = A.SC_DEPT_ID
+		                      LEFT OUTER JOIN BSC_METRIC_APPROVE D
+		                      ON A.YEAR=D.YEAR
+		                      AND A.SC_DEPT_ID=D.SC_DEPT_ID
+		              WHERE A.YEAR = #{findYear}
+		                    AND A.DELETE_DT IS NULL
+		                    AND D.APPROVE_STATUS_ID = '04'
+                    		AND B.FULL_STRATEGY_ID LIKE '%'||#{findStrategyId}||'%'
+		           GROUP BY B.YEAR,
+		                    C.UP_SC_DEPT_ID,
+		                    C.SC_DEPT_ID,
+		                    C.FULL_SC_DEPT_ID,
+		                    C.SC_DEPT_NM,
+		                    C.SC_DEPT_FULL_NM,
+		                    C.FULL_SC_DEPT_NM,
+		                    A.STRATEGY_ID,
+		                    B.FULL_STRATEGY_ID,
+		                    B.STRATEGY_NM,
+		                    C.SC_DEPT_LEVEL_ID,
+		                    B.STRATEGY_LEVEL_ID,
+		                    B.SORT_ORDER,
+		                    C.SORT_ORDER
+		           ORDER BY C.SORT_ORDER, B.SORT_ORDER) A
+		       LEFT OUTER JOIN
+		          BSC_STRATEGYSCORE E
+		       ON A.YEAR = E.YEAR
+		          AND E.MON = #{findMon}
+		          AND E.ANAL_CYCLE = 'Y'
+		          AND E.SC_DEPT_ID = A.SC_DEPT_ID
+		          AND E.STRATEGY_ID = A.STRATEGY_ID
+
+	</select>
+	
+	<!--
+	==================================================================
+	  # 설명	: 신호등 정보 보기
+	  #	기능	: SELECT
+	  #	TABLE	:
+	==================================================================
+	-->
+	<select id="selectSignalList" resultType="strategyDiagVO">
+		/* 신호등 정보 보기	bsc.mon.strategyDiag.selectSignalList */
+
+			SELECT A.CODE_ID, B.FROM_VALUE, B.TO_VALUE, 
+			       A.CODE_NM, B.COLOR 
+			  FROM COM_CODE A 
+			       LEFT OUTER JOIN COM_SIGNAL_STATUS B 
+			       ON A.CODE_ID = B.STATUS_ID 
+			       AND B.YEAR = A.YEAR 
+			 WHERE A.CODE_GRP_ID = '021' 
+			   AND A.DELETE_DT IS NULL 
+			   AND A.YEAR = (SELECT CASE YEAR_YN WHEN 'Y' THEN #{findYear} ELSE '9999' END FROM COM_CODE_GRP WHERE CODE_GRP_ID = '021') 
+			ORDER BY A.SORT_ORDER, A.CODE_ID
+
+	</select>
+	
+	<select id="selectStrategyList" parameterType="strategyDiagVO" resultType="strategyDiagVO">
+		
+		/* 전략목표 리스트 조회   bsc.mon.strategyDiag.selectStrategyList */ 
+	
+		SELECT STRATEGY_ID,
+		       STRATEGY_NM
+		  FROM BSC_STRATEGY
+		 WHERE YEAR = #{findYear}
+		   AND DELETE_DT IS NULL
+		 ORDER BY SORT_ORDER
+	
+	</select>
+	
+</mapper>
+

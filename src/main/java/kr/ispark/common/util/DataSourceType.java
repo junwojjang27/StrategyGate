@@ -1,0 +1,30 @@
+package kr.ispark.common.util;
+
+public enum DataSourceType {
+	MASTER,
+	CONN01,
+	CONN02,
+	CONN03,
+	CONN04,
+	CONN05,
+	CONN06,
+	CONN07,
+	CONN08,
+	CONN09,
+	CONN10,
+	CONN11,
+	CONN12,
+	CONN13,
+	CONN14,
+	CONN15,
+	CONN16,
+	CONN17,
+	CONN18,
+	CONN19,
+	CONN20,
+	CONN21,
+	CONN22,
+	CONN23,
+	CONN24,
+	CONN25
+}

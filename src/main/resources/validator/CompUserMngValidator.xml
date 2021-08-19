@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="compUserMngVO">
+			<field property="userId" depends="required, maxByteLength">
+				<arg0 key="word.empNum"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="userNm" depends="required, maxByteLength">
+				<arg0 key="word.name2"/>
+				<arg1 key="50" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>50</var-value>
+				</var>
+			</field>
+			<field property="jikgubId" depends="required, maxByteLength">
+				<arg0 key="word.jikgub"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="posId" depends="required, maxByteLength">
+				<arg0 key="word.pos"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="jobId" depends="required, maxByteLength">
+				<arg0 key="word.job"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="deptId" depends="required, maxByteLength">
+				<arg0 key="word.belongDept"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="email" depends="maxByteLength">
+				<arg0 key="word.email"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="beingYn" depends="required, maxByteLength">
+				<arg0 key="word.beingYn"/>
+				<arg1 key="1" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>1</var-value>
+				</var>
+			</field>
+		</form>
+	</formset>
+</form-validation>
+

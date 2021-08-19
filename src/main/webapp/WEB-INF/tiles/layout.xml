@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC 
+		"-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN" 
+		"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>
+	<definition name="/**/*.main"		template="/WEB-INF/jsp/common/tiles/layout.jsp">
+		<put-attribute name="content"	value="/WEB-INF/jsp/{1}/{2}.jsp"/>
+	</definition>
+	
+	<!-- 본문용 -->
+	<definition name="/**/*.simple"		template="/WEB-INF/jsp/common/tiles/layout-simple.jsp">
+		<put-attribute name="content"	value="/WEB-INF/jsp/{1}/{2}.jsp"/>
+	</definition>
+	
+	<!-- 자바스크립트용 -->
+	<definition name="/**/*.script"		template="/WEB-INF/jsp/common/tiles/layout-script.jsp">
+		<put-attribute name="content"	value="/WEB-INF/jsp/{1}/{2}.jsp"/>
+	</definition>
+	
+	<!-- XML용 -->
+	<definition name="/**/*.xml"		template="/WEB-INF/jsp/common/tiles/layout-xml.jsp">
+		<put-attribute name="content"	value="/WEB-INF/jsp/{1}/{2}.jsp"/>
+	</definition>
+	
+	<!-- window 팝업용 -->
+	<definition name="/**/*.popup"		template="/WEB-INF/jsp/common/tiles/layout-popup.jsp">
+		<put-attribute name="content"	value="/WEB-INF/jsp/{1}/{2}.jsp"/>
+	</definition>
+	
+</tiles-definitions>

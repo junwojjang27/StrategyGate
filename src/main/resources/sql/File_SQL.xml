@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><!--Converted at: Mon Feb 17 15:13:50 KST 2014-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="file">
+	<select id="selectFileList" parameterType="fileVO" resultType="fileVO">
+		/* file.selectFileList */
+		SELECT
+				a.ATCH_FILE_ID, b.FILE_CN, b.FILE_SN, b.FILE_STRE_COURS, b.STRE_FILE_NM,
+				b.FILE_EXTSN, b.ORIGNL_FILE_NM, NVL(b.FILE_SIZE, 0) AS FILE_SIZE, a.CREAT_DT, b.FORM_NM, b.FILE_TRASH_ID
+		FROM	COMTNFILE a, COMTNFILEDETAIL b
+		WHERE	a.ATCH_FILE_ID = #{atchFileId}
+			AND	a.ATCH_FILE_ID = b.ATCH_FILE_ID
+			AND	a.USE_AT = 'Y'
+		ORDER BY	b.FILE_SN
+	</select>
+
+	<delete id="deleteFileList" parameterType="fileVO">
+		/* file.deleteFileList */
+		DELETE	FROM	COMTNFILEDETAIL
+		WHERE	ATCH_FILE_ID = #{atchFileId}
+	</delete>
+
+	<insert id="insertFileMaster" parameterType="fileVO">
+		/* file.insertFileMaster */
+		INSERT INTO COMTNFILE	(ATCH_FILE_ID, CREAT_DT, USE_AT)
+		VALUES	(#{atchFileId}, SYSDATE, 'Y')
+	</insert>
+
+	<insert id="insertFileDetail" parameterType="fileVO">
+		/* file.insertFileDetail */
+		INSERT INTO COMTNFILEDETAIL	(
+			ATCH_FILE_ID,	FILE_SN,	FILE_STRE_COURS,	STRE_FILE_NM,
+			ORIGNL_FILE_NM,	FILE_EXTSN,		FILE_SIZE,	FILE_CN,			FORM_NM
+		) VALUES (
+			#{atchFileId},	#{fileSn},		#{fileStreCours},	#{streFileNm},
+			#{orignlFileNm},	#{fileExtsn},	#{fileSize},	#{fileCn},			#{formNm}
+		)
+	</insert>
+
+	<delete id="deleteFileDetail" parameterType="fileVO">
+		/* file.deleteFileDetail */
+		DELETE	FROM COMTNFILEDETAIL
+		WHERE	ATCH_FILE_ID = #{atchFileId}
+			AND	FILE_SN = #{fileSn}
+	</delete>
+
+	<select id="getMaxFileSN" parameterType="fileVO" resultType="java.lang.Integer">
+		/* file.getMaxFileSN */
+		SELECT	NVL(MAX(FILE_SN),0)+1 AS FILE_SN
+		FROM	COMTNFILEDETAIL
+		WHERE	ATCH_FILE_ID =	#{atchFileId}
+	</select>
+
+	<select id="selectFileInf" parameterType="fileVO" resultType="fileVO">
+		/* file.selectFileInf */
+		SELECT
+				ATCH_FILE_ID, FILE_CN, FILE_SN, FILE_STRE_COURS, STRE_FILE_NM,
+				FILE_EXTSN, ORIGNL_FILE_NM, FILE_SIZE, FORM_NM, FILE_TRASH_ID
+		FROM	COMTNFILEDETAIL
+		WHERE	ATCH_FILE_ID = #{atchFileId}
+			AND	FILE_SN = #{fileSn}
+	</select>
+
+	<update id="deleteCOMTNFILE" parameterType="fileVO">
+		/* file.deleteCOMTNFILE */
+		UPDATE	COMTNFILE
+			SET	USE_AT = 'N'
+		WHERE	ATCH_FILE_ID = #{atchFileId}
+	</update>
+
+	<select id="selectFileListByFileNm" parameterType="fileVO" resultType="fileVO">
+		/* file.selectFileListByFileNm */
+		SELECT * FROM ( SELECT rownum rn, TB.* FROM (
+			SELECT
+				a.ATCH_FILE_ID, b.FILE_CN, b.FILE_SN, b.FILE_STRE_COURS, b.STRE_FILE_NM,
+				b.FILE_EXTSN, b.ORIGNL_FILE_NM, b.FILE_SIZE, a.CREAT_DT, b.FORM_NM, b.FILE_TRASH_ID
+			FROM	COMTNFILE a, COMTNFILEDETAIL b
+			WHERE	a.ATCH_FILE_ID = b.ATCH_FILE_ID
+				AND	a.USE_AT = 'Y'
+			<if test="searchCnd == 'streFileNm'">
+				AND	b.STRE_FILE_NM LIKE '%' || #{searchWrd} || '%'
+			</if>
+			<if test="searchCnd == 'orignlFileNm'">
+				AND	b.ORIGNL_FILE_NM LIKE '%' || #{searchWrd} || '%'
+			</if>
+			ORDER BY a.ATCH_FILE_ID, b.FILE_SN
+		) TB ) WHERE rn BETWEEN #{firstIndex} + 1 AND #{firstIndex} + #{recordCountPerPage}
+	</select>
+
+	<select id="selectFileListCntByFileNm" parameterType="fileVO" resultType="int">
+		/* file.selectFileListCntByFileNm */
+		SELECT
+				COUNT(a.ATCH_FILE_ID)
+		FROM	COMTNFILE a, COMTNFILEDETAIL b
+		WHERE	a.ATCH_FILE_ID = b.ATCH_FILE_ID
+			AND	a.USE_AT = 'Y'
+			<if test="searchCnd == 'streFileNm'">
+				AND	b.STRE_FILE_NM LIKE '%' || #{searchWrd} || '%'
+			</if>
+			<if test="searchCnd == 'orignlFileNm'">
+				AND	b.ORIGNL_FILE_NM LIKE '%' || #{searchWrd} || '%'
+			</if>
+	</select>
+
+		<select id="selectImageFileList" parameterType="fileVO" resultType="fileVO">
+			/* file.selectImageFileList */
+		SELECT
+				a.ATCH_FILE_ID, b.FILE_CN, b.FILE_SN, b.FILE_STRE_COURS, b.STRE_FILE_NM,
+				b.FILE_EXTSN, b.ORIGNL_FILE_NM, b.FILE_SIZE, a.CREAT_DT, b.FORM_NM, b.FILE_TRASH_ID
+		FROM	COMTNFILE a, COMTNFILEDETAIL b
+		WHERE	a.ATCH_FILE_ID = #{atchFileId}
+			AND	a.ATCH_FILE_ID = b.ATCH_FILE_ID
+			AND	UPPER(b.FILE_EXTSN) IN ('GIF','JPG','BMP','PNG')
+			AND	a.USE_AT = 'Y'
+		ORDER BY	b.FILE_SN
+	</select>
+
+	<select id="selectFileInfsByCheckbox" parameterType="fileVO" resultType="fileVO">
+		/* file.selectFileInfsByCheckbox */
+		SELECT	ATCH_FILE_ID, FILE_CN, FILE_SN, FILE_STRE_COURS, STRE_FILE_NM,
+				FILE_EXTSN, ORIGNL_FILE_NM, FILE_SIZE, FORM_NM, FILE_TRASH_ID
+		FROM	COMTNFILEDETAIL
+		WHERE	ATCH_FILE_ID = #{atchFileId}
+			AND	FILE_SN IN
+			<foreach item="item" collection="chkAttachFiles" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+	</select>
+
+	<delete id="deleteFileInfsByAtchFileId" parameterType="fileVO">
+		/* file.deleteFileInfsByAtchFileId */
+		DELETE
+		FROM	COMTNFILEDETAIL
+		WHERE	ATCH_FILE_ID = #{atchFileId}
+	</delete>
+
+	<delete id="deleteFileInfsByCheckbox" parameterType="fileVO" >
+		/* file.deleteFileInfsByCheckbox */
+		DELETE
+		FROM	COMTNFILEDETAIL
+		WHERE	ATCH_FILE_ID = #{atchFileId}
+			AND	FILE_SN IN
+			<foreach item="item" collection="chkAttachFiles" open="(" separator="," close=")">
+			#{item}
+			</foreach>
+	</delete>
+
+	<update id="updateFileTrash" >
+		/* file.updateFileTrash */
+		UPDATE	COMTNFILEDETAIL
+			SET FILE_TRASH_ID = #{fileTrashId}
+		WHERE	ATCH_FILE_ID = #{atchFileId}
+			<if test="fileSn != null and fileSn != ''">
+				AND FILE_SN = #{fileSn}
+			</if>
+	</update>
+
+	<select id="selectFileListByFileTrash" parameterType="fileVO" resultType="fileVO">
+		/* file.selectFileListByFileTrash */
+		SELECT
+				a.ATCH_FILE_ID, b.FILE_CN, b.FILE_SN, b.FILE_STRE_COURS, b.STRE_FILE_NM,
+				b.FILE_EXTSN, b.ORIGNL_FILE_NM, b.FILE_SIZE, a.CREAT_DT, b.FORM_NM, b.FILE_TRASH_ID
+		FROM	COMTNFILE a, COMTNFILEDETAIL b
+		WHERE	b.FILE_TRASH_ID = #{fileTrashId}
+			AND	a.ATCH_FILE_ID = b.ATCH_FILE_ID
+			AND	a.USE_AT = 'Y'
+		ORDER BY	b.FILE_SN
+	</select>
+
+	<delete id="deleteFileInfsByFileTrash" >
+		/* file.deleteFileInfsByFileTrash */
+		DELETE
+		FROM	COMTNFILEDETAIL
+		WHERE	FILE_TRASH_ID = #{fileTrashId}
+			AND FILE_TRASH_ID IS NOT NULL
+			AND FILE_TRASH_ID != ''
+	</delete>
+
+	<update id="updateFileTrashRestore" >
+		/* file.updateFileTrashRestore */
+		UPDATE	COMTNFILEDETAIL
+			SET FILE_TRASH_ID = NULL
+		WHERE	FILE_TRASH_ID = #{fileTrashId}
+	</update>
+</mapper>

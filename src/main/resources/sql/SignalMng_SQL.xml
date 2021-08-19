@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.code.signalMng">
+	<select id="selectList" parameterType="signalMngVO" resultType="signalMngVO">
+		/*	신호등관리 조회	signalMng.selectList */
+		SELECT B.CODE_ID AS STATUS_CODE_ID,
+			   B.YEAR,
+			   D.STATUS_ID,
+			   NVL(C.CODE_NM,B.CODE_NM) AS STATUS_NM,
+		       D.FROM_VALUE,
+			   D.TO_VALUE,
+			   D.COLOR,
+		       D.COLOR AS COLOR_VAL
+		  FROM COM_CODE_GRP A
+		       INNER JOIN COM_CODE B
+		       ON A.CODE_GRP_ID = B.CODE_GRP_ID
+		       AND B.YEAR = #{findYear}
+		       AND B.DELETE_DT IS NULL
+		       LEFT OUTER JOIN COM_CODE_NM C
+		       ON B.CODE_GRP_ID = C.CODE_GRP_ID
+		       AND B.YEAR = C.YEAR
+		       AND B.CODE_ID = C.CODE_ID
+		       AND C.LANG = #{lang}
+		       LEFT OUTER JOIN COM_SIGNAL_STATUS D
+		       ON B.CODE_ID = D.STATUS_ID
+		       AND B.YEAR = D.YEAR
+		 WHERE A.CODE_GRP_ID = '021'
+		   AND A.DELETE_DT IS NULL
+		 ORDER BY B.SORT_ORDER
+
+	</select>
+	
+	<insert id="insertData" parameterType="signalMngVO">
+		/*	신호등관리 저장	system.code.signalMng.insertData	*/
+		INSERT INTO COM_SIGNAL_STATUS(
+			YEAR,
+			STATUS_ID,
+			FROM_VALUE,
+			TO_VALUE,
+			COLOR,
+			CREATE_DT)
+		
+    VALUES (
+			#{year},
+			#{statusCodeId},
+			#{fromValue},
+			#{toValue},
+			#{color},
+			SYSDATE)
+
+	</insert>
+
+	<update id="updateData" parameterType="signalMngVO">
+		/*	신호등관리 수정	system.code.signalMng.updateData	*/
+		UPDATE COM_SIGNAL_STATUS
+		SET
+			FROM_VALUE=#{fromValue},
+			TO_VALUE=#{toValue},
+			COLOR=#{color}
+		WHERE 1=1
+			AND YEAR=#{year}
+			AND STATUS_ID=#{statusId}
+
+	</update>
+</mapper>
+

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="ideaEvalRegVO" depends="maxByteLength">
+			<field property="evalFormCd">
+				<arg0 key="평가항목코드" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="evalFormDegree" depends="maxByteLength">
+				<arg0 key="평가차수(1차,2차,최종)" resource="true"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="evalFormNm" depends="maxByteLength">
+				<arg0 key="평가항목이름" resource="true"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+			<field property="particalTypeId" depends="maxByteLength">
+				<arg0 key="평가자구분(전직원,임원)" resource="true"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="evalFormComment" depends="maxByteLength">
+				<arg0 key="평가항목설명" resource="true"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+		</form>
+	</formset>
+</form-validation>
+

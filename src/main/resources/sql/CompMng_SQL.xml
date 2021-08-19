@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!--Converted at: Fri Mar 07 17:01:54 KST 2014-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.system.comp.compMng">
+	<select id="selectLang" parameterType="clientMngVO" resultType="clientMngVO">
+		/*	언어 목록 조회	system.system.comp.compMng.selectLang	*/
+		SELECT	A.LANG,	
+				A.LANG_NM, 
+				DECODE(B.LANG, NULL, 'N', 'Y')	AS LANG_USE_YN
+		FROM	COM_LANG A
+				LEFT JOIN	COM_COMP_LANG B
+						ON	A.LANG = B.LANG
+		ORDER BY	A.SORT_ORDER
+	</select>
+	
+	<select id="selectDetail" resultType="clientMngVO">	
+		/*	고객사 상세 조회 system.system.comp.compMng.selectDetail	*/
+		SELECT	A.COMP_NM,		A.BIZ_NO,		A.CEO_NM,			A.BIZ_CONDITION,
+				A.BIZ_TYPE,		A.COMP_TEL,		A.COMP_FAX,			A.COUNTRY,
+				A.COMP_LANG,	A.COMP_ADDR,	A.CHARGE_NM,		A.CHARGE_TEL,
+				A.CHARGE_EMAIL,	A.THEME,		A.PW_CHANGE_CYCLE,	A.USE_MONITORING_YN,
+				CASE	WHEN	B.SERVICE_END_DT IS NULL	THEN	'Y'
+						WHEN	TO_CHAR(SYSDATE, 'YYYYMMDD') >	B.SERVICE_END_DT	THEN	'E'
+						ELSE	'C'
+				END	CONTRACT_STATUS,
+				TO_CHAR(TO_DATE(B.CONTRACT_DT, 'YYYYMMDD'), 'YYYY.MM.DD')	AS CONTRACT_DT,
+				TO_CHAR(TO_DATE(B.SERVICE_START_DT, 'YYYYMMDD'), 'YYYY.MM.DD')	AS SERVICE_START_DT,
+				TO_CHAR(TO_DATE(B.SERVICE_END_DT, 'YYYYMMDD'), 'YYYY.MM.DD')	AS SERVICE_END_DT,
+				B.PAY_TYPE,		B.SERVICE_TYPE,	B.PAY_INFO
+		FROM	COM_COMPINFO A
+				LEFT JOIN	COM_COMPINFO_DETAIL B
+						ON	B.CURRENT_SEQ = 'Y'
+		WHERE	1=1
+	</select>
+	
+	<delete id="deleteLang" parameterType="clientMngVO"> 
+		/*	사용 언어 정보 삭제	system.system.comp.compMng.deleteLang	*/	
+		DELETE	FROM	COM_COMP_LANG
+		WHERE	1=1
+	</delete>
+	
+	<insert id="insertLang" parameterType="clientMngVO"> 
+		/*	사용 언어 정보 저장	system.system.comp.compMng.insertLang	*/
+		INSERT	INTO	COM_COMP_LANG	(
+			LANG
+		) VALUES (
+			#{newLang}
+		)
+	</insert>
+	
+	<update id="updateData" parameterType="clientMngVO">
+		/*	고객사 수정	system.system.comp.compMng.updateData	*/	
+		UPDATE	COM_COMPINFO 
+			SET	CEO_NM = #{ceoNm},
+				BIZ_CONDITION = #{bizCondition},
+				BIZ_TYPE = #{bizType},
+				COMP_TEL = #{compTel},
+				COMP_FAX = #{compFax},
+				COMP_LANG = #{compLang},
+				COMP_ADDR = #{compAddr},
+				CHARGE_NM = #{chargeNm},
+				CHARGE_TEL = #{chargeTel},
+				CHARGE_EMAIL = #{chargeEmail},
+				THEME = #{theme},
+				USE_MONITORING_YN = #{useMonitoringYn},
+				PW_CHANGE_CYCLE = #{pwChangeCycle}
+		WHERE	1=1
+	</update>
+</mapper>

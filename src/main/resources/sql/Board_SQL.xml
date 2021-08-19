@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.system.board">
+	<sql id="selectListQuery">
+		SELECT	B.SEQ,				B.TITLE,		B.HIT,	
+				B.GROUP_SEQ,		B.GROUP_ORDER,		B.GROUP_LEVEL,	B.REPLY_CNT,
+				B.COMMENT_CNT,		B.INSERT_USER_ID,	U.USER_NM,		TO_CHAR(B.CREATE_DT, 'YYYY.MM.DD')	AS CREATE_DT
+		FROM	COM_BOARD B
+				LEFT JOIN	V_ROLE_USER U
+						ON	B.INSERT_USER_ID = U.USER_ID
+				LEFT JOIN	COM_BOARD_SETTING S
+						ON	B.BOARD_ID = S.BOARD_ID
+				LEFT JOIN	COM_BOARD B2
+						ON	B.BOARD_ID = B2.BOARD_ID
+						AND	B.GROUP_SEQ = B2.GROUP_SEQ
+						AND	B2.GROUP_ORDER = 0
+						AND B2.GROUP_LEVEL = 0
+		  WHERE B.BOARD_ID = #{boardId}
+			AND	B.DELETE_DT IS NULL
+			<if test='searchKeyword != null and searchKeyword != ""'>
+				AND	UPPER(B.TITLE) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+			</if>
+			<if test='userNm != null and userNm != ""'>
+				AND	UPPER(U.USER_NM) LIKE '%' || UPPER(#{userNm}) || '%'
+			</if>
+			AND	(
+					S.PRIVATE_YN = 'N'
+					OR
+					B2.INSERT_USER_ID = #{userId}
+					OR
+					(
+						SELECT	COUNT(USER_ID)	FROM	COM_ADMIN
+						WHERE	AUTH_GUBUN = '01'
+							AND USER_ID = #{userId}
+					) <![CDATA[>]]> 0
+				)
+		ORDER BY	B.GROUP_SEQ DESC,	B.GROUP_ORDER
+	</sql>
+
+	<select id="selectList"	parameterType="boardVO"	resultType="boardVO">
+		/* 게시물 목록 조회	system.system.board.selectList */
+		SELECT T.*
+		FROM (
+			<include refid="common.pagingHeader"/>
+			<include refid="selectListQuery"/>
+			<include refid="common.pagingFooter"/>
+		) T
+	</select>
+
+	<select id="selectListCount"	parameterType="boardVO"	resultType="int">
+		/* 게시물 목록 수	system.system.board.selectListCount */
+		SELECT	COUNT(1)
+		FROM	(
+			<include refid="selectListQuery"/>
+		)
+	</select>
+	
+	<select id="selectBoardSetting"	parameterType="boardVO"	resultType="boardVO">
+		/* 게시판 설정 조회	system.system.board.selectBoardSetting */
+		SELECT	BOARD_ID,		BOARD_NM,		USE_ATCH_FILE_YN,	MAX_UPLOAD_SIZE,
+				MAX_UPLOAD_CNT,	USE_REPLY_YN,	USE_COMMENT_YN,		PRIVATE_YN,
+				WRITE_AUTH,		REPLY_AUTH,		DUPL_LIMIT_MIN
+		FROM	COM_BOARD_SETTING
+		WHERE	BOARD_ID = #{boardId}
+			AND	DELETE_DT IS NULL
+	</select>
+	
+	<select id="selectBoard"	parameterType="boardVO"	resultType="boardVO">
+		/* 게시물 조회	system.system.board.selectBoard */
+		SELECT
+				B.BOARD_ID,			B.SEQ,				B.UP_SEQ,
+				B.GROUP_SEQ,		B.GROUP_ORDER,		B.GROUP_LEVEL,		
+				B.TITLE,			B.CONTENTS,			B.INSERT_USER_ID,	B2.INSERT_USER_ID	AS UP_INSERT_USER_ID,
+				U.USER_NM,			B.ATCH_FILE_ID,		B.REPLY_CNT,
+				TO_CHAR(B.CREATE_DT, 'YYYY.MM.DD')	AS CREATE_DT,
+				S.USE_ATCH_FILE_YN,	S.MAX_UPLOAD_SIZE,	S.MAX_UPLOAD_CNT,
+				S.USE_REPLY_YN,		S.USE_COMMENT_YN,
+				S.PRIVATE_YN,		S.WRITE_AUTH,		S.REPLY_AUTH
+		FROM	COM_BOARD B
+				LEFT JOIN	V_ROLE_USER U
+						ON	B.INSERT_USER_ID = U.USER_ID
+				LEFT JOIN	COM_BOARD_SETTING S
+						ON	B.BOARD_ID = S.BOARD_ID
+				LEFT JOIN	COM_BOARD B2
+						ON	B.BOARD_ID = B2.BOARD_ID
+						AND	B.GROUP_SEQ = B2.GROUP_SEQ
+						AND	B2.GROUP_ORDER = 0
+						AND B2.GROUP_LEVEL = 0
+		WHERE	B.BOARD_ID = #{boardId}
+			AND	B.SEQ = #{seq}
+			AND	B.DELETE_DT IS NULL
+			AND	(
+					S.PRIVATE_YN = 'N'
+					OR
+					B2.INSERT_USER_ID = #{userId}
+					OR
+					(
+						SELECT	COUNT(USER_ID)	FROM	COM_ADMIN
+						WHERE	AUTH_GUBUN = '01'
+							AND USER_ID = #{userId}
+					) <![CDATA[>]]> 0
+				)
+	</select>
+	
+	<update id="updateHit"	parameterType="boardVO">
+		/*	게시물 조회수 증가	system.system.board.updateHit	*/
+		UPDATE	COM_BOARD
+			SET	HIT = HIT + 1
+		WHERE	BOARD_ID = #{boardId}
+			AND	SEQ = #{seq}
+	</update>
+	
+	<select id="selectDuplCount"	parameterType="boardVO"	resultType="int">
+		/*	중복 게시 제한 시간내 게시물 수 체크	system.system.board.selectDuplCount	*/
+		SELECT	COUNT(B.SEQ)
+		FROM	COM_BOARD B
+				LEFT JOIN	COM_BOARD_SETTING S
+						ON	B.BOARD_ID = S.BOARD_ID
+		WHERE	B.BOARD_ID = #{boardId}
+			AND	B.INSERT_USER_ID = #{userId}
+			AND	B.CREATE_DT <![CDATA[>]]> SYSDATE - S.DUPL_LIMIT_MIN/(24 * 60)
+			AND	B.DELETE_DT IS NULL
+	</select>
+	
+	<select	id="selectNextSeq"	parameterType="boardVO"	resultType="int">
+		/*	신규 게시물 채번	system.system.board.selectNextSeq	*/
+		SELECT	CASE	WHEN	MAX(SEQ) IS NULL	THEN 1
+						ELSE	MAX(SEQ) + 1
+				END	AS SEQ
+		FROM	COM_BOARD
+		WHERE	BOARD_ID = #{boardId}
+	</select>
+	
+	<select	id="selectNextGroupSeq"	parameterType="boardVO"	resultType="int">
+		/*	신규 게시물 그룹번호 채번	system.system.board.selectNextGroupSeq	*/
+		SELECT	CASE	WHEN	MAX(GROUP_SEQ) IS NULL	THEN 1
+						ELSE	MAX(GROUP_SEQ) + 1
+				END	AS GROUP_SEQ
+		FROM	COM_BOARD
+		WHERE	BOARD_ID = #{boardId}
+	</select>
+
+	<insert id="insertData"	parameterType="boardVO">
+		/*	게시물 저장	system.system.board.insertData	*/
+		INSERT	INTO	COM_BOARD	(
+			BOARD_ID,			SEQ,			UP_SEQ,
+			GROUP_SEQ,		GROUP_ORDER,		GROUP_LEVEL,
+			TITLE,			CONTENTS,			HIT,			REPLY_CNT,
+			COMMENT_CNT,	ATCH_FILE_ID,		INSERT_USER_ID,	INSERT_USER_IP,
+			CREATE_DT
+		) VALUES (
+			#{boardId},			#{seq},			#{upSeq},
+			#{groupSeq},	#{groupOrder},		#{groupLevel},
+			#{title},		#{contents},		0,				0,
+			0,				#{atchFileId},		#{userId},		#{insertUserIp},
+			SYSDATE
+		)
+	</insert>
+	
+	<update id="updateData"	parameterType="boardVO">
+		/*	게시물 수정	system.system.board.updateData	*/
+		UPDATE	COM_BOARD
+			SET	TITLE = #{title},
+				CONTENTS = #{contents},
+				MODIFY_DT = SYSDATE
+				<if test='atchFileId != null and atchFileId != ""'>
+					, ATCH_FILE_ID = #{atchFileId}
+				</if>
+		WHERE	BOARD_ID = #{boardId}
+			AND	SEQ = #{seq}
+	</update>
+
+	<update id="deleteData"	parameterType="boardVO">
+		/* 게시물 삭제	system.system.board.deleteData */
+		UPDATE	COM_BOARD
+			SET	DELETE_DT = SYSDATE
+		WHERE	BOARD_ID = #{boardId}
+			<if test='keys == null'>
+				AND	SEQ = #{seq}
+			</if>
+			<if test='keys != null'>
+				AND	SEQ IN
+				<foreach collection="keys" item="key" open="(" close=")" separator=",">
+					#{key}
+				</foreach>
+			</if>
+	</update>
+	
+	<select id="selectAtchFileIdListForDelete"	parameterType="fileVO"	resultType="String">
+		/*	삭제할 게시물에 첨부된 파일ID 목록 조회	system.system.board.selectAtchFileListForDelete	*/
+		SELECT	ATCH_FILE_ID
+		FROM	COM_BOARD
+		WHERE	ATCH_FILE_ID IS NOT NULL
+			<if test='keys == null'>
+				AND	SEQ = #{seq}
+			</if>
+			<if test='keys != null'>
+				AND	SEQ IN
+				<foreach collection="keys" item="key" open="(" close=")" separator=",">
+					#{key}
+				</foreach>
+			</if>
+	</select>
+	
+	<select id="selectMinGroupOrder"	parameterType="boardVO"	resultType="int">
+		/*	답글용 그룹 순서 최소값 조회	system.system.board.selectMinGroupOrder	*/
+		SELECT	CASE	WHEN	MIN(GROUP_ORDER) IS NULL
+				THEN	-1
+				ELSE	MIN(GROUP_ORDER)
+				END
+		FROM	COM_BOARD
+		WHERE	BOARD_ID = #{boardId}
+			AND	GROUP_SEQ = #{groupSeq}
+			AND	GROUP_ORDER <![CDATA[>]]> #{groupOrder}
+			AND	GROUP_LEVEL <![CDATA[<=]]> #{groupLevel}
+	</select>
+	
+	<select id="selectNextGroupOrder"	parameterType="boardVO"	resultType="int">
+		/*	답글용 그룹 순서 채번	system.system.board.selectNextGroupOrder	*/
+		SELECT	MAX(GROUP_ORDER) + 1
+		FROM	COM_BOARD
+		WHERE	BOARD_ID = #{boardId}
+			AND	GROUP_SEQ = #{groupSeq}
+	</select>
+	
+	<update id="updateGroupOrder"	parameterType="boardVO">
+		/*	답글용 그룹 순서 조정	system.system.board.updateGroupOrder	*/
+		UPDATE	COM_BOARD
+			SET	GROUP_ORDER = GROUP_ORDER + 1
+		WHERE	BOARD_ID = #{boardId}
+			AND	GROUP_SEQ = #{groupSeq}
+			AND	GROUP_ORDER <![CDATA[>=]]> #{groupOrder}
+	</update>
+	
+	<update id="updateReplyCount"	parameterType="boardVO">
+		/*	상위글 답글 수 수정	system.system.board.updateReplyCount	*/
+		UPDATE	COM_BOARD
+			SET	REPLY_CNT = (
+								SELECT	COUNT(SEQ)
+								FROM	COM_BOARD
+								WHERE	BOARD_ID = #{boardId}
+									AND	UP_SEQ = #{upSeq}
+									AND	DELETE_DT IS NULL
+							)
+		WHERE	BOARD_ID = #{boardId}
+			AND	SEQ = #{upSeq}
+	</update>
+	
+	<update id="updateReplyCountAll"	parameterType="boardVO">
+		/*	전체글의 답글 수 수정	system.system.board.updateReplyCountAll	*/
+		UPDATE	COM_BOARD A
+			SET	REPLY_CNT = (
+								SELECT	COUNT(SEQ)
+								FROM	COM_BOARD
+								WHERE	BOARD_ID = A.BOARD_ID
+									AND	UP_SEQ = A.SEQ
+									AND	DELETE_DT IS NULL
+							)
+		WHERE	BOARD_ID = #{boardId}
+	</update>
+	
+<!-- 댓글 -->
+	<select id="selectCommentList"	parameterType="boardVO"	resultType="boardVO">
+		/* 댓글 목록 조회	system.system.board.selectCommentList */
+		SELECT	C.COMMENT_SEQ,	C.CONTENTS,	C.INSERT_USER_ID,
+				U.USER_NM,		U.DEPT_NM,
+				TO_CHAR(C.CREATE_DT, 'YYYY.MM.DD')	AS CREATE_DT
+		FROM	COM_BOARD_COMMENT C
+				LEFT JOIN	V_ROLE_USER U
+						ON	C.INSERT_USER_ID = U.USER_ID
+		WHERE	C.BOARD_ID = #{boardId}
+			AND	C.SEQ = #{seq}
+			AND	C.DELETE_DT IS NULL
+		ORDER BY	C.CREATE_DT
+	</select>
+
+	<select	id="selectNextCommentSeq"	parameterType="boardVO"	resultType="int">
+		/*	신규 댓글 채번	system.system.board.selectNextSeq	*/
+		SELECT	CASE	WHEN	MAX(COMMENT_SEQ) IS NULL	THEN 1
+						ELSE	MAX(COMMENT_SEQ) + 1
+				END	AS SEQ
+		FROM	COM_BOARD_COMMENT
+		WHERE	BOARD_ID = #{boardId}
+			AND	SEQ = #{seq}
+	</select>
+	
+	<insert id="insertComment"	parameterType="boardVO">
+		/*	댓글 저장	system.system.board.insertComment	*/
+		INSERT	INTO	COM_BOARD_COMMENT	(
+			BOARD_ID,		SEQ,				COMMENT_SEQ,
+			CONTENTS,		INSERT_USER_ID,	INSERT_USER_IP,		CREATE_DT
+		) VALUES (
+			#{boardId},		#{seq},				#{commentSeq},
+			#{contents},	#{userId},		#{insertUserIp},	SYSDATE
+		)
+	</insert>
+	
+	<update id="updateCommentCount"	parameterType="boardVO">
+		/*	댓글수 갱신	system.system.board.updateCommentCount	*/
+		UPDATE	COM_BOARD
+			SET	COMMENT_CNT =	(
+									SELECT	COUNT(SEQ)
+									FROM	COM_BOARD_COMMENT
+									WHERE	BOARD_ID = #{boardId}
+										AND	SEQ = #{seq}
+										AND	DELETE_DT IS NULL
+								)
+		WHERE	BOARD_ID = #{boardId}
+			AND	SEQ = #{seq}
+	</update>
+	
+	<update id="updateComment"	parameterType="boardVO">
+		/*	댓글 수정	system.system.board.updateComment	*/
+		UPDATE	COM_BOARD_COMMENT
+			SET	CONTENTS = #{contents},
+				MODIFY_DT = SYSDATE
+		WHERE	BOARD_ID = #{boardId}
+			AND	SEQ = #{seq}
+			AND	COMMENT_SEQ = #{commentSeq}
+			<if test='userId != null and userId != ""'>
+				AND INSERT_USER_ID = #{userId}
+			</if>
+	</update>
+
+	<update id="deleteComment"	parameterType="boardVO">
+		/* 댓글 삭제	system.system.board.deleteComment */
+		UPDATE	COM_BOARD_COMMENT
+			SET	DELETE_DT = SYSDATE
+		WHERE	BOARD_ID = #{boardId}
+			AND	SEQ = #{seq}
+			AND	COMMENT_SEQ = #{commentSeq}
+			<if test='userId != null and userId != ""'>
+				AND INSERT_USER_ID = #{userId}
+			</if>
+	</update>
+</mapper>

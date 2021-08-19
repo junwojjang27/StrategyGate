@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="queryNamePath">
+	<select id="selectList" parameterType="camelPageNmVO" resultType="camelPageNmVO">
+		/*	koPageNm 조회	queryNamePath.selectList */
+selectQuery
+	</select>
+	
+	<select id="selectDetail" parameterType="camelPageNmVO" resultType="camelPageNmVO">
+		/*	koPageNm 상세 조회	 	queryNamePath.selectDetail	*/
+selectDetailQuery
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="camelPageNmVO">
+	    /*	koPageNm 정렬순서저장	 camelPageNm.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deletenonCamelPageNm" parameterType="camelPageNmVO">
+		/*	koPageNm 삭제	queryNamePath.deletenonCamelPageNm	*/
+deleteQuery
+	</update>
+
+	<insert id="insertData" parameterType="camelPageNmVO">
+		/*	koPageNm 저장	queryNamePath.insertData	*/
+insertQuery
+	</insert>
+
+	<update id="updateData" parameterType="camelPageNmVO">
+		/*	koPageNm 수정	queryNamePath.updateData	*/
+updateQuery
+	</update>
+</mapper>

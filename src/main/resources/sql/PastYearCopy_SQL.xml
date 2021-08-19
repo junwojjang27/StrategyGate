@@ -1,0 +1,1139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.batch.pastYearCopy">
+	<select id="selectList" parameterType="pastYearCopyVO" resultType="pastYearCopyVO">
+		/*	전년데이터일괄적용 조회	system.batch.pastYearCopy.selectList */
+		<!--공통코드 -->
+		SELECT 
+			'system' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM COM_CODE_GRP WHERE YEAR_YN = 'Y' AND CODE_GRP_ID IN (SELECT DISTINCT CODE_GRP_ID FROM COM_CODE WHERE YEAR = #{pastYear} ) ) PAST_CNT
+			, (SELECT COUNT(1) FROM COM_CODE_GRP WHERE YEAR_YN = 'Y' AND CODE_GRP_ID IN (SELECT DISTINCT CODE_GRP_ID FROM COM_CODE WHERE YEAR = #{findYear}) ) NEW_CNT
+			, 'COM_CODE' AS TABLE_NM
+		FROM DUAL
+		
+		<!--신호등 -->
+		UNION ALL
+		SELECT
+			'system' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM COM_SIGNAL_STATUS WHERE YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM COM_SIGNAL_STATUS WHERE YEAR = #{findYear}) AS NEW_CNT
+			,'COM_SIGNAL_STATUS' AS TABLE_NM
+		FROM DUAL
+		
+		<!--평가등급 -->
+		UNION ALL
+		SELECT
+			'system' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM BSC_EVAL_METHOD WHERE DELETE_DT IS NULL AND YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM BSC_EVAL_METHOD WHERE DELETE_DT IS NULL AND YEAR = #{findYear}) AS NEW_CNT
+			,'BSC_EVAL_METHOD' AS TABLE_NM
+		FROM DUAL
+		
+		<!--시스템연계항목 -->
+		UNION ALL
+		SELECT
+			'system' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM BSC_SYSTEM_ITEM WHERE DELETE_DT IS NULL AND YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM BSC_SYSTEM_ITEM WHERE DELETE_DT IS NULL AND YEAR = #{findYear}) AS NEW_CNT
+			,'BSC_SYSTEM_ITEM' AS TABLE_NM
+		FROM DUAL
+		
+		<!--관점 -->
+		UNION ALL
+		SELECT
+			'bsc' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM BSC_PERSPECTIVE WHERE DELETE_DT IS NULL AND YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM BSC_PERSPECTIVE WHERE DELETE_DT IS NULL AND YEAR = #{findYear}) AS NEW_CNT
+			,'BSC_PERSPECTIVE' AS TABLE_NM
+		FROM DUAL
+		
+		<!--전략목표 -->
+		UNION ALL
+		SELECT
+			'bsc' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM BSC_STRATEGY WHERE DELETE_DT IS NULL AND YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM BSC_STRATEGY WHERE DELETE_DT IS NULL AND YEAR = #{findYear}) AS NEW_CNT
+			,'BSC_STRATEGY' AS TABLE_NM
+		FROM DUAL
+		
+		<!--성과조직 -->
+		UNION ALL
+		SELECT
+			'bsc' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM BSC_SC_DEPT WHERE DELETE_DT IS NULL AND YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM BSC_SC_DEPT WHERE DELETE_DT IS NULL AND YEAR = #{findYear}) AS NEW_CNT
+			,'BSC_SC_DEPT' AS TABLE_NM
+		FROM DUAL
+		
+		<!--지표POOL -->
+		UNION ALL
+		SELECT
+			'bsc' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM BSC_METRIC_GRP WHERE DELETE_DT IS NULL AND YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM BSC_METRIC_GRP WHERE DELETE_DT IS NULL AND YEAR = #{findYear}) AS NEW_CNT
+			,'BSC_METRIC_GRP' AS TABLE_NM
+		FROM DUAL
+		
+		<!--지표-->
+		UNION ALL
+		SELECT
+			'bsc' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM BSC_METRIC WHERE DELETE_DT IS NULL AND YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM BSC_METRIC WHERE DELETE_DT IS NULL AND YEAR = #{findYear}) AS NEW_CNT
+			,'BSC_METRIC' AS TABLE_NM
+		FROM DUAL
+		
+		<!--경영평가범주 -->
+		UNION ALL
+		SELECT
+			'gov' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM GOV_EVAL_CAT_GRP WHERE DELETE_DT IS NULL AND YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM GOV_EVAL_CAT_GRP WHERE DELETE_DT IS NULL AND YEAR = #{findYear}) AS NEW_CNT
+			,'GOV_EVAL_CAT_GRP' AS TABLE_NM
+		FROM DUAL
+		
+		<!--경영평가부문-->
+		UNION ALL
+		SELECT
+			'gov' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM GOV_EVAL_CAT WHERE DELETE_DT IS NULL AND YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM GOV_EVAL_CAT WHERE DELETE_DT IS NULL AND YEAR = #{findYear}) AS NEW_CNT
+			,'GOV_EVAL_CAT' AS TABLE_NM
+		FROM DUAL
+		
+		<!--경영평가지표 -->
+		UNION ALL
+		SELECT
+			'gov' AS SYSTEM_GUBUN
+			,(SELECT COUNT(1) FROM GOV_METRIC WHERE DELETE_DT IS NULL AND YEAR = #{pastYear}) AS PAST_CNT
+			,(SELECT COUNT(1) FROM GOV_METRIC WHERE DELETE_DT IS NULL AND YEAR = #{findYear}) AS NEW_CNT
+			,'GOV_METRIC' AS TABLE_NM
+		FROM DUAL
+	</select>
+	
+	<!--공통코드 START -->
+	<delete id="deleteComCode">
+		/*	전년데이터일괄적용 공통코드 삭제	system.batch.pastYearCopy.deleteComCode */
+		DELETE FROM COM_CODE
+		WHERE CODE_GRP_ID IN ( SELECT CODE_GRP_ID FROM COM_CODE_GRP WHERE YEAR_YN = 'Y' )
+		AND YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertComCode" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 공통코드 등록	system.batch.pastYearCopy.insertComCode */
+		INSERT INTO COM_CODE(CODE_GRP_ID,CODE_ID,CODE_NM,YEAR,SORT_ORDER,CONTENT,ETC1,ETC2,CREATE_DT,DELETE_DT)
+		SELECT A.CODE_GRP_ID,A.CODE_ID,A.CODE_NM,#{findYear},A.SORT_ORDER,A.CONTENT,A.ETC1,A.ETC2,SYSDATE,NULL
+		FROM COM_CODE A
+		INNER JOIN COM_CODE_GRP B
+		ON A.CODE_GRP_ID = B.CODE_GRP_ID
+		AND B.DELETE_DT IS NULL
+		AND B.YEAR_YN = 'Y'
+		WHERE A.YEAR = #{pastYear}
+	</insert>
+	<!--공통코드 END -->
+	
+	<!--신호등 START-->
+	<delete id="deleteComSignal">
+		/*	전년데이터일괄적용 신호등 삭제	system.batch.pastYearCopy.deleteComSignal */
+		DELETE FROM COM_SIGNAL_STATUS
+		WHERE YEAR = #{findYear}
+	</delete>
+		
+	<insert id="insertComSignal" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 신호등 등록	system.batch.pastYearCopy.insertComSignal */
+		INSERT INTO COM_SIGNAL_STATUS (YEAR,STATUS_ID,FROM_VALUE,TO_VALUE,COLOR,CREATE_DT)
+		SELECT #{findYear},STATUS_ID,FROM_VALUE,TO_VALUE,COLOR,SYSDATE
+		FROM COM_SIGNAL_STATUS
+		WHERE YEAR = #{pastYear}
+	</insert>
+	<!--신호등 END-->
+	
+	<!--평가등급 START-->
+	<delete id="deleteEvalGradeCnt">
+		/*	전년데이터일괄적용 평가등급-배분표 삭제	system.batch.pastYearCopy.deleteEvalGradeCnt */
+		DELETE FROM BSC_EVAL_GRADE_CNT
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertEvalGradeCnt" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 평가등급-배분표 등록	system.batch.pastYearCopy.insertEvalGradeCnt */
+		INSERT INTO BSC_EVAL_GRADE_CNT (YEAR,EVAL_METHOD_ID,GRADE_ID,ITEM_CNT,ITEM_DISTRI_CNT,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT #{findYear},EVAL_METHOD_ID,GRADE_ID,ITEM_CNT,ITEM_DISTRI_CNT,SYSDATE,NULL,NULL
+		FROM BSC_EVAL_GRADE_CNT
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteEvalGrade">
+		/*	전년데이터일괄적용 평가등급-등급 삭제	system.batch.pastYearCopy.deleteEvalGrade */
+		DELETE FROM BSC_EVAL_GRADE
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertEvalGrade" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 평가등급-등급 등록	system.batch.pastYearCopy.insertEvalGrade */
+		INSERT INTO BSC_EVAL_GRADE(YEAR,EVAL_METHOD_ID,GRADE_ID,GRADE_NM,GRADE_RATE,GRADE_SCORE,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT #{findYear},EVAL_METHOD_ID,GRADE_ID,GRADE_NM,GRADE_RATE,GRADE_SCORE,SORT_ORDER,SYSDATE,NULL,NULL
+		FROM BSC_EVAL_GRADE
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteEvalMethod">
+		/*	전년데이터일괄적용 평가등급 삭제	system.batch.pastYearCopy.deleteEvalMethod */
+		DELETE FROM BSC_EVAL_METHOD 
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertEvalMethod" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 평가등급 등록	system.batch.pastYearCopy.insertEvalMethod */
+		INSERT INTO BSC_EVAL_METHOD(YEAR,EVAL_METHOD_ID,EVAL_METHOD_NM,EVAL_METHOD_GUBUN,DESCRIPTION,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT #{findYear},EVAL_METHOD_ID,EVAL_METHOD_NM,EVAL_METHOD_GUBUN,DESCRIPTION,SORT_ORDER,SYSDATE,NULL,NULL
+		FROM BSC_EVAL_METHOD
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--평가등급 END-->
+	
+	<!--시스템연계항목 START-->
+	<delete id="deleteBscSystemItem">
+		/*	전년데이터일괄적용 시스템연계항목 삭제	system.batch.pastYearCopy.deleteBscSystemItem */
+		DELETE FROM BSC_SYSTEM_ITEM
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscSystemItem" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 시스템연계항목 등록	system.batch.pastYearCopy.insertBscSystemItem */
+		INSERT INTO BSC_SYSTEM_ITEM(YEAR,ITEM_ID,ITEM_NM,ITEM_LOAD_GBN_ID,EXEC_YN,CONTENT,CHARGE_USER_ID,CREATE_DT,MODIFY_DT,DELETE_DT,ATCH_FILE_ID)
+		SELECT #{findYear},ITEM_ID,ITEM_NM,ITEM_LOAD_GBN_ID,EXEC_YN,CONTENT,CHARGE_USER_ID,SYSDATE,NULL,NULL,ATCH_FILE_ID
+		FROM BSC_SYSTEM_ITEM
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--시스템연계항목 END-->
+	
+	<!--
+	<insert	id="insertComSeq"	statementType="CALLABLE"	parameterType="PastYearCopyVO">
+		/*	전년도 데이터 복사 - 시퀀스 테이블 등록	system.batch.pastYearCopy.insertComSeq	*/
+		{CALL SP_INSERT_COM_SEQ(#{pastYear}, #{findYear}, #{tableId})}
+	</insert>
+	-->
+	
+	<delete	id="deleteComSeqData"	parameterType="PastYearCopyVO">
+		/*	전년도 데이터 복사 - 시퀀스 테이블 등록	system.batch.pastYearCopy.deleteComSeqData	*/
+		DELETE	FROM	COM_SEQ 
+			WHERE	YEAR = #{findYear}
+				AND	TABLE_NAME = #{tableId}
+	</delete>
+	
+	<insert	id="insertComSeqData"	parameterType="PastYearCopyVO">
+		/*	전년도 데이터 복사 - 시퀀스 테이블 등록	system.batch.pastYearCopy.insertComSeq	*/
+		INSERT	INTO	COM_SEQ	(
+				TABLE_NAME,	YEAR,	SEQ
+			)
+			SELECT	TABLE_NAME,	#{findYear},	SEQ
+			FROM	COM_SEQ 
+			WHERE	YEAR = #{pastYear}
+				AND	TABLE_NAME = #{tableId}
+	</insert>
+	
+	<!-- 
+	<insert	id="insertComSeq"	parameterType="PastYearCopyVO">
+		/*	전년도 데이터 복사 - 시퀀스 테이블 등록	system.batch.pastYearCopy.insertComSeq	*/
+		{call
+			declare
+			begin
+
+			DELETE	FROM	COM_SEQ 
+			WHERE	YEAR = #{findYear}
+				AND	TABLE_NAME = #{tableId};
+			
+			INSERT	INTO	COM_SEQ	(
+				TABLE_NAME,	YEAR,	SEQ
+			)
+			SELECT	TABLE_NAME,	#{findYear},	SEQ
+			FROM	COM_SEQ 
+			WHERE	YEAR = #{pastYear}
+				AND	TABLE_NAME = #{tableId};
+
+			end
+		}
+	</insert>
+	-->
+	
+	<!--관점 START-->
+	<delete id="deleteBscPerspective">
+		/*	전년데이터일괄적용 관점 삭제	system.batch.pastYearCopy.deleteBscPerspective */
+		DELETE FROM BSC_PERSPECTIVE
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscPerspective" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 관점 등록	system.batch.pastYearCopy.insertBscPerspective */
+		INSERT INTO BSC_PERSPECTIVE(YEAR,PERSPECTIVE_ID,PERSPECTIVE_NM,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT #{findYear},PERSPECTIVE_ID,PERSPECTIVE_NM,SORT_ORDER,SYSDATE,NULL,NULL
+		FROM BSC_PERSPECTIVE
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--관점 END-->
+	
+	<!--전략목표 START-->
+	<delete id="deleteBscStrategyMap">
+		/*	전년데이터일괄적용 전략목표체계도 삭제	system.batch.pastYearCopy.deleteBscStrategyMap */
+		DELETE FROM BSC_STRATEGY_MAP
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscStrategyMap" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 전략목표체계도 등록	system.batch.pastYearCopy.insertBscStrategyMap */
+		INSERT INTO BSC_STRATEGY_MAP(YEAR,SC_DEPT_ID,STRATEGY_ID,KIND,X1,Y1,X2,Y2,X3,Y3,X4,Y4,CREATE_DT)
+		SELECT #{findYear},SC_DEPT_ID,STRATEGY_ID,KIND,X1,Y1,X2,Y2,X3,Y3,X4,Y4,SYSDATE
+		FROM BSC_STRATEGY_MAP
+		WHERE YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteBscStrategy">
+		/*	전년데이터일괄적용 전략목표 삭제	system.batch.pastYearCopy.deleteBscStrategy */
+		DELETE FROM BSC_STRATEGY
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscStrategy" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 전략목표 등록	system.batch.pastYearCopy.insertBscStrategy */
+		INSERT INTO BSC_STRATEGY(YEAR,STRATEGY_ID,STRATEGY_NM,UP_STRATEGY_ID,PERSPECTIVE_ID,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT #{findYear},STRATEGY_ID,STRATEGY_NM,UP_STRATEGY_ID,PERSPECTIVE_ID,SORT_ORDER,SYSDATE,NULL,NULL
+		FROM BSC_STRATEGY
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--전략목표 END-->
+	
+	<!--성과조직 START-->
+	<delete id="deleteBscScDeptMap">
+		/*	전년데이터일괄적용 성과조직도 삭제	system.batch.pastYearCopy.deleteBscScDeptMap */
+		DELETE FROM BSC_SC_DEPT_MAP
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscScDeptMap" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 성과조직도 등록	system.batch.pastYearCopy.insertBscScDeptMap */
+		INSERT INTO BSC_SC_DEPT_MAP(YEAR,SC_DEPT_ID,DW_DEPT_ID,DW_DEPT_X_POS,DW_DEPT_Y_POS,CREATE_DT)
+		SELECT #{findYear},SC_DEPT_ID,DW_DEPT_ID,DW_DEPT_X_POS,DW_DEPT_Y_POS,SYSDATE
+		FROM BSC_SC_DEPT_MAP
+		WHERE YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteBscScDeptMapping">
+		/*	전년데이터일괄적용 성과조직매핑 삭제	system.batch.pastYearCopy.deleteBscScDeptMapping */
+		DELETE FROM BSC_SC_DEPT_MAPPING
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscScDeptMapping" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 성과조직매핑 등록	system.batch.pastYearCopy.insertBscScDeptMapping */
+		INSERT INTO BSC_SC_DEPT_MAPPING(YEAR,SC_DEPT_ID,DEPT_ID,CREATE_DT)
+		SELECT #{findYear},SC_DEPT_ID,DEPT_ID,SYSDATE
+		FROM BSC_SC_DEPT_MAPPING
+		WHERE YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteBscScDept">
+		/*	전년데이터일괄적용 성과조직 삭제	system.batch.pastYearCopy.deleteBscScDept */
+		DELETE FROM BSC_SC_DEPT
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscScDept" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 성과조직 등록	system.batch.pastYearCopy.insertBscScDept */
+		INSERT INTO BSC_SC_DEPT(YEAR,SC_DEPT_ID,SC_DEPT_NM,UP_SC_DEPT_ID,LEVEL_ID,SC_DEPT_GRP_ID,BSC_USER_ID,MANAGER_USER_ID,DEPT_KIND,SC_DEPT_FULL_NM,FULL_DESC_SC_DEPT_NM
+								,FULL_ASC_SC_DEPT_NM,FULL_SC_DEPT_ID,SORT_ORDER,REAL_SORT_ORDER,IS_LEAF,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT #{findYear},SC_DEPT_ID,SC_DEPT_NM,UP_SC_DEPT_ID,LEVEL_ID,SC_DEPT_GRP_ID,BSC_USER_ID,MANAGER_USER_ID,DEPT_KIND,SC_DEPT_FULL_NM,FULL_DESC_SC_DEPT_NM
+				,FULL_ASC_SC_DEPT_NM,FULL_SC_DEPT_ID,SORT_ORDER,REAL_SORT_ORDER,IS_LEAF,SYSDATE,NULL,NULL
+		FROM BSC_SC_DEPT
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--성과조직 END-->
+	
+	<!-- 
+	<delete id="deleteBscMetricDatas" statementType="CALLABLE" parameterType="PastYearCopyVO">
+		/*	지표 전년도 데이터 복사 전 지표 관련 데이터 삭제	system.batch.pastYearCopy.deleteBscMetricDatas	*/
+		{CALL SP_DELETE_BSC_METRIC_DATAS(#{findYear})}
+	</delete>
+	-->
+	
+	<delete id="deleteBscMetricData1" parameterType="PastYearCopyVO">
+		/*	지표 전년도 데이터 복사 전 지표 관련 데이터 삭제	system.batch.pastYearCopy.deleteBscMetricDatas	*/
+		DELETE	FROM	BSC_METRIC_GRP_SECTION
+		WHERE	YEAR = #{findYear}
+	</delete>	
+	
+	<delete id="deleteBscMetricData2" parameterType="PastYearCopyVO">
+		DELETE	FROM	BSC_METRIC
+		WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteBscMetricData3" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRIC_APPROVE
+		WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteBscMetricData4" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRIC_APPROVE_HIS
+		WHERE	YEAR = #{findYear}
+	</delete>	
+	
+	<delete id="deleteBscMetricData5" parameterType="PastYearCopyVO">
+		DELETE	FROM	BSC_METRIC_CLOSE
+		WHERE	YEAR = #{findYear}
+	</delete>	
+	
+	<delete id="deleteBscMetricData6" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRIC_COL
+		WHERE	YEAR = #{findYear}
+	</delete>
+		
+	<delete id="deleteBscMetricData7" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRIC_COMMENT
+		WHERE	YEAR = #{findYear}
+	</delete>
+		
+	<delete id="deleteBscMetricData8" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRIC_GRP
+		WHERE	YEAR = #{findYear}
+	</delete>
+		
+	<delete id="deleteBscMetricData9" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRIC_GRP_COL
+		WHERE	YEAR = #{findYear}
+	</delete>
+		
+	<delete id="deleteBscMetricData10" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRIC_GRP_MON
+		WHERE	YEAR = #{findYear}
+	</delete>
+		
+	<delete id="deleteBscMetricData11" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRIC_GRP_SECTION
+		WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteBscMetricData12" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRIC_MON
+		WHERE	YEAR = #{findYear}
+	</delete>
+		
+	<delete id="deleteBscMetricData13" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRIC_SECTION
+		WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteBscMetricData14" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_METRICSCORE
+		WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteBscMetricData15" parameterType="PastYearCopyVO">	
+		/*	목표	*/
+		DELETE	FROM	BSC_TARGET
+		WHERE	YEAR = #{findYear}
+	</delete>
+		
+	<delete id="deleteBscMetricData16" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_TARGET_HISTORY
+		WHERE	YEAR = #{findYear}
+	
+	</delete>
+	
+	<delete id="deleteBscMetricData17" parameterType="PastYearCopyVO">	
+		/*	실적	*/
+		DELETE	FROM	BSC_ACTUAL
+		WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteBscMetricData18" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_ACTUAL_CLOSE
+		WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteBscMetricData19" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_ACTUAL_COL_HISTORY
+		WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteBscMetricData20" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_ACTUAL_HISTORY
+		WHERE	YEAR = #{findYear}
+	</delete>
+		
+	<delete id="deleteBscMetricData21" parameterType="PastYearCopyVO">	
+		DELETE	FROM	BSC_ACTUAL_IN_TERM
+		WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteBscMetricData22" parameterType="PastYearCopyVO">	
+		/*	실행 계획	*/
+		DELETE	FROM	BSC_INITIATIVE
+		WHERE	YEAR = #{findYear}
+	</delete>	
+	
+	<!--지표POOL START-->
+	<delete id="deleteBscMetricGrpSection">
+		/*	전년데이터일괄적용 지표POOL구간대 삭제	system.batch.pastYearCopy.deleteBscMetricGrpSection */
+		DELETE FROM BSC_METRIC_GRP_SECTION
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricGrpSection" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 지표POOL구간대 등록	system.batch.pastYearCopy.insertBscMetricGrpSection */
+		INSERT INTO BSC_METRIC_GRP_SECTION(,YEAR,METRIC_GRP_ID,EVAL_SECTION_ID,FROM_VALUE,TO_VALUE,CONVERSION_SCORE,CREATE_DT,DELETE_DT)
+		SELECT #{findYear},METRIC_GRP_ID,EVAL_SECTION_ID,FROM_VALUE,TO_VALUE,CONVERSION_SCORE,SYSDATE,NULL
+		FROM BSC_METRIC_GRP_SECTION
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetricGrpCol">
+		/*	전년데이터일괄적용 지표POOL산식항목 삭제	system.batch.pastYearCopy.deleteBscMetricGrpCol */
+		DELETE FROM BSC_METRIC_GRP_COL
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricGrpCol" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 지표POOL산식항목 등록	system.batch.pastYearCopy.insertBscMetricGrpCol */
+		INSERT INTO BSC_METRIC_GRP_COL(YEAR,METRIC_GRP_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,INSERT_GUBUN,UNIT,ITEM_ID,TIME_ROLLUP,CREATE_DT,DELETE_DT)
+		SELECT #{findYear},METRIC_GRP_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,INSERT_GUBUN,UNIT,ITEM_ID,TIME_ROLLUP,SYSDATE,NULL
+		FROM BSC_METRIC_GRP_COL
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetricGrpMon">
+		/*	전년데이터일괄적용 지표POOL실적월 삭제	system.batch.pastYearCopy.deleteBscMetricGrpMon */
+		DELETE FROM BSC_METRIC_GRP_MON
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricGrpMon" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 지표POOL실적월 등록	system.batch.pastYearCopy.insertBscMetricGrpMon */
+		INSERT INTO BSC_METRIC_GRP_MON(YEAR,METRIC_GRP_ID,MON,CREATE_DT,DELETE_DT)
+		SELECT #{findYear},METRIC_GRP_ID,MON,SYSDATE,NULL
+		FROM BSC_METRIC_GRP_MON
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetricGrp">
+		/*	전년데이터일괄적용 지표POOL 삭제	system.batch.pastYearCopy.deleteBscMetricGrp */
+		DELETE FROM BSC_METRIC_GRP
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricGrp" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 지표POOL 등록	system.batch.pastYearCopy.insertBscMetricGrp */
+		INSERT INTO BSC_METRIC_GRP(YEAR,METRIC_GRP_ID,METRIC_GRP_NM,TYPE_ID,PROPERTY_ID,EVAL_CYCLE,UNIT,ACT_CAL_TYPE,SCORE_CAL_TYPE_GUBUN
+									,SCORE_CAL_TYPE_ID,CONTENT,DESCRIPTION,CREATE_DT,MODIFY_DT,DELETE_DT,GUBUN)
+		SELECT #{findYear},METRIC_GRP_ID,METRIC_GRP_NM,TYPE_ID,PROPERTY_ID,EVAL_CYCLE,UNIT,ACT_CAL_TYPE,SCORE_CAL_TYPE_GUBUN
+				,SCORE_CAL_TYPE_ID,CONTENT,DESCRIPTION,SYSDATE,NULL,NULL,GUBUN
+		FROM BSC_METRIC_GRP
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--지표POOL END-->
+	
+	<!--지표 START-->
+	<delete id="deleteBscMetricSection">
+		/*	전년데이터일괄적용 지표구간대 삭제	system.batch.pastYearCopy.deleteBscMetricSection */
+		DELETE FROM BSC_METRIC_SECTION
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricSection" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 지표구간대 등록	system.batch.pastYearCopy.insertBscMetricSection */
+		INSERT INTO BSC_METRIC_SECTION(YEAR,METRIC_ID,EVAL_SECTION_ID,FROM_VALUE,TO_VALUE,CONVERSION_SCORE,CREATE_DT,DELETE_DT)
+		SELECT #{findYear},METRIC_ID,EVAL_SECTION_ID,FROM_VALUE,TO_VALUE,CONVERSION_SCORE,SYSDATE,NULL
+		FROM BSC_METRIC_SECTION
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetricCol">
+		/*	전년데이터일괄적용 지표산식항목 삭제	system.batch.pastYearCopy.deleteBscMetricCol */
+		DELETE FROM BSC_METRIC_COL
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricCol" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 지표산식항목 등록	system.batch.pastYearCopy.insertBscMetricCol */
+		INSERT INTO BSC_METRIC_COL(YEAR,METRIC_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,INSERT_GUBUN,UNIT,ITEM_ID,TIME_ROLLUP,CAL_METRIC_ID,CAL_GUBUN,CREATE_DT,DELETE_DT)
+		SELECT #{findYear},METRIC_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,INSERT_GUBUN,UNIT,ITEM_ID,TIME_ROLLUP,CAL_METRIC_ID,CAL_GUBUN,SYSDATE,NULL
+		FROM BSC_METRIC_COL
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetricMon">
+		/*	전년데이터일괄적용 지표실적월 삭제	system.batch.pastYearCopy.deleteBscMetricMon */
+		DELETE FROM BSC_METRIC_MON
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetricMon" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 지표실적월 등록	system.batch.pastYearCopy.insertBscMetricMon */
+		INSERT INTO BSC_METRIC_MON(YEAR,METRIC_ID,MON,CREATE_DT,DELETE_DT)
+		SELECT #{findYear},METRIC_ID,MON,SYSDATE,NULL
+		FROM BSC_METRIC_MON
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteBscMetric">
+		/*	전년데이터일괄적용 지표 삭제	system.batch.pastYearCopy.deleteBscMetric */
+		DELETE FROM BSC_METRIC
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertBscMetric" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 지표 등록	system.batch.pastYearCopy.insertBscMetric */
+		INSERT INTO BSC_METRIC(YEAR,METRIC_ID,METRIC_NM,METRIC_GRP_ID,SC_DEPT_ID,TYPE_ID,STRATEGY_ID,GUBUN,UP_METRIC_ID,PROPERTY_ID,TAM_SHARE_YN,EVAL_CYCLE,DEPT_ROLLUP,ACT_CAL_TYPE,WEIGHT
+								,SCORE_CAL_TYPE_GUBUN,SCORE_CAL_TYPE_ID,UNIT,SORT_ORDER,ACT_INSERT_USER_ID,ACT_APPROVE_USER_ID,CONTENT,DESCRIPTION,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT #{findYear},METRIC_ID,METRIC_NM,METRIC_GRP_ID,SC_DEPT_ID,TYPE_ID,STRATEGY_ID,GUBUN,UP_METRIC_ID,PROPERTY_ID,TAM_SHARE_YN,EVAL_CYCLE,DEPT_ROLLUP,ACT_CAL_TYPE,WEIGHT
+				,SCORE_CAL_TYPE_GUBUN,SCORE_CAL_TYPE_ID,UNIT,SORT_ORDER,ACT_INSERT_USER_ID,ACT_APPROVE_USER_ID,CONTENT,DESCRIPTION,SYSDATE,NULL,NULL
+		FROM BSC_METRIC
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--지표 END-->
+	
+	<!--경영평가범주 START-->
+	<delete id="deleteGovEvalCatGrp">
+		/*	전년데이터일괄적용 경영평가범주 삭제	system.batch.pastYearCopy.deleteGovEvalCatGrp */
+		DELETE FROM GOV_EVAL_CAT_GRP
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGovEvalCatGrp" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 경영평가범주 등록	system.batch.pastYearCopy.insertGovEvalCatGrp */
+		INSERT INTO GOV_EVAL_CAT_GRP(YEAR,EVAL_CAT_GRP_ID,EVAL_CAT_GRP_NM,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT #{findYear},EVAL_CAT_GRP_ID,EVAL_CAT_GRP_NM,SORT_ORDER,SYSDATE,NULL,NULL
+		FROM GOV_EVAL_CAT_GRP
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--경영평가범주 END-->
+	
+	<!--경영평가부문 START-->
+	<delete id="deleteGovEvalCat">
+		/*	전년데이터일괄적용 경영평가부문 삭제	system.batch.pastYearCopy.deleteGovEvalCat */
+		DELETE FROM GOV_EVAL_CAT
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGovEvalCat" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 경영평가부문 등록	system.batch.pastYearCopy.insertGovEvalCat */
+		INSERT INTO GOV_EVAL_CAT(YEAR,EVAL_CAT_GRP_ID,EVAL_CAT_ID,EVAL_CAT_NM,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT #{findYear},EVAL_CAT_GRP_ID,EVAL_CAT_ID,EVAL_CAT_NM,SORT_ORDER,SYSDATE,NULL,NULL
+		FROM GOV_EVAL_CAT
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--경영평가부문 END-->
+	
+	<!--경영평가지표 START-->
+	<delete id="deleteGovMetricEvalItem">
+		/*	전년데이터일괄적용 경영평가지표착안사항 삭제	system.batch.pastYearCopy.deleteGovMetricEvalItem */
+		DELETE FROM GOV_METRIC_EVAL_ITEM
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGovMetricEvalItem" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 경영평가지표착안사항 등록	system.batch.pastYearCopy.insertGovMetricEvalItem */
+		INSERT INTO GOV_METRIC_EVAL_ITEM(YEAR,GOV_METRIC_ID,DETAIL_EVAL_ID,DETAIL_EVAL_DESC,EVAL_ITEM_DESC,CREATE_DT)
+		SELECT #{findYear},GOV_METRIC_ID,DETAIL_EVAL_ID,DETAIL_EVAL_DESC,EVAL_ITEM_DESC,SYSDATE
+		FROM GOV_METRIC_EVAL_ITEM
+		WHERE YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteGovCalTypeCol">
+		/*	전년데이터일괄적용 경영평가지표산식항목 삭제	system.batch.pastYearCopy.deleteGovCalTypeCol */
+		DELETE FROM GOV_CAL_TYPE_COL
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGovCalTypeCol" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 경영평가지표산식항목 등록	system.batch.pastYearCopy.insertGovCalTypeCol */
+		INSERT INTO GOV_CAL_TYPE_COL(YEAR,GOV_METRIC_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,UNIT_ID,CREATE_DT,MODIFY_DT,DELETE_DT)
+		SELECT #{findYear},GOV_METRIC_ID,CAL_TYPE_COL,CAL_TYPE_COL_NM,UNIT_ID,SYSDATE,NULL,NULL
+		FROM GOV_CAL_TYPE_COL
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteGovMetric">
+		/*	전년데이터일괄적용 경영평가지표 삭제	system.batch.pastYearCopy.deleteGovMetric */
+		DELETE FROM GOV_METRIC
+		WHERE YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGovMetric" parameterType="PastYearCopyVO">
+		/*	전년데이터일괄적용 경영평가지표 등록	system.batch.pastYearCopy.insertGovMetric */
+		INSERT INTO GOV_METRIC(YEAR,GOV_METRIC_ID,GOV_METRIC_NM,EVAL_CAT_GRP_ID,EVAL_CAT_ID,EVAL_METHOD,TYPE_ID,UNIT_ID,SC_DEPT_ID,UP_GOV_METRIC_ID
+								,WEIGHT,CONTENT,SORT_ORDER,CREATE_DT,MODIFY_DT,DELETE_DT,ACT_CAL_TYPE,MAX_TARGET_VALUE,MIN_TARGET_VALUE,STAD_VALUE,DEVIATION_VALUE,SCORE_CAL_TYPE_ID)
+		SELECT #{findYear},GOV_METRIC_ID,GOV_METRIC_NM,EVAL_CAT_GRP_ID,EVAL_CAT_ID,EVAL_METHOD,TYPE_ID,UNIT_ID,SC_DEPT_ID,UP_GOV_METRIC_ID
+				,WEIGHT,CONTENT,SORT_ORDER,SYSDATE,NULL,NULL,ACT_CAL_TYPE,MAX_TARGET_VALUE,MIN_TARGET_VALUE,STAD_VALUE,DEVIATION_VALUE,SCORE_CAL_TYPE_ID
+		FROM GOV_METRIC
+		WHERE YEAR = #{pastYear}
+		AND DELETE_DT IS NULL
+	</insert>
+	<!--경영평가지표 END-->
+
+<!-- 
+	<insert id="copySystemDataFromLastYear"	statementType="CALLABLE"	parameterType="PastYearCopyVO">
+		/*	전년도 시스템 데이터 복사	system.batch.pastYearCopy.copySystemDataFromLastYear	*/
+			/*	조직	*/
+			DELETE	FROM	BSC_SC_DEPT
+			WHERE	YEAR = #{findYear};
+			
+			DELETE	FROM	BSC_SC_DEPT_MAPPING
+			WHERE	YEAR = #{findYear};
+			
+			DELETE	FROM	COM_DEPTINFO
+			WHERE	YEAR = #{findYear};
+			
+			INSERT	INTO	BSC_SC_DEPT	(
+				YEAR,			SC_DEPT_ID,		SC_DEPT_NM,			UP_SC_DEPT_ID,
+				LEVEL_ID,	SC_DEPT_GRP_ID,	BSC_USER_ID,	MANAGER_USER_ID,	DEPT_KIND,
+				SC_DEPT_FULL_NM,	FULL_DESC_SC_DEPT_NM,	FULL_ASC_SC_DEPT_NM,	FULL_SC_DEPT_ID,
+				SORT_ORDER,	REAL_SORT_ORDER,	IS_LEAF,	CREATE_DT,			MODIFY_DT,
+				DELETE_DT
+			)
+			SELECT	#{findYear},		SC_DEPT_ID,	SC_DEPT_NM,			UP_SC_DEPT_ID,
+					LEVEL_ID,	SC_DEPT_GRP_ID,	BSC_USER_ID,	MANAGER_USER_ID,	DEPT_KIND,
+					SC_DEPT_FULL_NM,	FULL_DESC_SC_DEPT_NM,	FULL_ASC_SC_DEPT_NM,	FULL_SC_DEPT_ID,
+					SORT_ORDER,	REAL_SORT_ORDER,	IS_LEAF,	SYSDATE,		NULL,
+					NULL
+			FROM	BSC_SC_DEPT
+			WHERE	YEAR = #{pastYear};
+			
+			INSERT	INTO	BSC_SC_DEPT_MAPPING	(
+				YEAR,	SC_DEPT_ID,	DEPT_ID,
+				CREATE_DT
+			)
+			SELECT	#{findYear},	SC_DEPT_ID,	DEPT_ID,
+					SYSDATE
+			FROM	BSC_SC_DEPT_MAPPING
+			WHERE	YEAR = #{pastYear};
+			
+			INSERT	INTO	COM_DEPTINFO	(
+				YEAR,	DEPT_ID,	DEPT_NM,
+				DEPT_F_NM,	UP_DEPT_ID,	UP_DEPT_NM,	SORT_ORDER,
+				DEPT_LEVEL,	BONSA_YN,	CHIEF_ID,	CHIEF_NM,
+				BEING_YN,	DEPT_LEVEL_NM,	CREATE_DT,	MODIFY_DT,
+				REAL_SORT_ORDER,	IS_LEAF,	FULL_DEPT_ID
+			)
+			SELECT	#{findYear},	DEPT_ID,	DEPT_NM,
+				DEPT_F_NM,	UP_DEPT_ID,	UP_DEPT_NM,	SORT_ORDER,
+				DEPT_LEVEL,	BONSA_YN,	CHIEF_ID,	CHIEF_NM,
+				BEING_YN,	DEPT_LEVEL_NM,	SYSDATE,	NULL,
+				REAL_SORT_ORDER,	IS_LEAF,	FULL_DEPT_ID
+			FROM	COM_DEPTINFO
+			WHERE	YEAR = #{pastYear};
+		
+			/*	공통코드 */
+			DELETE	FROM COM_CODE
+			WHERE	CODE_GRP_ID	IN	(
+						SELECT	CODE_GRP_ID	FROM	COM_CODE_GRP	WHERE	YEAR_YN =	'Y'
+					)
+				AND	YEAR = #{findYear};
+			
+			DELETE	FROM COM_CODE_NM
+			WHERE	CODE_GRP_ID	IN	(
+						SELECT	CODE_GRP_ID	FROM	COM_CODE_GRP	WHERE	YEAR_YN =	'Y'
+					)
+				AND	YEAR = #{findYear};
+			
+			INSERT	INTO	COM_CODE	(
+				CODE_GRP_ID,	CODE_ID,	CODE_NM,	YEAR,
+				SORT_ORDER,	CONTENT,		ETC1,		ETC2,		CREATE_DT,
+				DELETE_DT
+			)
+			SELECT
+				A.CODE_GRP_ID,	A.CODE_ID,	A.CODE_NM,	#{findYear},
+				A.SORT_ORDER,	A.CONTENT,		A.ETC1,		A.ETC2,		SYSDATE,
+				NULL
+			FROM	COM_CODE A
+					JOIN	COM_CODE_GRP B
+						ON	A.CODE_GRP_ID = B.CODE_GRP_ID
+						AND	B.DELETE_DT IS NULL
+						AND	B.YEAR_YN = 'Y'
+			WHERE	A.YEAR = #{pastYear};
+			
+			INSERT	INTO	COM_CODE_NM	(
+				LANG,	CODE_GRP_ID,	CODE_ID,	YEAR,
+				CODE_NM,	CREATE_DT
+			)
+			SELECT	A.LANG,	A.CODE_GRP_ID,	A.CODE_ID,	#{findYear},
+					A.CODE_NM,	SYSDATE
+			FROM	COM_CODE_NM A
+					JOIN	COM_CODE_GRP B
+						ON	A.CODE_GRP_ID = B.CODE_GRP_ID
+						AND	B.DELETE_DT IS NULL
+						AND	B.YEAR_YN = 'Y'
+			WHERE	A.YEAR = #{pastYear};
+			
+			/*	공통코드 - 기준년도 추가 */
+			DELETE	FROM COM_CODE
+			WHERE	CODE_GRP_ID = '017'
+				AND	CODE_ID = #{findYear};
+			
+			DELETE	FROM COM_CODE_NM
+			WHERE	CODE_GRP_ID = '017'
+				AND	CODE_ID = #{findYear};
+			
+			INSERT	INTO	COM_CODE	(
+				CODE_GRP_ID,	CODE_ID,	CODE_NM,	YEAR,
+				SORT_ORDER,	CONTENT,		ETC1,		ETC2,		CREATE_DT,
+				DELETE_DT
+			)
+			SELECT
+				CODE_GRP_ID,	#{findYear},	#{findYear},	YEAR,
+				SORT_ORDER+1,	CONTENT,		ETC1,			ETC2,			CREATE_DT,
+				DELETE_DT
+			FROM	COM_CODE A
+			WHERE	CODE_GRP_ID = '017'
+				AND	CODE_ID = #{pastYear};
+			
+			INSERT	INTO	COM_CODE_NM	(
+				LANG,	CODE_GRP_ID,	CODE_ID,	YEAR,
+				CODE_NM,	CREATE_DT
+			)
+			SELECT	A.LANG,	A.CODE_GRP_ID,	#{findYear},	A.YEAR,
+					REPLACE(A.CODE_NM, #{pastYear}, #{findYear}),	SYSDATE
+			FROM	COM_CODE_NM A
+			WHERE	A.CODE_GRP_ID = '017'
+				AND	A.CODE_ID = #{pastYear};
+			
+			/*	신호등	*/
+			DELETE	FROM	COM_SIGNAL_STATUS
+			WHERE	YEAR = #{findYear};
+			
+			INSERT	INTO	COM_SIGNAL_STATUS	(
+				YEAR,	STATUS_ID,	FROM_VALUE,	TO_VALUE,
+				COLOR,		CREATE_DT
+			)
+			SELECT
+				#{findYear},	STATUS_ID,	FROM_VALUE,	TO_VALUE,
+				COLOR,		SYSDATE
+			FROM	COM_SIGNAL_STATUS
+			WHERE	YEAR = #{pastYear};
+			
+			/*	평가등급 - 배분표	*/
+			DELETE	FROM	BSC_EVAL_GRADE_CNT
+			WHERE	YEAR = #{findYear};
+			
+			INSERT	INTO	BSC_EVAL_GRADE_CNT	(
+				YEAR,		EVAL_METHOD_ID,	GRADE_ID,	ITEM_CNT,
+				ITEM_DISTRI_CNT,	CREATE_DT,	MODIFY_DT,		DELETE_DT
+			)
+			SELECT	#{findYear},	EVAL_METHOD_ID,	GRADE_ID,	ITEM_CNT,
+					ITEM_DISTRI_CNT,	SYSDATE,		NULL,			NULL
+			FROM	BSC_EVAL_GRADE_CNT
+			WHERE	YEAR = #{pastYear}
+				AND	DELETE_DT IS NULL;
+		
+			/*	평가등급 - 등급	*/
+			DELETE	FROM	BSC_EVAL_GRADE
+			WHERE	YEAR = #{findYear};
+		
+			INSERT	INTO	BSC_EVAL_GRADE	(
+				YEAR,			EVAL_METHOD_ID,	GRADE_ID,	GRADE_NM,
+				GRADE_RATE,	GRADE_SCORE,	SORT_ORDER,		CREATE_DT,	MODIFY_DT,
+				DELETE_DT
+			)
+			SELECT	#{findYear},	EVAL_METHOD_ID,	GRADE_ID,	GRADE_NM,
+					GRADE_RATE,	GRADE_SCORE,	SORT_ORDER,		SYSDATE,	NULL,
+					NULL
+			FROM	BSC_EVAL_GRADE
+			WHERE	YEAR = #{pastYear}
+				AND	DELETE_DT IS NULL;
+		
+			/*	평가등급 - 평가방법	*/
+			DELETE	FROM	BSC_EVAL_METHOD 
+			WHERE	YEAR = #{findYear};
+			
+			INSERT	INTO	BSC_EVAL_METHOD	(
+				YEAR,		EVAL_METHOD_ID,	EVAL_METHOD_NM,	EVAL_METHOD_GUBUN,
+				DESCRIPTION,	SORT_ORDER,	CREATE_DT,		MODIFY_DT,		DELETE_DT
+			)
+			SELECT	#{findYear},	EVAL_METHOD_ID,	EVAL_METHOD_NM,	EVAL_METHOD_GUBUN,
+					DESCRIPTION,	SORT_ORDER,		SYSDATE,		NULL,			NULL
+			FROM	BSC_EVAL_METHOD
+			WHERE	YEAR = #{pastYear}
+				AND	DELETE_DT IS NULL;
+			
+			/*	시스템연계항목	*/
+			DELETE	FROM BSC_SYSTEM_ITEM
+			WHERE	YEAR = #{findYear};
+			
+			INSERT	INTO	BSC_SYSTEM_ITEM	(
+				YEAR,		ITEM_ID,		ITEM_NM,	ITEM_LOAD_GBN_ID,
+				EXEC_YN,	CONTENT,	CHARGE_USER_ID,	CREATE_DT,	MODIFY_DT,
+				DELETE_DT,	ATCH_FILE_ID
+			)
+			SELECT	#{findYear},	ITEM_ID,		ITEM_NM,	ITEM_LOAD_GBN_ID,
+					EXEC_YN,	CONTENT,		CHARGE_USER_ID,	SYSDATE,	NULL,
+					NULL,		ATCH_FILE_ID
+			FROM	BSC_SYSTEM_ITEM
+			WHERE	YEAR = #{pastYear}
+				AND	DELETE_DT IS NULL;
+	</insert>
+	-->
+	
+	<delete id="deleteScDeptFromLastYear" parameterType="PastYearCopyVO">
+		/*	전년도 시스템 데이터 복사	system.batch.pastYearCopy.copySystemDataFromLastYear	*/
+			/*	조직	*/
+			DELETE	FROM	BSC_SC_DEPT
+			WHERE	YEAR = #{findYear}
+	</delete>	
+	
+	<delete id="deleteScDeptMapFromLastYear" parameterType="PastYearCopyVO">	
+			DELETE	FROM	BSC_SC_DEPT_MAPPING
+			WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteDeptFromLastYear" parameterType="PastYearCopyVO">		
+			DELETE	FROM	COM_DEPTINFO
+			WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertScDeptFromLastYear" parameterType="PastYearCopyVO">			
+			INSERT	INTO	BSC_SC_DEPT	(
+				YEAR,			SC_DEPT_ID,		SC_DEPT_NM,			UP_SC_DEPT_ID,
+				LEVEL_ID,	SC_DEPT_GRP_ID,	BSC_USER_ID,	MANAGER_USER_ID,	DEPT_KIND,
+				SC_DEPT_FULL_NM,	FULL_DESC_SC_DEPT_NM,	FULL_ASC_SC_DEPT_NM,	FULL_SC_DEPT_ID,
+				SORT_ORDER,	REAL_SORT_ORDER,	IS_LEAF,	CREATE_DT,			MODIFY_DT,
+				DELETE_DT
+			)
+			SELECT	#{findYear},		SC_DEPT_ID,	SC_DEPT_NM,			UP_SC_DEPT_ID,
+					LEVEL_ID,	SC_DEPT_GRP_ID,	BSC_USER_ID,	MANAGER_USER_ID,	DEPT_KIND,
+					SC_DEPT_FULL_NM,	FULL_DESC_SC_DEPT_NM,	FULL_ASC_SC_DEPT_NM,	FULL_SC_DEPT_ID,
+					SORT_ORDER,	REAL_SORT_ORDER,	IS_LEAF,	SYSDATE,		NULL,
+					NULL
+			FROM	BSC_SC_DEPT
+			WHERE	YEAR = #{pastYear}
+	</insert>
+	
+	<insert id="insertScDeptMapFromLastYear" parameterType="PastYearCopyVO">		
+			INSERT	INTO	BSC_SC_DEPT_MAPPING	(
+				YEAR,	SC_DEPT_ID,	DEPT_ID,
+				CREATE_DT
+			)
+			SELECT	#{findYear},	SC_DEPT_ID,	DEPT_ID,
+					SYSDATE
+			FROM	BSC_SC_DEPT_MAPPING
+			WHERE	YEAR = #{pastYear}
+	</insert>
+	
+	<insert id="insertDeptFromLastYear" parameterType="PastYearCopyVO">				
+			INSERT	INTO	COM_DEPTINFO	(
+				YEAR,	DEPT_ID,	DEPT_NM,
+				DEPT_F_NM,	UP_DEPT_ID,	UP_DEPT_NM,	SORT_ORDER,
+				DEPT_LEVEL,	BONSA_YN,	CHIEF_ID,	CHIEF_NM,
+				BEING_YN,	DEPT_LEVEL_NM,	CREATE_DT,	MODIFY_DT,
+				REAL_SORT_ORDER,	IS_LEAF,	FULL_DEPT_ID
+			)
+			SELECT	#{findYear},	DEPT_ID,	DEPT_NM,
+				DEPT_F_NM,	UP_DEPT_ID,	UP_DEPT_NM,	SORT_ORDER,
+				DEPT_LEVEL,	BONSA_YN,	CHIEF_ID,	CHIEF_NM,
+				BEING_YN,	DEPT_LEVEL_NM,	SYSDATE,	NULL,
+				REAL_SORT_ORDER,	IS_LEAF,	FULL_DEPT_ID
+			FROM	COM_DEPTINFO
+			WHERE	YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteCodeFromLastYear" parameterType="PastYearCopyVO">			
+			/*	공통코드 */
+			DELETE	FROM COM_CODE
+			WHERE	CODE_GRP_ID	IN	(
+						SELECT	CODE_GRP_ID	FROM	COM_CODE_GRP	WHERE	YEAR_YN =	'Y'
+					)
+				AND	YEAR = #{findYear}
+	</delete>
+	
+	<delete id="deleteCodeNmFromLastYear" parameterType="PastYearCopyVO">			
+			DELETE	FROM COM_CODE_NM
+			WHERE	CODE_GRP_ID	IN	(
+						SELECT	CODE_GRP_ID	FROM	COM_CODE_GRP	WHERE	YEAR_YN =	'Y'
+					)
+				AND	YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertCodeFromLastYear" parameterType="PastYearCopyVO">					
+			INSERT	INTO	COM_CODE	(
+				CODE_GRP_ID,	CODE_ID,	CODE_NM,	YEAR,
+				SORT_ORDER,	CONTENT,		ETC1,		ETC2,		CREATE_DT,
+				DELETE_DT
+			)
+			SELECT
+				A.CODE_GRP_ID,	A.CODE_ID,	A.CODE_NM,	#{findYear},
+				A.SORT_ORDER,	A.CONTENT,		A.ETC1,		A.ETC2,		SYSDATE,
+				NULL
+			FROM	COM_CODE A
+					JOIN	COM_CODE_GRP B
+						ON	A.CODE_GRP_ID = B.CODE_GRP_ID
+						AND	B.DELETE_DT IS NULL
+						AND	B.YEAR_YN = 'Y'
+			WHERE	A.YEAR = #{pastYear}
+	</insert>
+	
+	<insert id="insertCodeNmFromLastYear" parameterType="PastYearCopyVO">					
+			INSERT	INTO	COM_CODE_NM	(
+				LANG,	CODE_GRP_ID,	CODE_ID,	YEAR,
+				CODE_NM,	CREATE_DT
+			)
+			SELECT	A.LANG,	A.CODE_GRP_ID,	A.CODE_ID,	#{findYear},
+					A.CODE_NM,	SYSDATE
+			FROM	COM_CODE_NM A
+					JOIN	COM_CODE_GRP B
+						ON	A.CODE_GRP_ID = B.CODE_GRP_ID
+						AND	B.DELETE_DT IS NULL
+						AND	B.YEAR_YN = 'Y'
+			WHERE	A.YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteCodeYearFromLastYear" parameterType="PastYearCopyVO">					
+			/*	공통코드 - 기준년도 추가 */
+			DELETE	FROM COM_CODE
+			WHERE	CODE_GRP_ID = '017'
+				AND	CODE_ID = #{findYear}
+	</delete>
+			
+	<delete id="deleteCodeNmYearFromLastYear" parameterType="PastYearCopyVO">					
+			DELETE	FROM COM_CODE_NM
+			WHERE	CODE_GRP_ID = '017'
+				AND	CODE_ID = #{findYear}
+	</delete>
+	
+	<insert id="insertCodeYearFromLastYear" parameterType="PastYearCopyVO">					
+			INSERT	INTO	COM_CODE	(
+				CODE_GRP_ID,	CODE_ID,	CODE_NM,	YEAR,
+				SORT_ORDER,	CONTENT,		ETC1,		ETC2,		CREATE_DT,
+				DELETE_DT
+			)
+			SELECT
+				CODE_GRP_ID,	#{findYear},	#{findYear},	YEAR,
+				SORT_ORDER+1,	CONTENT,		ETC1,			ETC2,			CREATE_DT,
+				DELETE_DT
+			FROM	COM_CODE A
+			WHERE	CODE_GRP_ID = '017'
+				AND	CODE_ID = #{pastYear}
+	</insert>	
+	
+	<insert id="insertCodeNmYearFromLastYear" parameterType="PastYearCopyVO">				
+			INSERT	INTO	COM_CODE_NM	(
+				LANG,	CODE_GRP_ID,	CODE_ID,	YEAR,
+				CODE_NM,	CREATE_DT
+			)
+			SELECT	A.LANG,	A.CODE_GRP_ID,	#{findYear},	A.YEAR,
+					REPLACE(A.CODE_NM, #{pastYear}, #{findYear}),	SYSDATE
+			FROM	COM_CODE_NM A
+			WHERE	A.CODE_GRP_ID = '017'
+				AND	A.CODE_ID = #{pastYear}
+	</insert>
+	
+	<delete id="deleteSignalFromLastYear" parameterType="PastYearCopyVO">					
+			/*	신호등	*/
+			DELETE	FROM	COM_SIGNAL_STATUS
+			WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertSignalFromLastYear" parameterType="PastYearCopyVO">					
+			INSERT	INTO	COM_SIGNAL_STATUS	(
+				YEAR,	STATUS_ID,	FROM_VALUE,	TO_VALUE,
+				COLOR,		CREATE_DT
+			)
+			SELECT
+				#{findYear},	STATUS_ID,	FROM_VALUE,	TO_VALUE,
+				COLOR,		SYSDATE
+			FROM	COM_SIGNAL_STATUS
+			WHERE	YEAR = #{pastYear}
+	</insert>
+	
+	<delete id="deleteGradeCntFromLastYear" parameterType="PastYearCopyVO">					
+			/*	평가등급 - 배분표	*/
+			DELETE	FROM	BSC_EVAL_GRADE_CNT
+			WHERE	YEAR = #{findYear}
+	</delete>
+			
+	<insert id="insertGradeCntFromLastYear" parameterType="PastYearCopyVO">					
+			INSERT	INTO	BSC_EVAL_GRADE_CNT	(
+				YEAR,		EVAL_METHOD_ID,	GRADE_ID,	ITEM_CNT,
+				ITEM_DISTRI_CNT,	CREATE_DT,	MODIFY_DT,		DELETE_DT
+			)
+			SELECT	#{findYear},	EVAL_METHOD_ID,	GRADE_ID,	ITEM_CNT,
+					ITEM_DISTRI_CNT,	SYSDATE,		NULL,			NULL
+			FROM	BSC_EVAL_GRADE_CNT
+			WHERE	YEAR = #{pastYear}
+				AND	DELETE_DT IS NULL
+	</insert>
+		
+	<delete id="deleteGradeFromLastYear" parameterType="PastYearCopyVO">				
+			/*	평가등급 - 등급	*/
+			DELETE	FROM	BSC_EVAL_GRADE
+			WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertGradeFromLastYear" parameterType="PastYearCopyVO">				
+			INSERT	INTO	BSC_EVAL_GRADE	(
+				YEAR,			EVAL_METHOD_ID,	GRADE_ID,	GRADE_NM,
+				GRADE_RATE,	GRADE_SCORE,	SORT_ORDER,		CREATE_DT,	MODIFY_DT,
+				DELETE_DT
+			)
+			SELECT	#{findYear},	EVAL_METHOD_ID,	GRADE_ID,	GRADE_NM,
+					GRADE_RATE,	GRADE_SCORE,	SORT_ORDER,		SYSDATE,	NULL,
+					NULL
+			FROM	BSC_EVAL_GRADE
+			WHERE	YEAR = #{pastYear}
+				AND	DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteMethodFromLastYear" parameterType="PastYearCopyVO">				
+			/*	평가등급 - 평가방법	*/
+			DELETE	FROM	BSC_EVAL_METHOD 
+			WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertMethodFromLastYear" parameterType="PastYearCopyVO">			
+			INSERT	INTO	BSC_EVAL_METHOD	(
+				YEAR,		EVAL_METHOD_ID,	EVAL_METHOD_NM,	EVAL_METHOD_GUBUN,
+				DESCRIPTION,	SORT_ORDER,	CREATE_DT,		MODIFY_DT,		DELETE_DT
+			)
+			SELECT	#{findYear},	EVAL_METHOD_ID,	EVAL_METHOD_NM,	EVAL_METHOD_GUBUN,
+					DESCRIPTION,	SORT_ORDER,		SYSDATE,		NULL,			NULL
+			FROM	BSC_EVAL_METHOD
+			WHERE	YEAR = #{pastYear}
+				AND	DELETE_DT IS NULL
+	</insert>
+	
+	<delete id="deleteSystemItemFromLastYear" parameterType="PastYearCopyVO">					
+			/*	시스템연계항목	*/
+			DELETE	FROM BSC_SYSTEM_ITEM
+			WHERE	YEAR = #{findYear}
+	</delete>
+	
+	<insert id="insertSystemItemFromLastYear" parameterType="PastYearCopyVO">					
+			INSERT	INTO	BSC_SYSTEM_ITEM	(
+				YEAR,		ITEM_ID,		ITEM_NM,	ITEM_LOAD_GBN_ID,
+				EXEC_YN,	CONTENT,	CHARGE_USER_ID,	CREATE_DT,	MODIFY_DT,
+				DELETE_DT,	ATCH_FILE_ID
+			)
+			SELECT	#{findYear},	ITEM_ID,		ITEM_NM,	ITEM_LOAD_GBN_ID,
+					EXEC_YN,	CONTENT,		CHARGE_USER_ID,	SYSDATE,	NULL,
+					NULL,		ATCH_FILE_ID
+			FROM	BSC_SYSTEM_ITEM
+			WHERE	YEAR = #{pastYear}
+				AND	DELETE_DT IS NULL
+	</insert>
+	
+</mapper>

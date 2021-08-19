@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.system.comp.compDeptMng">
+	<select id="selectList" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	성과조직 조회	system.system.comp.compDeptMng.selectList */
+		SELECT
+				D.SC_DEPT_ID,		D.SC_DEPT_FULL_NM	AS SC_DEPT_NM,	D.SC_DEPT_NM	AS ORG_SC_DEPT_NM,	D.SC_DEPT_FULL_NM,
+				D.UP_SC_DEPT_ID,	D2.SC_DEPT_NM	AS UP_SC_DEPT_NM,
+				D.SC_DEPT_GRP_ID,	NVL(C2.CODE_NM, C.CODE_NM)	AS SC_DEPT_GRP_NM,
+				D.BSC_USER_ID,	U.USER_NM	AS BSC_USER_NM,	D.MANAGER_USER_ID,	U2.USER_NM	AS MANAGER_USER_NM,
+				D.YEAR,			D.SORT_ORDER,	D.DEPT_KIND, D.REAL_SORT_ORDER,
+				CASE	WHEN	D.DELETE_DT IS NULL
+						THEN	'Y'
+						ELSE	'N'
+				END	AS USE_YN,
+				(SELECT	COUNT(1)	FROM	BSC_METRIC
+					WHERE YEAR = D.YEAR	AND	SC_DEPT_ID = D.SC_DEPT_ID	AND	DELETE_DT IS NULL)	AS METRIC_CNT
+		FROM	(
+			SELECT
+					YEAR,		SC_DEPT_ID,		UP_SC_DEPT_ID,
+					SC_DEPT_NM,		SC_DEPT_FULL_NM,
+					SC_DEPT_GRP_ID,	DEPT_KIND,	BSC_USER_ID,	MANAGER_USER_ID,
+					SORT_ORDER,		DELETE_DT, REAL_SORT_ORDER
+			FROM	BSC_SC_DEPT
+			WHERE	YEAR = #{findYear}
+				<!--
+				AND	UP_SC_DEPT_ID = #{findScDeptId}
+				-->
+				AND	FULL_SC_DEPT_ID LIKE '%'||#{findScDeptId}||'%'
+				<if test='findUseYn == null or findUseYn == "Y"'>
+					AND	DELETE_DT IS NULL
+				</if>
+				<if test='findUseYn != null and findUseYn == "N"'>
+					AND	DELETE_DT IS NOT NULL
+				</if>
+			UNION
+			SELECT
+					YEAR,		SC_DEPT_ID,		UP_SC_DEPT_ID,
+					SC_DEPT_NM,		SC_DEPT_FULL_NM,
+					SC_DEPT_GRP_ID,	DEPT_KIND,	BSC_USER_ID,	MANAGER_USER_ID,
+					SORT_ORDER,		DELETE_DT, REAL_SORT_ORDER
+			FROM	BSC_SC_DEPT
+			WHERE	YEAR = #{findYear}
+				AND	SC_DEPT_ID = #{findScDeptId}
+				<if test='findUseYn == null or findUseYn == "Y"'>
+					AND	DELETE_DT IS NULL
+				</if>
+				<if test='findUseYn != null and findUseYn == "N"'>
+					AND	DELETE_DT IS NOT NULL
+				</if>
+		) D
+		LEFT JOIN	BSC_SC_DEPT D2
+			ON	D.YEAR = D2.YEAR
+			AND	D.UP_SC_DEPT_ID = D2.SC_DEPT_ID
+		LEFT JOIN	COM_CODE C
+			ON	D.YEAR = C.YEAR
+			AND	D.SC_DEPT_GRP_ID = C.CODE_ID
+			AND	C.CODE_GRP_ID = '003'
+		LEFT JOIN	COM_CODE_NM C2
+			ON	C.YEAR = C2.YEAR
+			AND	C.CODE_GRP_ID = C2.CODE_GRP_ID
+			AND	C.CODE_ID = C2.CODE_ID
+			AND	C2.LANG = #{lang}
+		LEFT JOIN	V_ROLE_USER U
+			ON	D.BSC_USER_ID = U.USER_ID
+			AND	U.HIDDEN_YN = 'N'
+		LEFT JOIN	V_ROLE_USER U2
+			ON	D.MANAGER_USER_ID = U2.USER_ID
+			AND	U2.HIDDEN_YN = 'N'
+		ORDER BY	D.REAL_SORT_ORDER NULLS LAST
+	</select>
+
+	<select id="selectExcelList" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	성과조직 조회	system.system.comp.compDeptMng.selectExcelList */
+		SELECT	D.SC_DEPT_ID,		D.SC_DEPT_NM,	D.UP_SC_DEPT_ID,
+				D.MANAGER_USER_ID,	D.BSC_USER_ID,
+				CASE	WHEN	D.DELETE_DT IS NULL
+						THEN	'Y'
+						ELSE	'N'
+				END	AS USE_YN,
+				D.SORT_ORDER
+		FROM	BSC_SC_DEPT D
+		WHERE	D.YEAR = #{findYear}
+		 ORDER BY	D.REAL_SORT_ORDER NULLS LAST
+	</select>
+	
+	<delete id="deleteScDeptAll" parameterType="scDeptVO">
+		/*	성과조직 데이터 전체 삭제	system.system.comp.compDeptMng.deleteScDeptAll 	*/
+		DELETE	FROM	BSC_SC_DEPT
+		WHERE	YEAR = #{year}
+	</delete>
+
+	<select id="selectSubScDeptCount" parameterType="scDeptVO" resultType="int">
+		/*	하위 성과조직수 조회	system.system.comp.compDeptMng.selectSubScDeptCount */
+		SELECT	COUNT(1)
+		FROM	BSC_SC_DEPT
+		WHERE	YEAR = #{findYear}
+			AND	UP_SC_DEPT_ID = #{findScDeptId}
+			<if test='findUseYn == null or findUseYn == "Y"'>
+				AND	DELETE_DT IS NULL
+			</if>
+			<if test='findUseYn != null and findUseYn == "N"'>
+				AND	DELETE_DT IS NOT NULL
+			</if>
+	</select>
+
+	<select id="selectUpScDeptId" parameterType="scDeptVO" resultType="String">
+		/*	상위 성과조직ID 조회	system.system.comp.compDeptMng.selectUpScDeptId */
+		SELECT	UP_SC_DEPT_ID
+		FROM	BSC_SC_DEPT
+		WHERE	YEAR = #{findYear}
+			AND	SC_DEPT_ID = #{findScDeptId}
+			<if test='findUseYn == null or findUseYn == "Y"'>
+				AND	DELETE_DT IS NULL
+			</if>
+			<if test='findUseYn != null and findUseYn == "N"'>
+				AND	DELETE_DT IS NOT NULL
+			</if>
+	</select>
+
+	<select id="selectDetail" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	성과조직 상세 조회	system.system.comp.compDeptMng.selectDetail	*/
+		SELECT	A.YEAR,				A.SC_DEPT_ID,	A.SC_DEPT_NM,		A.UP_SC_DEPT_ID,
+				B.SC_DEPT_NM	AS UP_SC_DEPT_NM,	A.SC_DEPT_GRP_ID,	A.DEPT_KIND,
+				A.BSC_USER_ID,	U.USER_NM	AS BSC_USER_NM,	U.EMAIL	AS BSC_USER_EMAIL,
+				A.MANAGER_USER_ID,	U2.USER_NM	AS MANAGER_USER_NM,	U2.EMAIL	AS MANAGER_USER_EMAIL,
+				A.LEVEL_ID,		A.SORT_ORDER,	A.SC_DEPT_FULL_NM,
+				DECODE(A.DELETE_DT, NULL, 'Y', 'N')	AS USE_YN
+		FROM	BSC_SC_DEPT A
+				LEFT JOIN	BSC_SC_DEPT B
+					ON	A.YEAR = B.YEAR
+					AND	A.UP_SC_DEPT_ID = B.SC_DEPT_ID
+					AND B.DELETE_DT IS NULL
+				LEFT JOIN	V_ROLE_USER U
+					ON	A.BSC_USER_ID = U.USER_ID
+					<!-- AND	U.HIDDEN_YN = 'N' -->
+				LEFT JOIN	V_ROLE_USER U2
+					ON	A.MANAGER_USER_ID = U2.USER_ID
+					<!-- AND	U2.HIDDEN_YN = 'N' -->
+		WHERE	A.YEAR = #{findYear}
+			AND	A.SC_DEPT_ID = #{scDeptId}
+			AND A.DELETE_DT IS NULL
+	</select>
+
+	<select id="selectMetricCountList" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	성과조직별 지표수 조회	system.system.comp.compDeptMng.selectMetricCountList */
+		SELECT	YEAR,	SC_DEPT_ID,	COUNT(METRIC_ID)	AS METRIC_CNT
+		FROM	BSC_METRIC
+		WHERE	YEAR = #{findYear}
+			AND DELETE_DT IS NULL
+			AND SC_DEPT_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+		GROUP BY	YEAR,	SC_DEPT_ID
+		HAVING	COUNT(METRIC_ID) <![CDATA[>]]> 0
+	</select>
+
+	<update id="deleteScDeptMng" parameterType="scDeptVO">
+		/* 성과조직 삭제	system.system.comp.compDeptMng.deleteScDeptMng	*/
+		UPDATE	BSC_SC_DEPT
+			SET	DELETE_DT = SYSDATE
+		WHERE	YEAR = #{findYear}
+			AND SC_DEPT_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+	</update>
+	
+	<select id="selectNewScDeptId" parameterType="scDeptVO" resultType="String">
+		/* 성과조직 채번	system.system.comp.compDeptMng.selectNewScDeptId	*/
+		SELECT	'D' || LPAD(TO_NUMBER(REPLACE((CASE	WHEN	MAX(SC_DEPT_ID) IS NULL
+					THEN	'0'
+					ELSE	MAX(SC_DEPT_ID)
+				END), 'D', '') + 1), 6, '0')
+		FROM	BSC_SC_DEPT
+		WHERE	YEAR = #{findYear}
+	</select>
+
+	<insert id="insertData" parameterType="scDeptVO">
+		/*	성과조직 저장	system.system.comp.compDeptMng.insertData	*/
+		INSERT	INTO	BSC_SC_DEPT	(
+			YEAR,			SC_DEPT_ID,			SC_DEPT_NM,	UP_SC_DEPT_ID,
+			SC_DEPT_GRP_ID,	BSC_USER_ID,	MANAGER_USER_ID,	DEPT_KIND,	SC_DEPT_FULL_NM,
+			SORT_ORDER,		CREATE_DT
+		) VALUES (
+			#{year},		#{scDeptId},		#{scDeptNm},	#{upScDeptId},
+			#{scDeptGrpId},	#{bscUserId},	#{managerUserId},	#{deptKind},	#{scDeptFullNm},
+			#{sortOrder},	SYSDATE
+		)
+	</insert>
+
+	<update id="updateData" parameterType="scDeptVO">
+		/*	성과조직 수정	system.system.comp.compDeptMng.updateData	*/
+		UPDATE	BSC_SC_DEPT
+			SET	SC_DEPT_NM = #{orgScDeptNm},
+				UP_SC_DEPT_ID = CASE	WHEN	LEVEL_ID = '1'	THEN	NULL	ELSE	#{upScDeptId}	END,
+				SC_DEPT_GRP_ID = #{scDeptGrpId},
+				BSC_USER_ID = #{bscUserId},
+				MANAGER_USER_ID = #{managerUserId},
+				DEPT_KIND = #{deptKind},
+				SORT_ORDER = #{sortOrder},
+				MODIFY_DT = SYSDATE,
+				DELETE_DT = DECODE(#{useYn}, 'Y', NULL, SYSDATE)
+		WHERE	YEAR = #{year}
+			AND	SC_DEPT_ID = #{scDeptId}
+	</update>
+
+	<select id="selectReDefineData" parameterType="scDeptVO" resultType="scDeptVO">
+		 /*	성과조직 정렬순서, 전체조직명 등 다시 정의 할 데이터 조회	system.system.comp.compDeptMng.selectReDefineData	*/
+		  <![CDATA[
+		  SELECT A.YEAR,
+	             A.SC_DEPT_ID,
+	             A.SC_DEPT_NM,
+	             B.LEVEL_ID,
+	             B.FULL_ASC_SC_DEPT_NM,
+	             B.FULL_SC_DEPT_ID,
+	             B.FULL_DESC_SC_DEPT_NM,
+	             B.IS_LEAF,
+	             B.REAL_SORT_ORDER
+		  FROM BSC_SC_DEPT A
+		  LEFT OUTER JOIN (SELECT A.YEAR,
+					             A.SC_DEPT_ID,
+					             A.SC_DEPT_NM,
+					             A.LEVEL_ID,
+					             A.FULL_ASC_SC_DEPT_NM,
+					             A.FULL_SC_DEPT_ID,
+					             NULL AS FULL_DESC_SC_DEPT_NM,
+					             A.IS_LEAF,
+					             ROWNUM AS REAL_SORT_ORDER
+					        FROM (SELECT A.YEAR,
+							             A.SC_DEPT_ID,
+							             A.SC_DEPT_NM,
+							             LEVEL AS LEVEL_ID,
+							             SUBSTR(CASE WHEN LEVEL > 1 THEN SUBSTR(SYS_CONNECT_BY_PATH(A.SC_DEPT_NM,'>'),INSTR(SYS_CONNECT_BY_PATH(A.SC_DEPT_NM,'>'),'>',2))
+							                    ELSE SYS_CONNECT_BY_PATH(A.SC_DEPT_NM,'>') END
+							                    ,2) AS FULL_ASC_SC_DEPT_NM,
+									     SUBSTR(SYS_CONNECT_BY_PATH(A.SC_DEPT_ID,'/'),2) AS FULL_SC_DEPT_ID,
+							             CASE WHEN CONNECT_BY_ISLEAF = 0 THEN 'N' ELSE 'Y' END AS IS_LEAF
+							        FROM BSC_SC_DEPT A
+							       WHERE A.YEAR = #{findYear}
+							      START WITH A.UP_SC_DEPT_ID IS NULL
+							      CONNECT BY PRIOR A.SC_DEPT_ID = A.UP_SC_DEPT_ID
+							                 AND PRIOR A.YEAR = A.YEAR
+							      ORDER SIBLINGS BY A.SORT_ORDER
+							      ) A
+							 ) B
+				ON A.YEAR = B.YEAR
+				AND A.SC_DEPT_ID = B.SC_DEPT_ID
+			WHERE A.YEAR = #{findYear}		      
+		 ]]>
+	</select>
+
+	<update id="updateReDefineData" parameterType="scDeptVO">
+		/*	성과조직 정렬순서, 전체조직명 등 수정	system.system.comp.compDeptMng.updateReDefineData	*/
+		UPDATE	BSC_SC_DEPT
+			SET	REAL_SORT_ORDER = #{realSortOrder},
+				SC_DEPT_FULL_NM = #{fullAscScDeptNm},
+				LEVEL_ID = #{levelId},
+				FULL_DESC_SC_DEPT_NM = #{fullDescScDeptNm},
+				FULL_ASC_SC_DEPT_NM = #{fullAscScDeptNm},
+				FULL_SC_DEPT_ID = #{fullScDeptId},
+				IS_LEAF = #{isLeaf}
+		WHERE	YEAR = #{year}
+			AND	SC_DEPT_ID = #{scDeptId}
+	</update>
+	
+	<delete id="deleteDeptinfo" parameterType="scDeptVO">
+		/*	조직 데이터 삭제	system.system.comp.compDeptMng.deleteDeptinfo 	*/
+		DELETE	FROM	COM_DEPTINFO
+		WHERE	YEAR = #{year}
+	</delete>
+	
+	<insert id="insertDeptinfoFromScDeptList" parameterType="scDeptVO">
+		/*	성과조직의 데이터로 조직 데이터 생성	system.system.comp.compDeptMng.insertDeptinfoFromScDeptList 	*/
+		INSERT	INTO	COM_DEPTINFO	(
+			YEAR,				DEPT_ID,	DEPT_NM,
+			DEPT_F_NM,	UP_DEPT_ID,			DEPT_LEVEL,	CHIEF_ID,
+			SORT_ORDER,	REAL_SORT_ORDER,	IS_LEAF,	CREATE_DT,
+			MODIFY_DT,	BEING_YN, FULL_DEPT_ID
+		)
+		SELECT	YEAR,				SC_DEPT_ID,	SC_DEPT_NM,
+				SC_DEPT_FULL_NM,	UP_SC_DEPT_ID,		LEVEL_ID,	MANAGER_USER_ID,	
+				SORT_ORDER,			REAL_SORT_ORDER,	IS_LEAF,	CREATE_DT,
+				MODIFY_DT,			CASE	WHEN	DELETE_DT IS NULL	THEN	'Y'	ELSE	'N'	END, FULL_SC_DEPT_ID
+		FROM	BSC_SC_DEPT
+		WHERE	YEAR = #{year}
+	</insert>
+	
+	<delete id="deleteScDeptMapping" parameterType="scDeptVO">
+		/*	성과조직 매핑 데이터 삭제	system.system.comp.compDeptMng.deleteScDeptMapping 	*/
+		DELETE	FROM	BSC_SC_DEPT_MAPPING
+		WHERE	YEAR = #{year}
+	</delete>
+	
+	<insert id="insertScDeptMapping" parameterType="scDeptVO">
+		/*	성과조직 매핑 데이터 등록	system.system.comp.compDeptMng.insertScDeptMapping 	*/
+		INSERT	INTO	BSC_SC_DEPT_MAPPING	(
+			YEAR,	SC_DEPT_ID,	DEPT_ID,
+			CREATE_DT
+		)
+		SELECT	YEAR,	SC_DEPT_ID,	SC_DEPT_ID,
+				SYSDATE
+		FROM	BSC_SC_DEPT
+		WHERE	YEAR = #{year}
+	</insert>
+
+	<delete id="deleteAuth" parameterType="scDeptVO">
+		/*	권한 삭제(02 부서장, 03 지표담당자, 06 실적입력자(실적등록), 07 실적승인자(실적등록))	system.system.comp.compDeptMng.deleteAuth	*/
+		DELETE	FROM	COM_ADMIN
+		WHERE	AUTH_GUBUN IN ('02', '03', '06', '07')
+	</delete>
+
+	<insert id="insertAuth" parameterType="scDeptVO">
+		/*	권한 등록(02 부서장, 03 지표담당자, 06 실적입력자(실적등록), 07 실적승인자(실적등록))	system.system.comp.compDeptMng.insertAuth	*/
+		INSERT	INTO	COM_ADMIN	(
+			AUTH_GUBUN,	USER_ID,	DEPT_ID
+		)
+		SELECT	DISTINCT
+				'02',	A.MANAGER_USER_ID,
+				(
+					SELECT	MAX(DEPT_ID) AS DEPT_ID
+					FROM	V_ROLE_USER
+					WHERE	USER_ID = A.MANAGER_USER_ID
+				)
+		FROM	BSC_SC_DEPT A
+		WHERE	A.YEAR = #{year}
+			AND A.DELETE_DT IS NULL
+			AND A.MANAGER_USER_ID IS NOT NULL
+		UNION
+		SELECT	DISTINCT
+				'03',	A.BSC_USER_ID,
+				(
+					SELECT	MAX(DEPT_ID) AS DEPT_ID
+					FROM	V_ROLE_USER
+					WHERE	USER_ID = A.BSC_USER_ID
+				)
+		FROM	BSC_SC_DEPT A
+		WHERE	A.YEAR = #{year}
+			AND A.DELETE_DT IS NULL
+			AND A.BSC_USER_ID IS NOT NULL
+		UNION
+		SELECT	DISTINCT
+				'07',	ACT_APPROVE_USER_ID,
+				(
+					SELECT	MAX(DEPT_ID) AS DEPT_ID
+					FROM	V_ROLE_USER
+					WHERE	USER_ID = A.ACT_APPROVE_USER_ID
+				)
+		FROM	BSC_METRIC A
+		WHERE	A.YEAR = #{year}
+			AND A.DELETE_DT IS NULL
+			AND	A.ACT_APPROVE_USER_ID IS NOT NULL
+		UNION
+		SELECT	DISTINCT
+				'06',	ACT_INSERT_USER_ID,
+				(
+					SELECT	MAX(DEPT_ID) AS DEPT_ID
+					FROM	V_ROLE_USER
+					WHERE	USER_ID = A.ACT_INSERT_USER_ID
+				)
+		FROM	BSC_METRIC A
+		WHERE	A.YEAR = #{year}
+			AND A.DELETE_DT IS NULL
+			AND	A.ACT_INSERT_USER_ID IS NOT NULL
+	</insert>
+
+	<update id="updateMetricUserId" parameterType="scDeptVO">
+		/*	성과지표 담당자 갱신	system.system.comp.compDeptMng.updateMetricUserId	*/
+		UPDATE	BSC_METRIC
+			SET	ACT_INSERT_USER_ID = (SELECT	BSC_USER_ID	FROM	BSC_SC_DEPT	WHERE YEAR = #{year}	AND	SC_DEPT_ID = #{scDeptId}	AND DELETE_DT IS NULL),
+				ACT_APPROVE_USER_ID =
+					(CASE	WHEN	TYPE_ID = '01'	THEN
+						(SELECT	MANAGER_USER_ID	FROM	BSC_SC_DEPT	WHERE YEAR = #{year}	AND	SC_DEPT_ID = #{scDeptId}	AND DELETE_DT IS NULL)
+					ELSE	NULL
+					END)
+		WHERE	YEAR = #{year}
+			AND	SC_DEPT_ID = #{scDeptId}
+	</update>
+
+	<select id="selectScDeptListByBscUserId" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	지표담당자용 성과조직 조회	system.system.comp.compDeptMng.selectScDeptListByBscUserId */
+		SELECT	D.SC_DEPT_ID,	D.SC_DEPT_NM,	D.SC_DEPT_FULL_NM
+		FROM	BSC_SC_DEPT D
+		WHERE	D.YEAR = #{findYear}
+			AND	D.BSC_USER_ID = #{userId}
+		ORDER BY	D.REAL_SORT_ORDER
+	</select>
+
+	<select id="selectScDeptListByManagerUserId" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	부서장용 성과조직 조회	system.system.comp.compDeptMng.selectScDeptListByManagerUserId */
+		SELECT	D.SC_DEPT_ID,	D.SC_DEPT_NM,	D.SC_DEPT_FULL_NM
+		FROM	BSC_SC_DEPT D
+		WHERE	D.YEAR = #{findYear}
+			AND	D.MANAGER_USER_ID = #{userId}
+		ORDER BY	D.REAL_SORT_ORDER
+	</select>
+	
+	<update id="deleteCompDeptMng" parameterType="scDeptVO">
+		/*	조직 삭제	system.system.comp.compDeptMng.deleteCompDeptMng */
+		UPDATE	BSC_SC_DEPT
+			SET	DELETE_DT = SYSDATE
+		WHERE YEAR = #{findYear}
+		AND SC_DEPT_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+	</update>
+	
+	<select id="selectDeptCnt" parameterType="scDeptVO" resultType="int">
+		/* 조직 중복 체크	system.system.comp.compDeptMng.selectDeptCnt	*/
+		SELECT 
+			COUNT(1)
+		FROM BSC_SC_DEPT
+		WHERE YEAR = #{year}
+		AND SC_DEPT_ID = #{scDeptId}
+	</select>
+	
+	<update id="updateOrinData" parameterType="scDeptVO">
+		/*	조직정보 수정	system.system.comp.compDeptMng.updateOrinData */
+		UPDATE	BSC_SC_DEPT
+			SET	SC_DEPT_NM		=	#{scDeptNm}
+			,UP_SC_DEPT_ID		=	#{upScDeptId}
+			,MANAGER_USER_ID	=	#{managerUserId}
+			,BSC_USER_ID		=	#{bscUserId}
+			,SORT_ORDER			=	#{sortOrder}
+			,DELETE_DT	=	(CASE	WHEN	UPPER(NVL(#{useYn}, 'Y')) = 'Y'	THEN	NULL	ELSE	SYSDATE	END)
+		WHERE YEAR = #{year}
+		AND SC_DEPT_ID = #{scDeptId}
+	</update>
+</mapper>

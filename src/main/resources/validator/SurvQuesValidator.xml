@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="survQuesVO">
+			<field property="quesSeq" depends="required, maxlength, integer">
+				<arg0 key="word.questionNum" resource="true"/>
+				<arg1 key="5" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>5</var-value>
+				</var>
+			</field>
+			<field property="quesNm" depends="required, maxByteLength">
+				<arg0 key="word.question" resource="true"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+			<field property="quesGbnId" depends="maxlength">
+				<arg0 key="word.quesGbn" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="itemCntId" depends="maxlength">
+				<arg0 key="word.itemCnt" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="itemCheckGbnId" depends="maxlength">
+				<arg0 key="word.selectGbn" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="quesLinkYn" depends="maxlength">
+				<arg0 key="word.linkYn" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+
+		</form>
+	</formset>
+</form-validation>
+

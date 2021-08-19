@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.survey.survResult">
+	<select id="selectList" parameterType="survResultVO" resultType="survResultVO">
+		/*	질문그룹_최종 목록 조회	system.survey.survResult.selectList */
+	</select>
+
+	<select id="selectDetail" parameterType="survResultVO" resultType="survResultVO">
+		/*	설문결과 상세 조회	 	system.survey.survResult.selectDetail	*/
+		SELECT
+			  SURVEY_ID
+			, SURVEY_NM
+			, CLOSE_YN
+			, ALL_USR_CNT
+			, ANS_USR_CNT
+			, CASE WHEN ANS_USR_CNT != 0 THEN ROUND((ANS_USR_CNT/ALL_USR_CNT)*100,2) || '%' ELSE 0 || '%' END PARTICPATION_RATE
+		FROM(
+				SELECT
+				  A.SURVEY_ID
+				, A.SURVEY_NM
+				, A.CLOSE_YN
+				, (SELECT COUNT(0) FROM SUR_TARGET_USER WHERE SURVEY_ID=A.SURVEY_ID) AS ALL_USR_CNT
+				, (SELECT COUNT(0) FROM SUR_TARGET_USER_STATE WHERE SURVEY_ID=A.SURVEY_ID) AS ANS_USR_CNT
+				FROM SUR_SURVEY A
+		)
+		WHERE 1=1
+		AND SURVEY_ID=#{surveyId}
+	</select>
+
+	<select id="selectQuesList" parameterType="survResultVO" resultType="survResultVO">
+		/*	설문질문 목록 조회	system.survey.survResult.selectQuesList */
+		SELECT
+			A.SURVEY_ID,
+			A.QUES_ID,
+			A.QUES_SEQ,
+			A.QUES_NM,
+			A.QUES_GBN_ID,
+			A.ITEM_CNT_ID,
+			A.ITEM_CHECK_GBN_ID,
+			A.QUES_LINK_YN,
+			A.QUES_GRP_ID
+		FROM SUR_SURVEY_QUES A
+		WHERE 1=1
+		AND A.SURVEY_ID=#{surveyId}
+		<if test='selectQuesLinkYn != null '>
+			AND A.QUES_LINK_YN=#{selectQuesLinkYn}
+		</if>
+		<if test='findQuesGbnId != null and findQuesGbnId != ""'>
+			AND A.QUES_GBN_ID = #{findQuesGbnId}
+		</if>
+		ORDER BY A.QUES_SEQ
+	</select>
+
+	<select id="selectItemList" parameterType="survResultVO" resultType="survResultVO">
+		/*	설문답변 목록 조회	system.survey.survResult.selectItemList */
+		SELECT
+			  SURVEY_ID
+			, QUES_ID
+			, QUES_ITEM_ID
+			, ITEM_CONTENT
+			, LINK_QUES_ID
+			, ANSWER_CNT
+			, ANSWER_RATE
+			, QUES_SEQ
+			, ITEM_NUM
+		FROM (
+				SELECT
+					  A.SURVEY_ID
+					, A.QUES_ID
+					, '0000000' AS QUES_ITEM_ID
+					, '합계' AS ITEM_CONTENT
+					, NULL AS LINK_QUES_ID
+					, B.ANSWER_CNT
+					, B.ANSWER_RATE
+					, 99999 AS QUES_SEQ
+					, 99999 AS ITEM_NUM
+				FROM SUR_SURVEY_QUES A
+				LEFT OUTER JOIN (
+									SELECT
+										  SURVEY_ID
+										, QUES_ID
+										, MAX(SUM_ANSWER_CNT) AS ANSWER_CNT
+										, MAX(SUM_ANSWER_RATE) AS ANSWER_RATE
+									FROM (
+											SELECT
+												  SURVEY_ID
+												, QUES_ID
+												, SUM(ANSWER_CNT) OVER(PARTITION BY SURVEY_ID,QUES_ID) AS SUM_ANSWER_CNT
+												, ROUND(SUM(ANSWER_RATE) OVER(PARTITION BY SURVEY_ID,QUES_ID)) AS SUM_ANSWER_RATE
+											FROM (
+													SELECT
+														  A.SURVEY_ID
+														, A.QUES_ID
+														, A.QUES_ITEM_ID
+														, B.ANSWER_CNT
+														, B.ANSWER_RATE
+													FROM SUR_SURVEY_ITEM A
+													LEFT OUTER JOIN SUR_ITEM_SUMMARY B
+														ON A.SURVEY_ID = B.SURVEY_ID
+														AND A.QUES_ID = B.QUES_ID
+														AND A.QUES_ITEM_ID = B.QUES_ITEM_ID
+													WHERE 1=1
+													AND A.SURVEY_ID = #{surveyId}
+											)
+									)
+									GROUP BY SURVEY_ID, QUES_ID
+				) B
+					ON A.SURVEY_ID = B.SURVEY_ID
+					AND A.QUES_ID = B.QUES_ID
+				WHERE 1=1
+				AND A.SURVEY_ID = #{surveyId}
+				UNION ALL
+				SELECT
+					  A.SURVEY_ID
+					, A.QUES_ID
+					, A.QUES_ITEM_ID
+					, A.ITEM_CONTENT
+					, A.LINK_QUES_ID
+					, B.ANSWER_CNT
+					, B.ANSWER_RATE
+					, C.QUES_SEQ
+					, A.ITEM_NUM
+				FROM SUR_SURVEY_ITEM A
+				LEFT OUTER JOIN SUR_ITEM_SUMMARY B
+					ON A.SURVEY_ID = B.SURVEY_ID
+					AND A.QUES_ID = B.QUES_ID
+					AND A.QUES_ITEM_ID = B.QUES_ITEM_ID
+				LEFT OUTER JOIN SUR_SURVEY_QUES C
+				ON A.SURVEY_ID = C.SURVEY_ID
+					AND A.QUES_ID = C.QUES_ID
+				WHERE 1=1
+				AND A.SURVEY_ID = #{surveyId}
+		)
+		ORDER BY QUES_ID,QUES_SEQ, ITEM_NUM
+	</select>
+
+	<select id="selectChartData" parameterType="survResultVO" resultType="survResultVO">
+		/*	차트 데이터 목록 조회	system.survey.survResult.selectChartData */
+		SELECT
+			  A.SURVEY_ID
+			, A.QUES_ID
+			, C.QUES_NM
+			, A.QUES_ITEM_ID
+			, B.ITEM_CONTENT
+			, A.ANSWER_CNT
+			, A.ANSWER_RATE
+		FROM SUR_ITEM_SUMMARY A
+		LEFT OUTER JOIN SUR_SURVEY_ITEM B
+			ON A.SURVEY_ID = B.SURVEY_ID
+			AND A.QUES_ID = B.QUES_ID
+			AND A.QUES_ITEM_ID = B.QUES_ITEM_ID
+		LEFT OUTER JOIN SUR_SURVEY_QUES C
+			ON A.SURVEY_ID = C.SURVEY_ID
+			AND A.QUES_ID = C.QUES_ID
+		WHERE 1=1
+		AND A.SURVEY_ID=#{surveyId}
+		AND A.QUES_ID=#{quesId}
+	</select>
+
+	<select id="selectEssayList" parameterType="survResultVO" resultType="survResultVO">
+		/*	주관식 목록 조회	system.survey.survResult."selectEssayList" */
+		SELECT
+			  A.SURVEY_ID
+			, A.SURVEY_USER_ID
+			, CASE WHEN B.SURVEY_TYPE_ID = '001' THEN C.SURVEY_USER_NM ELSE TO_CHAR(ROWNUM) END AS SURVEY_USER_NM
+			, A.QUES_ID
+			, A.QUES_ITEM_ID
+			, A.ANSWER_CONTENT
+		FROM SUR_RESULT A
+		LEFT OUTER JOIN SUR_SURVEY B
+			ON A.SURVEY_ID = B.SURVEY_ID
+		LEFT OUTER JOIN SUR_TARGET_USER C
+			ON A.SURVEY_ID = C.SURVEY_ID
+			AND A.SURVEY_USER_ID = C.SURVEY_USER_ID
+		WHERE 1=1
+		AND A.SURVEY_ID=#{surveyId}
+		AND A.QUES_ID=#{quesId}
+		AND A.QUES_ITEM_ID='QI00000'
+	</select>
+</mapper>
+

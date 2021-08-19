@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="5 minutes">
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+		</layout>
+	</appender>
+	<appender name="consoleForSql" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}%n%msg%n</Pattern>
+		</layout>
+	</appender>
+ 
+ 	<logger name="egovframework" additivity="false">
+ 		<level value="DEBUG"/>
+		<appender-ref ref="console"/>
+	</logger>
+	
+	<logger name="kr.ispark" additivity="false">
+		<level value="DEBUG"/>
+		<appender-ref ref="console"/>
+	</logger>
+	
+	<logger name="org.springframework" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="console"/>
+	</logger>
+	
+	<logger name="kr.ispark.common.security.CustomSecurityMetadataSource" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="console"/>
+	</logger>
+	<logger name="kr.ispark.common.aspect.CompIdAspect" additivity="false">
+		<level value="ERROR"/>
+		<appender-ref ref="console"/>
+	</logger>
+	<logger name="kr.ispark.common.aspect.DbInfoAspect" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="console"/>
+	</logger>
+	<!-- 
+	<logger name="kr.ispark.common.aspect.CtrlAspect" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="console"/>
+	</logger>
+	-->
+	<logger name="java.sql" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="consoleForSql"/>
+	</logger>
+	
+	<logger name="jdbc.sqltiming" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="consoleForSql"/>
+	</logger>
+	
+	<logger name="org.mariadb.jdbc" level="DEBUG" additivity="false">
+        <appender-ref ref="console"/>
+    </logger>
+ 
+	<root level="ERROR">
+		<appender-ref ref="console"/>
+	</root>
+</configuration>

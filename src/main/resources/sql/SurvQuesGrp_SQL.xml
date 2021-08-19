@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.survey.survQuesGrp">
+	<select id="selectList" parameterType="survQuesGrpVO" resultType="survQuesGrpVO">
+		/*	설문질문그룹 조회	system.survey.survQuesGrp.selectList */
+		SELECT
+			A.SURVEY_ID,
+			A.QUES_GRP_ID,
+			A.QUES_GRP_NM,
+			A.SORT_ORDER,
+			COUNT(B.QUES_GRP_ID) AS MAP_QUES_CNT
+		FROM SUR_QUES_GRP A
+		LEFT OUTER JOIN SUR_SURVEY_QUES B
+			ON A.SURVEY_ID = B.SURVEY_ID
+			AND A.QUES_GRP_ID = B.QUES_GRP_ID
+		WHERE 1=1
+		AND A.SURVEY_ID=#{findSurveyId}
+		GROUP BY  A.SURVEY_ID,
+					  A.QUES_GRP_ID,
+					  A.QUES_GRP_NM,
+					  A.SORT_ORDER
+		ORDER BY A.SORT_ORDER
+	</select>
+
+	<select id="selectListForMap" parameterType="survQuesGrpVO" resultType="survQuesGrpVO">
+		/*	설문질문그룹별 설문매핑 조회	system.survey.survQuesGrp.selectListForMap */
+		SELECT
+			QUES_SEQ,
+			QUES_ID,
+			QUES_NM,
+			QUES_GRP_ID
+			FROM SUR_SURVEY_QUES
+		WHERE 1=1
+		AND SURVEY_ID=#{findSurveyId}
+		ORDER BY QUES_SEQ
+	</select>
+
+	<update id="deleteSurvQuesGrp" parameterType="survQuesGrpVO">
+		/*	설문질문그룹 삭제	system.survey.survQuesGrp.deleteSurvQuesGrp	*/
+		DELETE FROM SUR_QUES_GRP
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+			AND QUES_GRP_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+	</update>
+
+	<update id="deleteSurvQues" parameterType="survQuesGrpVO">
+		/*	설문차수별질문 질문그룹코드 삭제	system.survey.survQuesGrp.deleteSurvQues	*/
+		UPDATE SUR_SURVEY_QUES
+		SET
+			QUES_GRP_ID=NULL
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+			AND QUES_GRP_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+	</update>
+
+	<insert id="insertData" parameterType="survQuesGrpVO">
+		/*	설문질문그룹 저장	system.survey.survQuesGrp.insertData	*/
+		INSERT INTO SUR_QUES_GRP(
+			SURVEY_ID,
+			QUES_GRP_ID,
+			QUES_GRP_NM,
+			SORT_ORDER,
+			CREATE_DT
+		) VALUES (
+			#{surveyId},
+			#{quesGrpId},
+			#{quesGrpNm},
+			#{sortOrder},
+			SYSDATE
+		)
+
+	</insert>
+
+	<update id="updateData" parameterType="survQuesGrpVO">
+		/*	설문질문그룹 수정	system.survey.survQuesGrp.updateData	*/
+		UPDATE SUR_QUES_GRP
+		SET
+			QUES_GRP_NM=#{quesGrpNm},
+			SORT_ORDER=#{sortOrder}
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+			AND QUES_GRP_ID=#{quesGrpId}
+
+	</update>
+
+	<update id="updateDataForMap" parameterType="survQuesGrpVO">
+		/*	설문질문그룹별 설문매핑 수정	system.survey.survQuesGrp.updateDataForMap	*/
+		UPDATE SUR_SURVEY_QUES
+		SET
+			QUES_GRP_ID=#{quesGrpId}
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+			AND QUES_ID=#{quesId}
+
+	</update>
+</mapper>
+

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="scDeptVO">
+			<field property="scDeptId" depends="maxlength">
+				<arg0 key="word.scDeptCode" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="scDeptNm" depends="required, maxByteLength">
+				<arg0 key="word.scDeptNm2" resource="true"/>
+				<arg1 key="150" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>150</var-value>
+				</var>
+			</field>
+<!-- 			<field property="scDeptGrpId" depends="required"> -->
+<!-- 				<arg0 key="word.evalGrp" resource="true"/> -->
+<!-- 			</field> -->
+			<field property="upScDeptId" depends="maxlength">
+				<arg0 key="word.upScOrgCd" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="bscUserId" depends="maxlength">
+				<arg0 key="word.deptInCharge2" resource="true"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="managerUserId" depends="maxlength">
+				<arg0 key="word.manager" resource="true"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="useYn" depends="required">
+				<arg0 key="word.useYn" resource="true"/>
+			</field>
+			<field property="sortOrder" depends="required,integer">
+				<arg0 key="word.sortOrder" resource="true"/>
+				<arg1 key="10" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>10</var-value>
+				</var>
+			</field>
+		</form>
+	</formset>
+</form-validation>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.survey.survProgStat">
+	<select id="selectList" parameterType="survProgStatVO" resultType="survProgStatVO">
+		/*	설문진행현황 조회	system.survey.survProgStat.selectList */
+		SELECT
+			  A.SURVEY_ID
+			, A.SURVEY_NM
+			, A.SURVEY_TYPE_ID
+			, CA.CODE_NM AS SURVEY_TYPE_NM
+			, A.START_DT
+			, A.END_DT
+			, A.SURVEY_DATE
+			, A.TARGET_CNT
+			, A.ANSWER_CNT
+			, CASE WHEN A.TARGET_CNT != 0 THEN RTRIM(TO_CHAR((A.ANSWER_CNT/A.TARGET_CNT)*100,'FM9990D99'),'.')
+				ELSE '0' END || '%' AS ANSWER_RATE
+			, A.CLOSE_YN
+			, A.CLOSE_NM
+			, A.SURVEY_YEAR
+		FROM(
+					SELECT
+						A.SURVEY_ID,
+						A.SURVEY_NM,
+						A.SURVEY_TYPE_ID,
+						A.START_DT,
+						A.END_DT ,
+						TO_CHAR(TO_DATE(A.START_DT,'YYYYMMDD'),'YYYY.MM.DD') || '~' || TO_CHAR(TO_DATE(A.END_DT,'YYYYMMDD'),'YYYY.MM.DD') AS SURVEY_DATE,
+						(SELECT COUNT(0) FROM SUR_TARGET_USER WHERE SURVEY_ID = A.SURVEY_ID) AS TARGET_CNT,
+						(SELECT COUNT(0) FROM SUR_TARGET_USER_STATE WHERE SURVEY_ID = A.SURVEY_ID) AS ANSWER_CNT,
+						A.CLOSE_YN,
+						CASE WHEN A.CLOSE_YN = 'Y' THEN '마감취소' ELSE '마감' END AS CLOSE_NM,
+						A.SURVEY_YEAR
+					FROM SUR_SURVEY A
+					WHERE A.DELETE_DT IS NULL
+		) A
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'373'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="A.SURVEY_TYPE_ID"/>
+		</include>
+		WHERE 1=1
+		<if test='findSurveyId != null and findSurveyId != ""'>
+		AND A.SURVEY_ID=#{findSurveyId}
+		</if>
+		ORDER BY A.START_DT DESC, A.END_DT DESC
+	</select>
+
+	<select id="selectSendMail" parameterType="survProgStatVO" resultType="userVO">
+		/*	설문대상자 목록 조회	system.survey.survProgStat.selectSendMail */
+		SELECT
+			  A.SURVEY_ID
+			, A.SURVEY_END_YN
+			, A.USER_ID
+			, A.USER_NM
+			, A.DEPT_ID
+			, A.DEPT_NM
+			, A.JIKGUB_ID
+			, A.JIKGUB_NM
+			, A.POS_ID
+			, A.POS_NM
+			, A.EMAIL
+			, A.BEING_YN
+		FROM(
+				SELECT
+					  A.SURVEY_ID
+					, CASE WHEN B.SURVEY_END_YN IS NULL THEN 'N' ELSE 'Y' END AS SURVEY_END_YN
+					, U.USER_ID
+					, U.USER_NM
+					, U.DEPT_ID
+					, U.DEPT_NM
+					, U.JIKGUB_ID
+					, U.JIKGUB_NM
+					, U.POS_ID
+					, U.POS_NM
+					, U.EMAIL
+					, U.BEING_YN
+				FROM SUR_TARGET_USER A
+				LEFT OUTER JOIN SUR_TARGET_USER_STATE B
+					ON A.SURVEY_ID = B.SURVEY_ID
+					AND A.SURVEY_USER_ID = B.SURVEY_USER_ID
+				LEFT OUTER JOIN V_ROLE_USER U
+					ON A.SURVEY_USER_ID = U.USER_ID
+				WHERE 1=1
+				<if test='keySurveyId != null and keySurveyId != ""'>
+				AND A.SURVEY_ID=#{keySurveyId}
+				</if>
+		) A
+		WHERE 1=1
+		AND A.SURVEY_END_YN = 'N'
+	</select>
+
+	<update id="deleteItemTotalData" parameterType="survProgStatVO">
+		/*	설문질문답변별종합점수 삭제	system.survey.survProgStat.deleteItemTotalData	*/
+		DELETE FROM SUR_ITEM_SUMMARY
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+	</update>
+
+	<insert id="insertItemTotalForAll" parameterType="survProgStatVO">
+		/*	설문질문답변별종합점수 입력	system.survey.survProgStat.insertItemTotalForAll	*/
+		INSERT INTO SUR_ITEM_SUMMARY
+		SELECT
+			  SURVEY_ID
+			, QUES_ID
+			, QUES_ITEM_ID
+			, ANSWER_CNT
+			, RTRIM(TO_CHAR(CASE WHEN ANSWER_CNT_SUM !=0 THEN (ANSWER_CNT/ANSWER_CNT_SUM)*100 ELSE 0 END,'FM9990D99'),'.') AS ANSWER_RATE
+			, SYSDATE
+		FROM(
+				SELECT
+					  A.SURVEY_ID
+					, A.QUES_ID
+					, A.QUES_ITEM_ID
+					, B.SURVEY_YEAR
+					, DEPT.SC_DEPT_ID
+					, NVL(C.ANSWER_CNT,0) AS ANSWER_CNT
+					, NVL(C.ANSWER_CNT_SUM,0) AS ANSWER_CNT_SUM
+				FROM SUR_SURVEY_ITEM A
+				LEFT OUTER JOIN SUR_SURVEY B
+				ON A.SURVEY_ID = B.SURVEY_ID
+				LEFT OUTER JOIN (
+									SELECT
+									  SURVEY_ID
+									, QUES_ID
+									, QUES_ITEM_ID
+									, 'D000001' AS SC_DEPT_ID
+									, COUNT(SURVEY_USER_ID) OVER(PARTITION BY SURVEY_ID,QUES_ID,QUES_ITEM_ID) AS ANSWER_CNT
+									, COUNT(SURVEY_USER_ID) OVER(PARTITION BY SURVEY_ID,QUES_ID) AS ANSWER_CNT_SUM
+									FROM SUR_RESULT
+									WHERE 1=1
+									AND SURVEY_ID = #{surveyId}
+									AND QUES_ITEM_ID != 'QI00000'
+				) C
+				ON A.SURVEY_ID    = C.SURVEY_ID
+					AND A.QUES_ID      = C.QUES_ID
+					AND A.QUES_ITEM_ID = C.QUES_ITEM_ID
+				WHERE A.SURVEY_ID = #{surveyId}
+		)
+		GROUP BY SURVEY_ID, QUES_ID, QUES_ITEM_ID, ANSWER_CNT, ANSWER_CNT_SUM
+	</insert>
+
+	<update id="updateData" parameterType="survProgStatVO">
+		/*	설문진행현황 마감	system.survey.survProgStat.updateData	*/
+		UPDATE SUR_SURVEY
+		SET
+			CLOSE_YN=CASE WHEN #{closeYn} = 'N' THEN 'Y' ELSE 'N' END
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+
+	</update>
+</mapper>
+

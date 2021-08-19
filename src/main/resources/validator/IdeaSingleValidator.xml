@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="ideaSingleVO">
+			<field property="title" depends="required, maxByteLength">
+				<arg0 key="제목"/>
+				<arg1 key="300" resource="false"/>
+				<var>
+					<var-name>maxBytelength</var-name>
+					<var-value>300</var-value>
+				</var>
+			</field>
+			<field property="content" depends="required, maxByteLength">
+				<arg0 key="내용"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxBytelength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+		</form>
+	</formset>
+</form-validation>
+

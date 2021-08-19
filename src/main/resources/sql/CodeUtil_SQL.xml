@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="codeUtil">
+
+	<select id="getDbIdList" resultType="codeVO">
+		/* codeUtil.getDbIdList */
+		SELECT DB_ID
+		  FROM COM_COMP_DBINFO A
+		 WHERE 1=1
+	</select>
+	
+	<select id="getCodeGrpList" resultType="codeVO">
+		/* codeUtil.getCodeGrpList */
+		SELECT	A.LANG AS	LANG,
+				C.CODE_GRP_ID,
+				NVL(D.CODE_GRP_NM, C.CODE_GRP_NM)	AS	CODE_GRP_NM,
+				C.CODE_DEF_ID,	C.YEAR_YN,	C.CONTENT
+		FROM	COM_COMP_LANG A
+				JOIN COM_CODE_GRP C
+					ON	1=1
+				LEFT OUTER JOIN COM_CODE_GRP_NM D
+					ON	A.LANG = D.LANG
+					AND	C.CODE_GRP_ID = D.CODE_GRP_ID
+		WHERE	C.DELETE_DT IS NULL
+		ORDER BY	A.LANG, C.CODE_GRP_ID
+	</select>
+
+	<!--
+	==================================================================
+	# 설명	: 코드 목록
+	#	기능	: SELECT
+	#	TABLE	: COM_CODE
+	==================================================================
+	-->
+	
+	<select id="getCodeList" parameterType="java.lang.String" resultType="codeVO">
+		/* 코드 목록	codeUtil.getCodeList */
+		SELECT	T1.LANG	AS	LANG
+				, T1.CODE_GRP_ID
+				, T1.CODE_ID
+				, T1.YEAR
+				, T1.CODE_NM
+				, T1.SORT_ORDER
+				, T1.CONTENT
+				, T1.ETC1
+				, T1.ETC2
+				, T2.CODE_GRP_NM
+				, T2.YEAR_YN
+		FROM	(
+					SELECT	A.LANG
+							, C.CODE_GRP_ID
+							, C.CODE_ID
+							, C.YEAR
+							, IFNULL(D.CODE_NM, C.CODE_NM)	AS	CODE_NM
+							, C.SORT_ORDER
+							, C.CONTENT
+							, C.ETC1
+							, C.ETC2
+					FROM	COM_COMP_LANG A
+							LEFT OUTER JOIN	COM_CODE C
+								ON	1=1
+							LEFT OUTER JOIN COM_CODE_NM D
+								ON	A.LANG = D.LANG
+								AND	C.CODE_GRP_ID = D.CODE_GRP_ID
+								AND	C.CODE_ID = D.CODE_ID
+								AND	C.YEAR = D.YEAR
+					WHERE	1 = 1
+						AND	C.DELETE_DT IS NULL
+				) T1,
+				COM_CODE_GRP T2
+		WHERE	T1.CODE_GRP_ID = T2.CODE_GRP_ID
+			AND	T2.DELETE_DT IS NULL
+		ORDER BY	T1.LANG, 
+					T1.CODE_GRP_ID, 
+					T1.YEAR, T1.SORT_ORDER
+	</select>
+	
+	<select id="selectUpdateCompIdList" resultType="String">
+		SELECT	DISTINCT	UPDATE_COMP_ID
+		FROM	COM_CODE_UPDATE_LOG
+		WHERE	UPDATE_DT <![CDATA[>=]]> date_add(now(), interval -10 minute)
+
+	</select>
+	
+	<insert id="insertCodeUpdateLog" parameterType="egovMap">
+		/*	공통코드 변경 이력 등록	codeUtil.insertCodeUpdateLog	*/
+		INSERT INTO COM_CODE_UPDATE_LOG (
+			UPDATE_DT
+		) VALUES (
+			SYSDATE
+		)
+	</insert>
+	
+	<delete id="deleteCodeUpdateLog">
+		/*	공통코드 변경 이력 삭제 (하루 전까지만 남기고 삭제)	codeUtil.deleteCodeUpdateLog	*/
+		DELETE	FROM	COM_CODE_UPDATE_LOG
+		WHERE	UPDATE_DT <![CDATA[<]]> SYSDATE -1
+	</delete>
+	
+	
+	
+	<!-- 번외로  db 접속하여 테스트 -->
+	<select id="selectDBCodeList" parameterType="EgovMap" resultType="codeVO">
+		/* 코드 목록	codeUtil.selectDBCodeList */
+		SELECT	  T1.LANG	AS	LANG
+				, T1.CODE_GRP_ID
+				, T1.CODE_ID
+				, T1.YEAR
+				, T1.CODE_NM
+				, T1.SORT_ORDER
+				, T1.CONTENT
+				, T1.ETC1
+				, T1.ETC2
+				, T2.CODE_GRP_NM
+				, T2.YEAR_YN
+		FROM	(
+					SELECT	  A.LANG
+							, C.CODE_GRP_ID
+							, C.CODE_ID
+							, C.YEAR
+							, NVL(D.CODE_NM, C.CODE_NM)	AS	CODE_NM
+							, C.SORT_ORDER
+							, C.CONTENT
+							, C.ETC1
+							, C.ETC2
+					FROM	COM_COMP_LANG A
+							LEFT JOIN	COM_CODE C
+								ON	C.CODE_GRP_ID = #{codeGrpId}
+								AND	C.DELETE_DT IS NULL
+								AND C.YEAR = #{year}
+							LEFT JOIN COM_CODE_NM D
+								ON	A.LANG = D.LANG
+								AND	C.CODE_GRP_ID = D.CODE_GRP_ID
+								AND	C.CODE_ID = D.CODE_ID
+								AND	C.YEAR = D.YEAR
+					WHERE	1 = 1
+					    AND A.LANG = #{lang}
+				) T1,
+				COM_CODE_GRP T2
+		WHERE	T1.CODE_GRP_ID = T2.CODE_GRP_ID
+			AND	T2.DELETE_DT IS NULL
+		ORDER BY	T1.LANG, 
+					T1.CODE_GRP_ID, 
+					T1.YEAR, T1.SORT_ORDER
+	</select>
+	
+	<select id="selectDBCodeDetail" parameterType="EgovMap" resultType="java.lang.String">
+		/* 코드 상세	codeUtil.selectDBCodeList */
+		SELECT	<if test='codeCol == "codeNm"'>
+					NVL(D.CODE_NM, C.CODE_NM)	AS	CODE_NM
+				</if>
+				<if test='codeCol == "etc1"'>
+					C.ETC1
+				</if>
+				<if test='codeCol == "etc2"'>
+					C.ETC2
+				</if>
+				<if test='codeCol == "content"'>
+					C.CONTENT
+				</if>
+		FROM	COM_COMP_LANG A
+				LEFT OUTER JOIN	COM_CODE C
+					ON	C.CODE_GRP_ID = #{codeGrpId}
+					AND	C.DELETE_DT IS NULL
+					AND C.YEAR = #{year}
+					AND C.CODE_ID = #{codeId}
+				LEFT OUTER JOIN COM_CODE_NM D
+					ON	A.LANG = D.LANG
+					AND	C.CODE_GRP_ID = D.CODE_GRP_ID
+					AND	C.CODE_ID = D.CODE_ID
+					AND	C.YEAR = D.YEAR
+		WHERE	1 = 1
+		    AND A.LANG = #{lang}
+	</select>
+	
+	<select id="selectDBCodeGrpDetail" parameterType="EgovMap" resultType="java.lang.String">
+	
+		SELECT  <if test='codeGrpCol == "codeGrpNm"'>
+					A.CODE_GRP_NM
+				</if>
+				<if test='codeGrpCol == "yearYn"'>
+					A.YEAR_YN
+				</if>
+		  FROM COM_CODE_GRP A
+		       INNER JOIN COM_CODE_GRP_NM B
+		       ON A.CODE_GRP_ID = B.CODE_GRP_ID
+		 WHERE A.CODE_GRP_ID = #{codeGrpId}
+		   AND LANG = #{lang}
+	
+	</select>
+	
+</mapper>

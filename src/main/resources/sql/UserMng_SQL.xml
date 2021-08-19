@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.menu.userMng">
+	<select id="selectList" parameterType="userMngVO" resultType="userMngVO">
+		/*	사용자관리 조회	userMng.selectList */
+		SELECT	A.DEPT_ID,		C.DEPT_NM,	A.USER_ID,		A.USER_NM,
+				A.POS_ID,		A.POS_NM,	A.JIKGUB_ID,	A.JIKGUB_NM,
+				B.AUTH_GUBUN,	D.CODE_NM	AS AUTH_GUBUN_NM
+		FROM	V_ROLE_USER A
+				LEFT JOIN	COM_ADMIN B
+					ON	A.USER_ID = B.USER_ID
+				JOIN	V_DEPTINFO C
+					ON	A.DEPT_ID = C.DEPT_ID
+					<if test="findSearchDeptNm != null and findSearchDeptNm != ''">
+						AND C.DEPT_NM LIKE '%'||#{findSearchDeptNm}||'%'
+					</if>
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="018"/>
+					<property name="pAlias" value="D"/>
+					<property name="pCompareColumn" value="B.AUTH_GUBUN"/>
+				</include>
+		WHERE	C.YEAR = (SELECT MAX(YEAR)	FROM	V_DEPTINFO	WHERE	1=1)
+				<if test="findSearchUserNm != null and findSearchUserNm != ''">
+					AND A.USER_NM LIKE '%'||#{findSearchUserNm}||'%'
+				</if>
+		ORDER BY	A.USER_NM, C.REAL_SORT_ORDER, A.JIKGUB_ID, A.POS_ID, A.USER_ID, D.SORT_ORDER
+	</select>
+</mapper>

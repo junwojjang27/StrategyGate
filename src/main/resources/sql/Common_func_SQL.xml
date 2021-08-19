@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="common.func">
+	<sql id="getCodeNm">
+	    <!-- SUBQUERY 용 -->
+		(SELECT NVL(YY.CODE_NM,XX.CODE_NM) AS CODE_NM
+		   FROM COM_CODE XX
+		        LEFT OUTER JOIN COM_CODE_NM YY
+		        ON XX.YEAR = YY.YEAR
+		        AND XX.CODE_GRP_ID = YY.CODE_GRP_ID
+		        AND XX.CODE_ID = YY.CODE_ID
+		        AND XX.YEAR = YY.YEAR
+		        AND YY.LANG = #{lang}
+		  WHERE XX.CODE_GRP_ID = ${pCodeGrpId}
+		    AND XX.YEAR = CASE WHEN (SELECT YEAR_YN FROM COM_CODE_GRP WHERE CODE_GRP_ID = ${pCodeGrpId}) = 'Y' THEN ${pYear}
+		                  ELSE '9999' END
+		    AND XX.CODE_ID = ${pJoinColumn}
+		    AND XX.DELETE_DT IS NULL) AS ${pResultAlias} ${pDot}
+	</sql>
+	
+	<sql id="getCodeJoin">
+	    <!-- 해당쿼리 사용시 SELECT 절에 ${pAlias}.CODE_NM을 선언해야 값이 출력됨. -->
+		LEFT OUTER JOIN (SELECT	XX.CODE_ID, NVL(YY.CODE_NM,XX.CODE_NM) AS CODE_NM,
+								XX.SORT_ORDER
+						   FROM COM_CODE XX
+						        LEFT OUTER JOIN COM_CODE_NM YY
+						        ON XX.YEAR = YY.YEAR
+						        AND XX.CODE_GRP_ID = YY.CODE_GRP_ID
+						        AND XX.CODE_ID = YY.CODE_ID
+						        AND XX.YEAR = YY.YEAR
+						        AND YY.LANG = #{lang}
+						  WHERE XX.CODE_GRP_ID = ${pCodeGrpId}
+						    AND XX.YEAR = CASE WHEN (SELECT YEAR_YN FROM COM_CODE_GRP WHERE CODE_GRP_ID = ${pCodeGrpId}) = 'Y' THEN ${pYear}
+						                  ELSE '9999' END
+						    AND XX.DELETE_DT IS NULL
+						 ) ${pAlias}
+	     ON ${pCompareColumn} = ${pAlias}.CODE_ID  					 
+	</sql>
+	
+	<sql id="getCodeNullCaseJoin">
+	    <!-- 해당쿼리 사용시 SELECT 절에 ${pAlias}.CODE_NM을 선언해야 값이 출력됨. -->
+		LEFT OUTER JOIN (SELECT	XX.CODE_ID, NVL(YY.CODE_NM,XX.CODE_NM) AS CODE_NM,
+								XX.SORT_ORDER
+						   FROM COM_CODE XX
+						        LEFT OUTER JOIN COM_CODE_NM YY
+						        ON XX.YEAR = YY.YEAR
+						        AND XX.CODE_GRP_ID = YY.CODE_GRP_ID
+						        AND XX.CODE_ID = YY.CODE_ID
+						        AND XX.YEAR = YY.YEAR
+						        AND YY.LANG = #{lang}
+						  WHERE XX.CODE_GRP_ID = ${pCodeGrpId}
+						    AND XX.YEAR = CASE WHEN (SELECT YEAR_YN FROM COM_CODE_GRP WHERE CODE_GRP_ID = ${pCodeGrpId}) = 'Y' THEN ${pYear}
+						                  ELSE '9999' END
+						    AND XX.DELETE_DT IS NULL
+						 ) ${pAlias}
+	     ON NVL(${pCompareColumn},${pCompareColumnNull}) = ${pAlias}.CODE_ID  					 
+	</sql>
+	
+	<sql id="getCodeJoinWithCompId">
+	    <!-- 해당쿼리 사용시 SELECT 절에 ${pAlias}.CODE_NM을 선언해야 값이 출력됨. -->
+		LEFT OUTER JOIN (SELECT	NVL(YY.CODE_NM,XX.CODE_NM) AS CODE_NM,
+								XX.SORT_ORDER
+						   FROM COM_CODE XX
+						        LEFT OUTER JOIN COM_CODE_NM YY
+						        ON XX.YEAR = YY.YEAR
+						        AND XX.CODE_GRP_ID = YY.CODE_GRP_ID
+						        AND XX.CODE_ID = YY.CODE_ID
+						        AND XX.YEAR = YY.YEAR
+						        AND YY.LANG = #{lang}
+						  WHERE XX.CODE_GRP_ID = ${pCodeGrpId}
+						    AND XX.YEAR = CASE WHEN (SELECT YEAR_YN FROM COM_CODE_GRP WHERE CODE_GRP_ID = ${pCodeGrpId}) = 'Y' THEN ${pYear}
+						                  ELSE '9999' END
+						    AND XX.DELETE_DT IS NULL
+						 ) ${pAlias}
+	     ON ${pCompareColumn} = ${pAlias}.CODE_ID  					 
+	</sql>
+	
+</mapper>

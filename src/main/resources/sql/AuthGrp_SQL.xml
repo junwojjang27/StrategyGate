@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.menu.authGrp">
+	<select id="selectList" parameterType="authGrpVO" resultType="authGrpVO">
+		/*	그룹별권한 조회	authGrp.selectList */
+		SELECT
+			AUTH_GUBUN,
+			USER_ID,
+			DEPT_ID
+		FROM COM_ADMIN
+		WHERE 1=1
+
+	</select>
+	
+	<select id="selectMenuList" parameterType="authGrpVO" resultType="authGrpVO">
+		/*	메뉴 조회	authGrp.selectMenuList */
+	  SELECT A.PGM_ID,
+             B.PGM_NM,
+             B.FULL_PGM_NM
+        FROM COM_PGM A
+             INNER JOIN COM_PGM_NM B
+             ON A.PGM_ID = B.PGM_ID
+             AND B.LANG = #{lang}
+       WHERE A.PGM_ID NOT IN(SELECT PGM_ID
+                               FROM COM_PGM_AUTH
+                              WHERE AUTH_GUBUN = #{findAuthGubun})
+         AND A.DELETE_DT IS NULL
+       ORDER BY A.REAL_ORDER
+
+	</select>
+	
+	<select id="selectMenuSelectedList" parameterType="authGrpVO" resultType="authGrpVO">
+		/*	메뉴 조회	authGrp.selectMenuSelectedList */
+	 SELECT A.PGM_ID,
+            B.PGM_NM,
+            B.FULL_PGM_NM,
+            A.UP_PGM_ID,
+            A.PGM_LEVEL_ID
+       FROM COM_PGM A
+            INNER JOIN COM_PGM_NM B
+            ON A.PGM_ID = B.PGM_ID
+            AND B.LANG = #{lang}
+            INNER JOIN COM_PGM_AUTH C
+            ON A.PGM_ID = C.PGM_ID
+            AND C.AUTH_GUBUN = #{findAuthGubun}
+      WHERE A.DELETE_DT IS NULL
+      ORDER BY A.SORT_ORDER
+
+	</select>
+	
+	<select id="selectDetail" parameterType="authGrpVO" resultType="authGrpVO">
+		/*	그룹별권한 상세 조회	 	authGrp.selectDetail	*/
+		SELECT
+			AUTH_GUBUN,
+			USER_ID,
+			DEPT_ID
+		FROM COM_ADMIN
+		WHERE 1=1
+			AND AUTH_GUBUN=#{authGubun}
+			AND USER_ID=#{userId}
+
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="authGrpVO">
+	    /*	그룹별권한 정렬순서저장	 authGrp.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteAuthGrp" parameterType="authGrpVO">
+		/*	그룹별권한 삭제	authGrp.deleteAuthGrp	*/
+		DELETE FROM COM_ADMIN
+		WHERE 1=1
+			AND AUTH_GUBUN=#{authGubun}
+			AND USER_ID=#{userId}
+
+	</update>
+
+	<insert id="insertData" parameterType="authGrpVO">
+		/*	그룹별권한 저장	authGrp.insertData	*/
+		INSERT INTO COM_PGM_AUTH(
+			AUTH_GUBUN,
+			PGM_ID,
+			CREATE_DT)
+		VALUES (
+			#{authGubun},
+			#{pgmId},
+			SYSDATE)
+
+	</insert>
+	
+	<delete id="deleteData" parameterType="authGrpVO">
+		/*	그룹별권한 수정	authGrp.deleteData	*/
+		DELETE FROM COM_PGM_AUTH
+		WHERE 1=1
+			AND AUTH_GUBUN=#{authGubun}
+
+	</delete>
+
+	<update id="updateData" parameterType="authGrpVO">
+		/*	그룹별권한 수정	authGrp.updateData	*/
+		UPDATE COM_ADMIN
+		SET
+			DEPT_ID=#{deptId}
+		WHERE 1=1
+			AND AUTH_GUBUN=#{authGubun}
+			AND USER_ID=#{userId}
+
+	</update>
+</mapper>
+

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="superMng.superMng.userAdminMng">
+	<select id="selectList" parameterType="userAdminMngVO" resultType="userAdminMngVO">
+		/*	사용자관리 조회	superMng.superMng.userAdminMng.selectList */
+		SELECT
+			 A.USER_ID
+			,A.USER_NM
+			,A.PASSWD
+			,A.DEPT_ID
+			,A.DEPT_NM
+			,A.JIKGUB_ID
+			,A.JIKGUB_NM
+			,A.POS_ID
+			,A.POS_NM
+			,A.EMAIL
+			,A.BEING_YN
+			,A.JOIN_DT
+			,A.RETIRE_DT
+			,A.BIRTH_DT
+			,A.LANG
+			,A.PW_CHANGE_DT
+			,A.HIDDEN_YN
+			,A.CREATE_DT
+			,A.MODIFY_DT
+			,A.JOB_ID
+			,A.JOB_NM
+			,B.AUTH_GUBUN
+			,CA.CODE_NM AS AUTH_GUBUN_NM
+		FROM COM_USERINFO A
+		LEFT OUTER JOIN COM_ADMIN B
+		ON A.USER_ID = B.USER_ID
+		<include refid="common.func.getCodeJoinWithCompId">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCompId" value="'${findCompId}'"/>
+			<property name="pCodeGrpId" value="'018'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="NVL(B.AUTH_GUBUN,'99')"/>
+		</include>
+		WHERE 1=1
+		<if test="findDeptId !=null and findDeptId != ''" >
+			AND A.DEPT_ID = #{findDeptId}
+		</if>
+		<if test="findAuthId !=null and findAuthId != ''" >
+			AND B.AUTH_GUBUN = #{findAuthId}
+		</if>
+		<if test="findUserNm !=null and findUserNm != ''" >
+			AND UPPER(A.USER_NM) LIKE '%' || UPPER(#{findUserNm}) || '%'
+		</if>
+		ORDER BY A.USER_ID, B.AUTH_GUBUN
+	</select>
+	
+	<select id="selectCompList" parameterType="userAdminMngVO" resultType="userAdminMngVO">
+		/*	회사 목록 조회	superMng.superMng.userAdminMng.selectCompList */
+			SELECT	COMP_NM
+			FROM	COM_COMPINFO
+			WHERE	USE_YN = 'Y'
+	</select>
+	
+	<select id="selectDeptList" parameterType="userAdminMngVO" resultType="deptVO">
+		/*	조직 목록 조회	superMng.superMng.userAdminMng.selectDeptList	*/
+		SELECT	DEPT_ID,	DEPT_NM,
+				UP_DEPT_ID,	SORT_ORDER,	CHIEF_ID,
+				CHIEF_NM,	DEPT_LEVEL_ID	AS DEPT_LEVEL,	IS_LEAF
+		FROM	V_DEPTINFO
+		WHERE	YEAR = (SELECT	MAX(YEAR)	FROM	V_DEPTINFO)
+		ORDER BY	REAL_SORT_ORDER
+	</select>
+
+	<select id="selectAuthList" parameterType="userAdminMngVO" resultType="userAdminMngVO">
+		/*	권한 목록 조회	superMng.superMng.userAdminMng.selectAuthList */
+		SELECT	
+			XX.CODE_ID AS AUTH_GUBUN
+			, NVL(YY.CODE_NM,XX.CODE_NM) AS AUTH_GUBUN_NM
+		FROM COM_CODE XX
+		LEFT OUTER JOIN COM_CODE_NM YY
+		ON XX.YEAR = YY.YEAR
+			AND XX.CODE_GRP_ID = YY.CODE_GRP_ID
+			AND XX.CODE_ID = YY.CODE_ID
+			AND XX.YEAR = YY.YEAR
+			AND YY.LANG = #{lang}
+		WHERE XX.CODE_GRP_ID = '018'
+			AND XX.YEAR = CASE WHEN (SELECT YEAR_YN FROM COM_CODE_GRP WHERE CODE_GRP_ID = '018') = 'Y' THEN #{findYear} ELSE '9999' END
+			AND XX.DELETE_DT IS NULL
+		ORDER BY XX.SORT_ORDER
+	</select>
+	
+</mapper>
+

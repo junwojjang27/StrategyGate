@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="ideaEvalExcVO">
+			<field property="evalFormCd" depends="maxlength">
+				<arg0 key="평가항목코드" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="evalFormNm" depends="maxlength">
+				<arg0 key="평가항목이름" resource="true"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+			<field property="evalFormDegree" depends="maxlength">
+				<arg0 key="평가차수(1,2,3)" resource="true"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="evalFormComment" depends="maxlength">
+				<arg0 key="평가항목설명" resource="true"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+			<field property="createDt" depends="maxlength">
+				<arg0 key="생성일자" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="updateDt" depends="maxlength">
+				<arg0 key="수정일자" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="deleteDt" depends="maxlength">
+				<arg0 key="삭제일자" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="particalTypeId" depends="maxlength">
+				<arg0 key="평가자구분(임원,전직원)" resource="true"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+
+		</form>
+	</formset>
+</form-validation>
+

@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="dashboardVO">
+			<field property="mon" depends="maxlength">
+				<arg0 key="word.mon" resource="true"/>
+				<arg1 key="2" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>2</var-value>
+				</var>
+			</field>
+			<field property="analCycle" depends="maxlength">
+				<arg0 key="word.analysisCycle" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="metricId" depends="maxlength">
+				<arg0 key="word.metricCode" resource="true"/>
+				<arg1 key="30" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>30</var-value>
+				</var>
+			</field>
+			<field property="metricNm" depends="maxlength">
+				<arg0 key="word.metricNm" resource="true"/>
+				<arg1 key="300" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>300</var-value>
+				</var>
+			</field>
+			<field property="scDeptId" depends="maxlength">
+				<arg0 key="word.scDeptCode" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="scDeptNm" depends="maxlength">
+				<arg0 key="word.scDeptNm2" resource="true"/>
+				<arg1 key="150" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>150</var-value>
+				</var>
+			</field>
+			<field property="metricGrpId" depends="maxlength">
+				<arg0 key="word.metricPoolCode" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="metricGrpNm" depends="maxlength">
+				<arg0 key="지표POOL명" resource="true"/>
+				<arg1 key="300" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>300</var-value>
+				</var>
+			</field>
+			<field property="perspectiveId" depends="maxlength">
+				<arg0 key="word.perspectiveCode" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="perspectiveNm" depends="maxlength">
+				<arg0 key="word.perspectiveNm" resource="true"/>
+				<arg1 key="75" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>75</var-value>
+				</var>
+			</field>
+			<field property="strategyId" depends="maxlength">
+				<arg0 key="word.strategyId" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="strategyNm" depends="maxlength">
+				<arg0 key="word.strategyNm" resource="true"/>
+				<arg1 key="150" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>150</var-value>
+				</var>
+			</field>
+			<field property="target" depends="maxlength">
+				<arg0 key="word.target" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="actual" depends="maxlength">
+				<arg0 key="word.actual" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="score" depends="maxlength">
+				<arg0 key="word.score" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="finalScore" depends="maxlength">
+				<arg0 key="word.finalScore" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="weightScore" depends="maxlength">
+				<arg0 key="word.weightCalcScore" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="status" depends="maxlength">
+				<arg0 key="word.statusColor" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="unit" depends="maxlength">
+				<arg0 key="word.unitId" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="unitNm" depends="maxlength">
+				<arg0 key="word.unitNm" resource="true"/>
+				<arg1 key="75" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>75</var-value>
+				</var>
+			</field>
+			<field property="evalCycle" depends="maxlength">
+				<arg0 key="word.evalCycleTargetId" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="evalCycleNm" depends="maxlength">
+				<arg0 key="word.evalCycleNm" resource="true"/>
+				<arg1 key="75" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>75</var-value>
+				</var>
+			</field>
+			<field property="deptRollup" depends="maxlength">
+				<arg0 key="word.deptRollup2" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="deptRollupNm" depends="maxlength">
+				<arg0 key="word.deptRollupNm" resource="true"/>
+				<arg1 key="75" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>75</var-value>
+				</var>
+			</field>
+			<field property="propertyId" depends="maxlength">
+				<arg0 key="word.propertyId" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="propertyNm" depends="maxlength">
+				<arg0 key="word.metricAttr" resource="true"/>
+				<arg1 key="75" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>75</var-value>
+				</var>
+			</field>
+			<field property="typeId" depends="maxlength">
+				<arg0 key="word.metricType2" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="typeNm" depends="maxlength">
+				<arg0 key="word.metricType2" resource="true"/>
+				<arg1 key="50" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>50</var-value>
+				</var>
+			</field>
+			<field property="weight" depends="maxlength">
+				<arg0 key="word.weight" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="actCalType" depends="maxlength">
+				<arg0 key="word.actualCalc" resource="true"/>
+				<arg1 key="500" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>500</var-value>
+				</var>
+			</field>
+			<field property="scoreCalTypeGubun" depends="maxlength">
+				<arg0 key="word.scoreCalcDivision" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="scoreCalTypeId" depends="maxlength">
+				<arg0 key="word.scoreCalTypeId" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="scoreCalTypeNm" depends="maxlength">
+				<arg0 key="word.scoreCalTypeNm" resource="true"/>
+				<arg1 key="500" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>500</var-value>
+				</var>
+			</field>
+			<field property="description" depends="maxlength">
+				<arg0 key="word.kpiPurpose" resource="true"/>
+				<arg1 key="4000" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>4000</var-value>
+				</var>
+			</field>
+			<field property="gubun" depends="maxlength">
+				<arg0 key="word.kpiType" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="gubunNm" depends="maxlength">
+				<arg0 key="word.kpiTypeNm" resource="true"/>
+				<arg1 key="50" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>50</var-value>
+				</var>
+			</field>
+			<field property="upMetricId" depends="maxlength">
+				<arg0 key="word.upKpiCd" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="upMetricNm" depends="maxlength">
+				<arg0 key="word.upKpiNm" resource="true"/>
+				<arg1 key="150" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>150</var-value>
+				</var>
+			</field>
+			<field property="tamShareYn" depends="maxlength">
+				<arg0 key="word.goalActualShareYn" resource="true"/>
+				<arg1 key="1" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>1</var-value>
+				</var>
+			</field>
+			<field property="sortOrder" depends="maxlength">
+				<arg0 key="word.sortOrder" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="content" depends="maxlength">
+				<arg0 key="word.kpiContent" resource="true"/>
+				<arg1 key="4000" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>4000</var-value>
+				</var>
+			</field>
+			<field property="kpiInsertUserId" depends="maxlength">
+				<arg0 key="KPI입력자ID" resource="true"/>
+				<arg1 key="16" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>16</var-value>
+				</var>
+			</field>
+			<field property="kpiInsertUserNm" depends="maxlength">
+				<arg0 key="word.kpiInputUserNm" resource="true"/>
+				<arg1 key="50" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>50</var-value>
+				</var>
+			</field>
+			<field property="actInsertUserId" depends="maxlength">
+				<arg0 key="word.inputUser" resource="true"/>
+				<arg1 key="30" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>30</var-value>
+				</var>
+			</field>
+			<field property="actInsertUserNm" depends="maxlength">
+				<arg0 key="word.inputUser2" resource="true"/>
+				<arg1 key="50" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>50</var-value>
+				</var>
+			</field>
+			<field property="actApproveUserId" depends="maxlength">
+				<arg0 key="word.approver" resource="true"/>
+				<arg1 key="30" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>30</var-value>
+				</var>
+			</field>
+			<field property="actApproveUserNm" depends="maxlength">
+				<arg0 key="word.approver2" resource="true"/>
+				<arg1 key="50" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>50</var-value>
+				</var>
+			</field>
+			<field property="upScDeptId" depends="maxlength">
+				<arg0 key="word.upScOrgCd" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="scDeptGrpId" depends="maxlength">
+				<arg0 key="word.orgEvalGrp" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="levelId" depends="maxlength">
+				<arg0 key="word.deptLevel" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="createDt" depends="maxlength">
+				<arg0 key="word.createDT" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+
+		</form>
+	</formset>
+</form-validation>
+

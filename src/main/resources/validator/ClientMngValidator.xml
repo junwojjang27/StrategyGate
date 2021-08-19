@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="clientMngVO">
+			<field property="compNm" depends="required, maxByteLength">
+				<arg0 key="word.compNm" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="newCompId" depends="required, maxlength">
+				<arg0 key="word.compId" resource="true"/>
+				<arg1 key="30" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>30</var-value>
+				</var>
+			</field>
+			<field property="bizNo" depends="required, maxlength">
+				<arg0 key="word.bizNo" resource="true"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="ceoNm" depends="required, maxByteLength">
+				<arg0 key="word.agent" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="bizCondition" depends="required, maxByteLength">
+				<arg0 key="word.business" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="bizType" depends="required, maxByteLength">
+				<arg0 key="word.sectors" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="compTel" depends="required, maxlength">
+				<arg0 key="word.tel" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="compFax" depends="maxlength">
+				<arg0 key="word.fax" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="country" depends="required">
+				<arg0 key="word.country" resource="true"/>
+			</field>
+			<field property="compLang" depends="required">
+				<arg0 key="word.lang" resource="true"/>
+			</field>
+			<field property="compAddr" depends="required, maxByteLength">
+				<arg0 key="word.addr" resource="true"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+			<field property="chargeNm" depends="required, maxByteLength">
+				<arg0 key="word.inCharge" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="chargeTel" depends="required, maxlength">
+				<arg0 key="word.inChargeTel" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="chargeEmail" depends="required, maxlength">
+				<arg0 key="word.inChargeEmail" resource="true"/>
+				<arg1 key="50" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>50</var-value>
+				</var>
+			</field>
+			<field property="theme" depends="required">
+				<arg0 key="word.selectTheme" resource="true"/>
+			</field>
+			<field property="memo" depends="maxByteLength">
+				<arg0 key="word.memo" resource="true"/>
+				<arg1 key="4000" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>4000</var-value>
+				</var>
+			</field>
+			<field property="pwChangeCycle" depends="integer">
+				<arg0 key="word.passwordChangeCycle" resource="true"/>
+			</field>
+			<field property="dbDriver" depends="required, maxByteLength">
+				<arg0 key="word.compDbDriverName" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="dbUrl" depends="required, maxByteLength">
+				<arg0 key="word.compDbUrl" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+			<field property="connectionId" depends="required, maxByteLength">
+				<arg0 key="word.compDbConnId" resource="true"/>
+				<arg1 key="8" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>8</var-value>
+				</var>
+			</field>
+			<field property="dbId" depends="required, maxByteLength">
+				<arg0 key="word.compDbDatabaseId" resource="true"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="dbUserId" depends="required, maxByteLength">
+				<arg0 key="word.compDbUserId" resource="true"/>
+				<arg1 key="20" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>20</var-value>
+				</var>
+			</field>
+			<field property="dbUserPasswd" depends="required, maxByteLength">
+				<arg0 key="word.compDbPassword" resource="true"/>
+				<arg1 key="100" resource="false"/>
+				<var>
+					<var-name>maxByteLength</var-name>
+					<var-value>100</var-value>
+				</var>
+			</field>
+		</form>
+	</formset>
+</form-validation>

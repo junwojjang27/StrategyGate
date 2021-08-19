@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="egovframework, kr.ispark" use-default-filters="false">
+		<context:include-filter expression="org.springframework.stereotype.Controller" type="annotation"/>
+	</context:component-scan>
+	
+	<bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+		<property name="order" value="0"/>
+	</bean>
+
+	<bean id="tilesViewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView"/>
+		<property name="order" value="1"/>
+	</bean>
+
+	<bean class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<property name="suffix" value=".jsp"/>
+		<property name="order" value="2"/>
+	</bean>
+	
+	<bean class="kr.ispark.common.BscJacksonMapper" id="jsonView">
+		<property name="contentType" value="application/json;charset=UTF-8"/>
+	</bean>
+	
+	<bean id="excelDownloadView" class="kr.ispark.common.ExcelDownloadView" >
+		<property name="contentType" value="application/vnd.ms-excel; charset=UTF-8"></property>
+	</bean>
+	
+	<bean id="bscExcelDownloadView" class="kr.ispark.common.BscExcelDownloadView" >
+		<property name="contentType" value="application/vnd.ms-excel; charset=UTF-8"></property>
+	</bean>
+	
+	<bean id="tilesConfigurer" class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+		<property name="definitions">
+			<list>
+				<value>/WEB-INF/tiles/layout.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+		<property name="webBindingInitializer">
+			<bean class="egovframework.com.cmm.web.EgovBindingInitializer">
+			</bean>
+		</property>
+		<property name="customArgumentResolvers">
+			<list>
+				<bean class="egovframework.rte.ptl.mvc.bind.AnnotationCommandMapArgumentResolver"/>
+			</list>
+		</property>
+		<!-- requestbody로 어노테이션 설정시 json형태로 반환한다. -->
+		<property name="messageConverters">
+			<list>
+				<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"></bean>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- ReqeustMapping 과 Controller 클래스 매핑을 위한 annotation mvc 설정 -->
+	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+		<property name="interceptors">
+			<ref bean="localeChangeInterceptor"/>
+		</property>
+	</bean>
+	
+	<!-- <bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"> -->
+	<bean id="localeChangeInterceptor" class="kr.ispark.common.interceptor.CustomLocaleChangeInterceptor">
+		<property name="paramName" value="lang"/>
+	</bean>
+
+	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver">
+		<!-- <property name="defaultLocale" value="en"/> -->
+	</bean>
+	<!-- 
+	<bean id="paramAspect" class="kr.ispark.common.aspect.CtrlAspect"/>
+	<aop:config>
+		<aop:aspect ref="paramAspect">
+			<aop:before method="getInfoController" pointcut="execution(* *..*Controller.*(..))"/>
+		</aop:aspect>
+	</aop:config>
+	 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**/*.do"/>
+			<bean id="refererInterceptor" class="kr.ispark.common.interceptor.RefererInterceptor" >
+				<property name="permittedAntPathURL">
+					<set>
+						<value>/login.do</value>
+						<value>/logout.do</value>
+						<value>/error/*.do</value>
+						<value>/api/apiTest.do</value>
+						<value>/connectionReload.do</value>
+						<value>/comPop/notice/popNoticeDetail.do</value>
+					</set>
+				</property>
+			</bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+</beans>

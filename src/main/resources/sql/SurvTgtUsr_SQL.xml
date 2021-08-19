@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.survey.survTgtUsr">
+	<select id="selectList" parameterType="survTgtUsrVO" resultType="survTgtUsrVO">
+		/*	설문대상자 조회	system.survey.survTgtUsr.selectList */
+		SELECT
+			SURVEY_ID,
+			SURVEY_USER_ID,
+			SURVEY_USER_NM,
+			DEPT_NM,
+			POS_NM,
+			JIKGUB_NM
+		FROM SUR_TARGET_USER
+		WHERE 1=1
+		AND SURVEY_ID=#{findSurveyId}
+		ORDER BY SURVEY_USER_NM
+
+	</select>
+
+	<update id="deleteSurvTgtUsr" parameterType="survTgtUsrVO">
+		/*	설문대상자 삭제	system.survey.survTgtUsr.deleteSurvTgtUsr	*/
+		DELETE FROM SUR_TARGET_USER
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+			AND SURVEY_USER_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+
+	</update>
+
+	<update id="deleteAllSurvTgtUsr" parameterType="survTgtUsrVO">
+		/*	설문대상자 전체삭제	system.survey.survTgtUsr.deleteAllSurvTgtUsr	*/
+		DELETE FROM SUR_TARGET_USER
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+
+	</update>
+
+	<insert id="insertData" parameterType="survTgtUsrVO">
+		/*	설문대상자 저장	system.survey.survTgtUsr.insertData	*/
+		INSERT INTO SUR_TARGET_USER(
+			SURVEY_ID,
+			SURVEY_USER_ID,
+			SURVEY_USER_NM,
+			DEPT_NM,
+			POS_NM,
+			JIKGUB_NM
+		) VALUES (
+			#{surveyId},
+			#{surveyUserId},
+			#{surveyUserNm},
+			#{deptNm},
+			#{posNm},
+			#{jikgubNm}
+		)
+
+	</insert>
+
+	<update id="deleteAllUser" parameterType="survTgtUsrVO">
+		/*	전직원삭제	system.survey.survTgtUsr.deleteAllUser	*/
+		DELETE FROM SUR_TARGET_USER
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+
+	</update>
+
+	<insert id="insertAllUser" parameterType="survTgtUsrVO">
+		/*	전직원추가	system.survey.survTgtUsr.insertAllUser	*/
+		INSERT INTO SUR_TARGET_USER
+		SELECT
+			  #{surveyId}
+			, U.USER_ID
+			, U.USER_NM
+			, U.DEPT_NM
+			<!-- , D.DEPT_F_NM AS DEPT_NM -->
+			, C1.CODE_NM AS POS_NM
+			, C2.CODE_NM AS JIKGUB_NM
+		FROM V_ROLE_USER U
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'344'"/>
+			<property name="pAlias" value="C1"/>
+			<property name="pCompareColumn" value="U.POS_ID"/>
+		</include>
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'345'"/>
+			<property name="pAlias" value="C2"/>
+			<property name="pCompareColumn" value="U.JIKGUB_ID"/>
+		</include>
+<!-- 		LEFT JOIN V_DEPTINFO D
+			ON	U.DEPT_ID = D.DEPT_ID
+			AND	D.YEAR = #{findYear} -->
+		WHERE 1=1
+
+	</insert>
+</mapper>
+

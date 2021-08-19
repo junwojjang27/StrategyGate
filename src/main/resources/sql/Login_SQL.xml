@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="login">
+	<select id="selectUser" parameterType="userVO" resultType="userVO">
+		/*	로그인용 사용자 조회	login.selectUser	*/
+		SELECT	U.USER_ID,	U.USER_NM,		U.PASSWD,
+				U.DEPT_ID,	U.DEPT_NM,	U.JIKGUB_ID,	U.JIKGUB_NM,
+				U.POS_ID,	U.POS_NM,	U.JOB_ID,		U.JOB_NM,
+				U.EMAIL,	U.BEING_YN,	U.JOIN_DT,		U.RETIRE_DT,
+				U.BIRTH_DT,	U.PW_CHANGE_DT,	U.HIDDEN_YN,
+				CASE	WHEN	U.LANG	IS NULL	THEN	C.COMP_LANG
+						ELSE	U.LANG
+				END	LANG,
+				CASE	WHEN	C.PW_CHANGE_CYCLE IS NULL	THEN	'N'
+						WHEN	U.PW_CHANGE_DT IS NULL	THEN 'Y'
+						ELSE	CASE	WHEN	SYSDATE - U.PW_CHANGE_DT > C.PW_CHANGE_CYCLE	THEN	'Y'
+										ELSE	'N'
+								END
+				END	AS	ALERT_PW_CHANGE_YN,	C.PW_CHANGE_CYCLE,
+				D.CONNECTION_ID, D.DB_ID, E.EVALER_STEP
+		FROM	V_ROLE_USER U
+				LEFT JOIN	COM_COMPINFO C
+						ON	1=1
+				LEFT JOIN	COM_COMP_DBINFO D
+						ON	1=1		
+				LEFT JOIN (
+					SELECT USER_ID,
+					CASE
+					    WHEN A_151=1 THEN '2'
+					    WHEN A_150=1 THEN '1'
+					    ELSE '0' END AS EVALER_STEP
+					FROM (
+					    SELECT USER_ID,
+					        SUM(CASE WHEN AUTH_GUBUN='150' THEN 1 ELSE 0 END )   AS A_150 ,
+					        SUM(CASE WHEN AUTH_GUBUN='151' THEN 1 ELSE 0 END )   AS A_151 
+					    FROM COM_ADMIN
+					     GROUP BY USER_ID
+					)
+				) E ON U.USER_ID=E.USER_ID
+		WHERE	U.USER_ID = #{userId}
+	</select>
+	
+	<select id="selectAdminGubunList" parameterType="userVO" resultType="String">
+		/*	사용자 권한 목록 조회	login.selectAdminGubunList	*/
+		SELECT	A.AUTH_GUBUN
+		FROM	COM_ADMIN A
+				JOIN 	COM_CODE B
+					ON A.AUTH_GUBUN = B.CODE_ID
+					AND B.CODE_GRP_ID = '018'
+					AND B.DELETE_DT IS NULL
+		WHERE	A.USER_ID = #{userId}
+		UNION ALL
+		SELECT '99' FROM DUAL <!-- 일반사용자는 등록된 직원 모두 해당되도록 처리 -->	
+	</select>
+	
+	<select id="selectLangList" parameterType="userVO" resultType="langVO">
+		/*	로그인 사용자 회사의 사용언어 목록 조회	login.selectLangList	*/
+		SELECT	  A.LANG
+				, B.LANG_NM
+		FROM	COM_COMP_LANG A
+				LEFT JOIN	COM_LANG B
+					ON A.LANG = B.LANG
+		WHERE	1=1
+		ORDER BY	B.SORT_ORDER
+	</select>
+	
+	<select id="selectUserScDeptList" parameterType="egovMap" resultType="egovMap">
+		/*	로그인 사용자의 연도별 성과조직 목록 조회	login.selectUserScDeptList	*/
+		SELECT	M.YEAR,	M.SC_DEPT_ID
+		FROM	V_ROLE_USER U
+				JOIN	BSC_SC_DEPT_MAPPING M
+					ON	U.DEPT_ID = M.DEPT_ID
+		WHERE	U.USER_ID = #{userId}
+		ORDER BY	M.YEAR
+	</select>
+	
+	<select id="selectServiceUseYn" parameterType="userVO" resultType="String">
+		/*	서비스 사용여부 조회	login.selectServiceUseYn	*/
+		SELECT	USE_YN
+		FROM	COM_COMPINFO
+		WHERE	1=1
+	</select>
+</mapper>

@@ -1,0 +1,687 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="superMng.superMng.menuDeployMng">
+	<select id="selectDeployList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/*	메뉴배포관리 조회	superMng.superMng.menuDeployMng.selectList */
+		SELECT X.PGM_ID,
+			   X.PGM_NM AS MAIN_PGM_NM,
+		       X.PGM_NM,
+		       X.PGM_LEVEL_ID,
+		       TO_NUMBER(X.PGM_LEVEL_ID) AS LEVEL_ID,
+		       X.URL,
+		       X.SORT_ORDER,
+		       X.URL_PATTERN,
+		       X.UP_PGM_ID,
+		       X.UP_PGM_NM,
+		       X.PGM_GBN_ID,
+		       X.USE_YN AS DEPLOY_TARGET_YN,
+		       NVL(X.DEPLOY_CNT, 0)	AS DEPLOY_CNT,
+		       NVL((SELECT	COUNT(1)	FROM	COM_COMPINFO	WHERE	USE_YN = 'Y'	AND	HAS_DEFAULT_DATA_YN = 'Y'), 0)	AS COMP_CNT,
+		       CASE WHEN X.IS_LEAF = 'N' THEN 'false' ELSE 'true' END AS HAS_LEAF,
+		       CASE WHEN X.IS_LEAF = 'N' THEN 'true' ELSE 'false' END AS EXPANDED
+		FROM
+		(
+		  SELECT A.PGM_ID,
+		         CASE WHEN B.PGM_NM IS NULL THEN A.PGM_NM ELSE B.PGM_NM END AS PGM_NM, 
+		         A.PGM_LEVEL_ID,
+		         A.IS_LEAF,
+		         A.URL,
+		         A.SORT_ORDER,
+		         A.REAL_ORDER,
+		         A.URL_PATTERN,
+		         A.UP_PGM_ID,
+		         D.PGM_NM AS UP_PGM_NM,
+		         A.PGM_GBN_ID,
+		         CASE WHEN A.DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN,
+		         E.CNT AS DEPLOY_CNT   
+		    FROM COM_PGM A
+		         LEFT JOIN	COM_PGM_NM B
+						ON	A.PGM_ID = B.PGM_ID
+						AND	A.COMP_ID = B.COMP_ID
+						AND	B.LANG = #{lang}		
+		         LEFT OUTER JOIN COM_PGM C
+		         ON A.COMP_ID = C.COMP_ID
+		         AND A.UP_PGM_ID = C.PGM_ID
+		         AND C.SORT_ORDER IS NOT NULL
+		         LEFT JOIN	COM_PGM_NM D
+				 ON	C.PGM_ID = D.PGM_ID
+				 AND C.COMP_ID = D.COMP_ID
+				 AND D.LANG = #{lang}
+			     LEFT OUTER JOIN (SELECT B.PGM_ID,	COUNT(1)	AS CNT
+									FROM COM_COMPINFO A,
+										 COM_PGM B
+								   WHERE A.COMP_ID = B.COMP_ID
+									 AND A.COMP_ID != #{templateCompId}
+									 AND A.USE_YN = 'Y'
+									 AND A.HAS_DEFAULT_DATA_YN = 'Y'
+									GROUP BY B.PGM_ID
+								  ) E		
+				 ON A.PGM_ID = E.PGM_ID 	
+		   WHERE A.COMP_ID = #{templateCompId}
+		     AND A.SORT_ORDER IS NOT NULL
+		     <if test='findUseYn == "Y"'>
+		     	AND A.DELETE_DT IS NULL
+		     </if>
+		     <if test='findUseYn == "N"'>
+		     	AND A.DELETE_DT IS NOT NULL
+		     </if>
+		  ) X
+		  ORDER BY X.REAL_ORDER
+
+	</select>
+	
+	<select id="selectDeployCompList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/* 회사별 메뉴 배포 목록	superMng.superMng.menuDeployMng.selectDeployCompList */
+		SELECT	A.COMP_ID,	A.COMP_NM,
+				DECODE(B.PGM_ID, NULL, 'N', 'Y')	AS DEPLOY_YN
+		FROM	COM_COMPINFO A
+				LEFT JOIN	COM_PGM B
+						ON	A.COMP_ID = B.COMP_ID
+						AND	B.PGM_ID = #{pgmId}
+		WHERE	A.USE_YN = 'Y'
+			AND	A.HAS_DEFAULT_DATA_YN = 'Y'
+			AND	A.COMP_ID != #{templateCompId}
+		ORDER BY	A.COMP_NM
+	</select>
+	
+	<update id="updateDeployData" parameterType="menuDeployMngVO" >
+		/* 회사별 메뉴 배포 목록	superMng.superMng.menuDeployMng.updateDeployData */
+		
+		UPDATE COM_PGM
+		   SET DELETE_DT = CASE WHEN #{deployTargetYn} = 'Y' THEN NULL ELSE SYSDATE END,
+		       PGM_GBN_ID = #{pgmGbnId}
+		 WHERE COMP_ID = #{templateCompId}
+		   AND PGM_ID = #{pgmId}
+	
+	</update>
+	
+	<delete id="deleteDeployedMenu" parameterType="menuDeployMngVO">
+		/* 배포 전 메뉴 삭제	superMng.superMng.menuDeployMng.deleteDeployedMenu */
+		DELETE	FROM	COM_PGM
+		WHERE	COMP_ID = #{tempCompId}
+			AND	PGM_ID = #{pgmId}
+	</delete>
+	
+	<delete id="deleteDeployedMenuNm" parameterType="menuDeployMngVO">
+		/* 배포 전 메뉴(언어별) 삭제	superMng.superMng.menuDeployMng.deleteDeployedMenuNm */
+		DELETE	FROM	COM_PGM_NM
+		WHERE	COMP_ID = #{tempCompId}
+			AND	PGM_ID = #{pgmId}
+	</delete>
+	
+	<delete id="deleteDeployedMenuAuth" parameterType="menuDeployMngVO">
+		/* 배포 전 메뉴 권한 삭제	superMng.superMng.menuDeployMng.deleteDeployedMenuAuth */
+		DELETE	FROM	COM_PGM_AUTH
+		WHERE	COMP_ID = #{tempCompId}
+			AND	PGM_ID = #{pgmId}
+	</delete>
+	
+	<insert id="insertDeployMenu" parameterType="menuDeployMngVO">
+		/* 메뉴 배포	superMng.superMng.menuDeployMng.insertDeployMenu */
+		INSERT	INTO	COM_PGM	(
+			COMP_ID,	PGM_ID,		PGM_NM,
+			UP_PGM_ID,	PGM_LEVEL_ID,	URL,
+			SORT_ORDER, REAL_ORDER,	CONTENT,	PARAM, URL_PATTERN, CREATE_DT, DELETE_DT, IS_LEAF, FULL_PGM_ID, GUIDE_COMMENT, PGM_GBN_ID
+		)
+		SELECT	#{tempCompId},		A.PGM_ID,		NVL(B.PGM_NM, A.PGM_NM),
+				A.UP_PGM_ID,	A.PGM_LEVEL_ID,		A.URL,
+				A.SORT_ORDER, A.REAL_ORDER,   A.CONTENT,		A.PARAM, A.URL_PATTERN, A.CREATE_DT, A.DELETE_DT, A.IS_LEAF, A.FULL_PGM_ID, A.GUIDE_COMMENT, A.PGM_GBN_ID		
+		FROM	COM_PGM A
+				LEFT JOIN	(
+								SELECT	B.COMP_ID,	B.PGM_ID,	B.PGM_NM
+								FROM	COM_PGM_NM B,
+										COM_COMPINFO C
+								WHERE	B.COMP_ID = C.COMP_ID
+									AND	B.LANG = C.COMP_LANG
+									AND	B.PGM_ID =	#{pgmId}
+									AND	C.COMP_ID = #{tempCompId}
+							) B
+						ON	A.COMP_ID = B.COMP_ID
+						AND	A.PGM_ID = B.PGM_ID
+		WHERE	A.COMP_ID = #{templateCompId}
+			AND	A.PGM_ID = #{pgmId}
+	</insert>
+	
+	<insert id="insertDeployMenuNm" parameterType="menuDeployMngVO">
+		/* 메뉴(언어별) 배포	superMng.superMng.menuDeployMng.insertDeployMenuNm */
+		INSERT	INTO	COM_PGM_NM	(
+			COMP_ID,	LANG,	PGM_ID,	PGM_NM
+		)
+		SELECT	#{tempCompId},	LANG,	PGM_ID,	PGM_NM
+		FROM	COM_PGM_NM
+		WHERE	COMP_ID = #{templateCompId}
+			AND	PGM_ID = #{pgmId}
+			AND	LANG IN	(
+							SELECT	LANG	FROM	COM_COMP_LANG A
+							WHERE	A.COMP_ID = #{tempCompId}
+						)
+	</insert>
+
+	<insert id="insertDeployMenuAuth" parameterType="menuDeployMngVO">
+		/* 메뉴 권한 배포	superMng.superMng.menuDeployMng.insertDeployMenuAuth */
+		INSERT	INTO	COM_PGM_AUTH	(
+			COMP_ID,	AUTH_GUBUN,	PGM_ID
+		)
+		SELECT	#{tempCompId},	AUTH_GUBUN,	PGM_ID
+		FROM	COM_PGM_AUTH
+		WHERE	COMP_ID = #{templateCompId}
+			AND	PGM_ID = #{pgmId}
+			AND	AUTH_GUBUN IN	(
+									SELECT	CODE_ID FROM COM_CODE
+									WHERE	COMP_ID = #{tempCompId}
+										AND	CODE_GRP_ID = '018'
+										AND	DELETE_DT IS NULL
+								)
+	</insert>
+	
+	<!--
+	메뉴관리 시작~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 -->
+	
+	<select id="selectList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO"  useCache="false">
+		/*	메뉴관리 조회	superMng.superMng.menuDeployMng.selectList */
+		  
+		SELECT X.PGM_ID,
+			   X.PGM_NM AS MAIN_PGM_NM,
+		       X.PGM_NM,
+		       X.PGM_LEVEL_ID,
+		       TO_NUMBER(X.PGM_LEVEL_ID) AS LEVEL_ID,
+		       X.URL,
+		       X.SORT_ORDER,
+		       X.URL_PATTERN,
+		       X.UP_PGM_ID,
+		       X.UP_PGM_NM,
+		       X.USE_YN,
+		       X.PGM_NM_LANG,
+		       CASE WHEN X.PGM_ID = '1' THEN '1' 
+		       <foreach collection="pgmAuthMap" index="key" item="value" separator="">
+     				WHEN X.PGM_ID = #{key} THEN #{value}  
+     		   </foreach>
+     		   END AS AUTH_GUBUNS,
+     		    CASE WHEN X.PGM_ID = '1' THEN '1' 
+		       <foreach collection="pgmAuthNmMap" index="key" item="value" separator="">
+     				WHEN X.PGM_ID = #{key} THEN #{value}  
+     		   </foreach>
+     		   END AS AUTH_GUBUN_NMS,
+     		   X.AUTH_CNT,
+		       CASE WHEN X.IS_LEAF = 'N' THEN 'false' ELSE 'true' END AS HAS_LEAF,
+		       CASE WHEN X.IS_LEAF = 'N' THEN 'true' ELSE 'false' END AS EXPANDED
+		FROM
+		(
+		  SELECT A.PGM_ID,
+		         CASE WHEN B.PGM_NM IS NULL THEN A.PGM_NM ELSE B.PGM_NM END AS PGM_NM, 
+		         A.PGM_LEVEL_ID,
+		         A.IS_LEAF,
+		         A.URL,
+		         A.SORT_ORDER,
+		         A.REAL_ORDER,
+		         A.URL_PATTERN,
+		         A.UP_PGM_ID,
+		         D.PGM_NM AS UP_PGM_NM,
+		         X.PGM_NM_LANG,
+		         Y.AUTH_CNT,
+		         CASE WHEN A.DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN     
+		    FROM COM_PGM A
+		         LEFT JOIN	COM_PGM_NM B
+						ON	A.PGM_ID = B.PGM_ID
+						AND	A.COMP_ID = B.COMP_ID
+						AND	B.LANG = #{lang}		
+		         LEFT OUTER JOIN COM_PGM C
+		         ON A.COMP_ID = C.COMP_ID
+		         AND A.UP_PGM_ID = C.PGM_ID
+		         AND C.SORT_ORDER IS NOT NULL
+		         LEFT JOIN	COM_PGM_NM D
+						ON	C.PGM_ID = D.PGM_ID
+						AND	C.COMP_ID = D.COMP_ID
+						AND	D.LANG = #{lang}
+				 LEFT OUTER JOIN (  SELECT A.PGM_ID,
+									       <choose>
+										     	<when test="langList.size != 0">
+										           <foreach collection="langList" item="langList" separator="||" close="AS PGM_NM_LANG">
+												       #{langList.lang}||'#$%'||MAX(CASE WHEN B.LANG = #{langList.lang} THEN B.PGM_NM END)||'$%^'
+												   </foreach>
+										     	</when>
+										     	<otherwise>
+										           '' AS PGM_NM_LANG
+										     	</otherwise>
+										    </choose>
+									  FROM COM_PGM A
+									       INNER JOIN COM_PGM_NM B
+									       ON A.COMP_ID = B.COMP_ID
+									       AND A.PGM_ID = B.PGM_ID
+									 WHERE A.COMP_ID = #{templateCompId}
+									 GROUP BY A.PGM_ID
+									 ORDER BY A.PGM_ID
+				 				 ) X
+			      ON A.PGM_ID = X.PGM_ID
+			      LEFT OUTER JOIN (SELECT A.COMP_ID, A.PGM_ID, COUNT(1) AS AUTH_CNT
+			                         FROM COM_PGM_AUTH A
+			                        WHERE A.COMP_ID = #{templateCompId}
+			                        GROUP BY A.COMP_ID, A.PGM_ID) Y
+			      ON A.PGM_ID = Y.PGM_ID
+		   WHERE A.COMP_ID = #{templateCompId}
+		     AND A.SORT_ORDER IS NOT NULL
+		     <if test='findUseYn == "Y"'>
+		     	AND A.DELETE_DT IS NULL
+		     </if>
+		     <if test='findUseYn == "N"'>
+		     	AND A.DELETE_DT IS NOT NULL
+		     </if>
+		  ) X
+		  ORDER BY X.REAL_ORDER
+		   
+		   
+	</select>
+	
+	<select id="selectReSortList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/*	메뉴관리 정렬순서 재정렬 조회	superMng.superMng.menuDeployMng.selectReSortList */
+		
+		<!-- 
+		SELECT A.PGM_ID
+		  FROM COM_PGM A
+		 WHERE A.COMP_ID = #{templateCompId}
+		 START WITH A.UP_PGM_ID IS NULL
+		 CONNECT BY PRIOR A.PGM_ID = A.UP_PGM_ID
+		            AND PRIOR A.COMP_ID = A.COMP_ID
+		 ORDER SIBLINGS BY A.SORT_ORDER
+		 -->
+		 
+		 
+		  SELECT A.COMP_ID,
+		         A.PGM_ID,
+		         A.PGM_NM,
+		         A.FULL_PGM_ID,     
+		         A.UP_PGM_ID,
+		         A.URL,
+		         A.URL_PATTERN,
+		         A.PGM_LEVEL_ID,
+		         A.SORT_ORDER,
+		         A.IS_LEAF,
+		         ROWNUM AS REAL_ORDER,
+		         A.DELETE_DT
+		  FROM 
+		  (
+		  SELECT A.COMP_ID,
+		         A.PGM_ID,
+		         A.PGM_NM,
+		         SYS_CONNECT_BY_PATH(A.PGM_NM, '>') AS FULL_PGM_NM,
+		         SYS_CONNECT_BY_PATH(A.PGM_ID, '/') AS FULL_PGM_ID,    
+		         A.UP_PGM_ID,
+		         A.URL,
+		         A.URL_PATTERN,
+		         LEVEL AS PGM_LEVEL_ID,
+		         A.SORT_ORDER,
+		         CASE WHEN CONNECT_BY_ISLEAF = 0 THEN 'N' ELSE 'Y' END AS IS_LEAF,
+		         A.DELETE_DT
+		    FROM COM_PGM A
+		   WHERE A.COMP_ID = #{templateCompId}
+		   START WITH A.UP_PGM_ID IS NULL
+		   CONNECT BY PRIOR A.PGM_ID = A.UP_PGM_ID AND PRIOR A.COMP_ID = A.COMP_ID
+		   ORDER SIBLINGS BY A.COMP_ID, A.SORT_ORDER
+		   ) A
+		 
+
+	</select>
+	
+	<select id="selectFullNameList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/*	메뉴관리 정렬순서 재정렬 조회	superMng.superMng.menuDeployMng.selectFullNameList */
+		
+		SELECT A.PGM_ID,
+		       SUBSTR(CASE WHEN LEVEL > 1 THEN SUBSTR(SYS_CONNECT_BY_PATH(B.PGM_NM,'>'),INSTR(SYS_CONNECT_BY_PATH(B.PGM_NM,'>'),'>',2)) 
+					                    ELSE SYS_CONNECT_BY_PATH(B.PGM_NM,'>') END
+					                    ,2) AS FULL_PGM_NM,
+		       B.LANG AS INPUT_LANG
+		  FROM COM_PGM A
+		       INNER JOIN COM_PGM_NM B
+		       ON A.COMP_ID = B.COMP_ID
+		       AND A.PGM_ID = B.PGM_ID
+		 WHERE A.COMP_ID = #{templateCompId}
+		 START WITH A.UP_PGM_ID IS NULL
+		 CONNECT BY PRIOR A.PGM_ID = A.UP_PGM_ID
+		            AND PRIOR A.COMP_ID = A.COMP_ID
+		            AND PRIOR B.LANG = B.LANG
+		 ORDER SIBLINGS BY A.SORT_ORDER
+		
+	</select>
+	
+	<select id="selectCompReSortList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/*	메뉴관리 정렬순서 재정렬 조회	superMng.superMng.menuDeployMng.selectReSortList */
+		
+		<!-- 
+		SELECT A.PGM_ID
+		  FROM COM_PGM A
+		 WHERE A.COMP_ID = #{templateCompId}
+		 START WITH A.UP_PGM_ID IS NULL
+		 CONNECT BY PRIOR A.PGM_ID = A.UP_PGM_ID
+		            AND PRIOR A.COMP_ID = A.COMP_ID
+		 ORDER SIBLINGS BY A.SORT_ORDER
+		 -->
+		 
+		 
+		  SELECT A.COMP_ID,
+		         A.PGM_ID,
+		         A.PGM_NM,
+		         A.FULL_PGM_ID,     
+		         A.UP_PGM_ID,
+		         A.URL,
+		         A.URL_PATTERN,
+		         A.PGM_LEVEL_ID,
+		         A.SORT_ORDER,
+		         A.IS_LEAF,
+		         ROWNUM AS REAL_ORDER,
+		         A.DELETE_DT
+		  FROM 
+		  (
+		  SELECT A.COMP_ID,
+		         A.PGM_ID,
+		         A.PGM_NM,
+		         SYS_CONNECT_BY_PATH(A.PGM_NM, '>') AS FULL_PGM_NM,
+		         SYS_CONNECT_BY_PATH(A.PGM_ID, '/') AS FULL_PGM_ID,    
+		         A.UP_PGM_ID,
+		         A.URL,
+		         A.URL_PATTERN,
+		         LEVEL AS PGM_LEVEL_ID,
+		         A.SORT_ORDER,
+		         CASE WHEN CONNECT_BY_ISLEAF = 0 THEN 'N' ELSE 'Y' END AS IS_LEAF,
+		         A.DELETE_DT
+		    FROM ${targetDbId}.COM_PGM A
+		   WHERE A.COMP_ID = #{tempCompId}
+		   START WITH A.UP_PGM_ID IS NULL
+		   CONNECT BY PRIOR A.PGM_ID = A.UP_PGM_ID AND PRIOR A.COMP_ID = A.COMP_ID
+		   ORDER SIBLINGS BY A.COMP_ID, A.SORT_ORDER
+		   ) A
+		 
+
+	</select>
+	
+	<select id="selectCompFullNameList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/*	메뉴관리 정렬순서 재정렬 조회	superMng.superMng.menuDeployMng.selectFullNameList */
+		
+		SELECT A.PGM_ID,
+		       SUBSTR(CASE WHEN LEVEL > 1 THEN SUBSTR(SYS_CONNECT_BY_PATH(B.PGM_NM,'>'),INSTR(SYS_CONNECT_BY_PATH(B.PGM_NM,'>'),'>',2)) 
+					                    ELSE SYS_CONNECT_BY_PATH(B.PGM_NM,'>') END
+					                    ,2) AS FULL_PGM_NM,
+		       B.LANG AS INPUT_LANG
+		  FROM ${targetDbId}.COM_PGM A
+		       INNER JOIN ${targetDbId}.COM_PGM_NM B
+		       ON A.COMP_ID = B.COMP_ID
+		       AND A.PGM_ID = B.PGM_ID
+		 WHERE A.COMP_ID = #{tempCompId}
+		 START WITH A.UP_PGM_ID IS NULL
+		 CONNECT BY PRIOR A.PGM_ID = A.UP_PGM_ID
+		            AND PRIOR A.COMP_ID = A.COMP_ID
+		            AND PRIOR B.LANG = B.LANG
+		 ORDER SIBLINGS BY A.SORT_ORDER
+		
+	</select>
+	
+	
+	<select id="selectAuthPgmList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/*	메뉴권한 조회	 	superMng.superMng.menuDeployMng.selectAuthPgmList	*/
+	    SELECT A.PGM_ID,
+	           A.AUTH_GUBUN,
+	           CASE WHEN C.CODE_NM IS NULL THEN B.CODE_NM ELSE C.CODE_NM END AS AUTH_GUBUN_NM
+	      FROM COM_PGM_AUTH A
+	           LEFT OUTER JOIN COM_CODE B
+	           ON A.COMP_ID = B.COMP_ID
+	           AND A.AUTH_GUBUN = B.CODE_ID
+               AND B.CODE_GRP_ID = '018'
+	           AND B.DELETE_DT IS NULL
+	           LEFT OUTER JOIN COM_CODE_NM C
+	           ON B.COMP_ID = C.COMP_ID
+	           AND B.CODE_GRP_ID = C.CODE_GRP_ID
+			   AND B.CODE_ID = C.CODE_ID
+	           AND B.YEAR = C.YEAR
+	           AND C.LANG = #{lang}
+	     WHERE A.COMP_ID = #{templateCompId}
+	     ORDER BY A.PGM_ID, A.AUTH_GUBUN	
+	</select>
+	
+	<select id="selectLangList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/*	표준언어조회	 	superMng.superMng.menuDeployMng.selectLangList	*/
+	    SELECT	L.LANG, L.LANG_NM
+		FROM	COM_COMP_LANG  CL
+				LEFT JOIN	COM_LANG L
+					ON	CL.LANG = L.LANG
+		WHERE	CL.COMP_ID = #{compId}
+		ORDER BY	L.LANG
+	</select>
+	
+	<select id="selectCompLangList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/*	표준언어조회	 	superMng.superMng.menuDeployMng.selectLangList	*/
+	    SELECT	L.LANG, L.LANG_NM
+		FROM	COM_COMP_LANG  CL
+				LEFT JOIN	COM_LANG L
+					ON	CL.LANG = L.LANG
+		WHERE	CL.COMP_ID = #{tempCompId}
+		ORDER BY	L.LANG
+	</select>
+	
+	<select id="selectDetail" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/*	메뉴관리 상세 조회	 	superMng.superMng.menuDeployMng.selectDetail	*/
+		SELECT
+			COMP_ID,
+			PGM_ID,
+			PGM_NM,
+			UP_PGM_ID,
+			PGM_LEVEL_ID,
+			URL,
+			SORT_ORDER,
+			CONTENT,
+			PARAM,
+			URL_PATTERN,
+			CREATE_DT,
+			DELETE_DT
+		FROM COM_PGM
+		WHERE 1=1
+			AND COMP_ID=#{templateCompId}
+			AND PGM_ID=#{pgmId}
+
+	</select>	
+	
+	<select id="selectRoleList" parameterType="menuDeployMngVO" resultType="menuDeployMngVO">
+		/*	메뉴관리 상세 조회	 	superMng.superMng.menuDeployMng.selectRoleList	*/
+		SELECT A.CODE_ID AS AUTH_GUBUN,
+		       A.CODE_NM AS AUTH_GUBUN_NM,
+		       CASE WHEN B.PGM_ID IS NULL THEN 'N' ELSE 'Y' END AS CHECK_YN 
+		  FROM (SELECT	XX.CODE_ID, NVL(YY.CODE_NM,XX.CODE_NM) AS CODE_NM,
+						XX.SORT_ORDER
+				   FROM COM_CODE XX
+				        LEFT OUTER JOIN COM_CODE_NM YY
+				        ON XX.COMP_ID = YY.COMP_ID
+				        AND XX.YEAR = YY.YEAR
+				        AND XX.CODE_GRP_ID = YY.CODE_GRP_ID
+				        AND XX.CODE_ID = YY.CODE_ID
+				        AND XX.YEAR = YY.YEAR
+				        AND YY.LANG = #{lang}
+				  WHERE XX.COMP_ID = #{templateCompId}
+				    AND XX.CODE_GRP_ID = '018'
+				    AND XX.YEAR = CASE WHEN (SELECT YEAR_YN FROM COM_CODE_GRP WHERE COMP_ID = #{templateCompId} AND CODE_GRP_ID = '018') = 'Y' THEN #{findYear}
+				                  ELSE '9999' END
+				    AND XX.DELETE_DT IS NULL
+				 ) A 
+				 LEFT OUTER JOIN COM_PGM_AUTH B
+				 ON B.COMP_ID = #{templateCompId}
+				 AND B.AUTH_GUBUN = A.CODE_ID
+				 AND B.PGM_ID = #{pgmId}
+		  WHERE 1=1
+		  ORDER BY A.SORT_ORDER
+		 
+	
+	</select>
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="menuDeployMngVO">
+	    /*	메뉴관리 정렬순서저장	 menuMng.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteMenuMng" parameterType="menuDeployMngVO">
+		/*	메뉴관리 삭제	superMng.superMng.menuDeployMng.deleteMenuMng	*/
+		UPDATE COM_PGM
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND COMP_ID=#{templateCompId}
+			AND PGM_ID=#{pgmId}
+
+	</update>
+
+	<insert id="insertData" parameterType="menuDeployMngVO">
+		/*	메뉴관리 저장	superMng.superMng.menuDeployMng.insertData	*/
+		INSERT INTO COM_PGM(
+			COMP_ID,
+			PGM_ID,
+			PGM_NM,
+			UP_PGM_ID,
+			PGM_LEVEL_ID,
+			URL,
+			SORT_ORDER,
+			CONTENT,
+			PARAM,
+			<!-- 
+			URL_PATTERN,
+			-->
+			CREATE_DT,
+			DELETE_DT)
+		
+    VALUES (
+			#{templateCompId},
+			#{pgmId},
+			#{pgmNm},
+			#{upPgmId},
+			#{pgmLevelId},
+			#{url},
+			#{sortOrder},
+			#{content},
+			#{param},
+			<!-- 
+			#{urlPattern},
+			-->
+			SYSDATE,
+			CASE WHEN #{useYn} = 'Y' THEN NULL ELSE SYSDATE END
+			)
+
+	</insert>
+	
+	<insert id="insertPgmNmData" parameterType="menuDeployMngVO">
+		/*	메뉴관리 메뉴명저장	menuMng.insertPgmNmData	*/
+		INSERT INTO COM_PGM_NM(
+			COMP_ID,
+			LANG,
+			PGM_ID,
+			PGM_NM,
+			CREATE_DT)
+    VALUES (
+			#{templateCompId},
+			#{inputLang},
+			#{pgmId},
+			#{pgmNm},
+			SYSDATE
+			)
+
+	</insert>
+
+	<update id="updateData" parameterType="menuDeployMngVO">
+		/*	메뉴관리 수정	superMng.superMng.menuDeployMng.updateData	*/
+		UPDATE COM_PGM
+		SET
+			PGM_NM=#{pgmNm},
+			UP_PGM_ID=#{upPgmId},
+			PGM_LEVEL_ID=#{pgmLevelId},
+			URL=#{url},
+			SORT_ORDER=#{sortOrder},
+			CONTENT=#{content},
+			PARAM=#{param},
+			<!-- 
+			URL_PATTERN=#{urlPattern},
+			-->
+			DELETE_DT = CASE WHEN #{useYn} = 'Y' THEN NULL ELSE SYSDATE END
+		WHERE 1=1
+			AND COMP_ID=#{templateCompId}
+			AND PGM_ID=#{pgmId}
+
+	</update>
+	
+	<delete id="deletePgmNmData" parameterType="menuDeployMngVO">
+		/*	메뉴관리 메뉴명 삭제	superMng.superMng.menuDeployMng.deletePgmNmData	*/
+		DELETE FROM COM_PGM_NM
+	    WHERE COMP_ID = #{templateCompId}
+	      AND PGM_ID = #{pgmId}
+
+	</delete>
+	
+	<delete id="deletePgmAuthData" parameterType="menuDeployMngVO">
+		/*	메뉴관리 메뉴권한 삭제	superMng.superMng.menuDeployMng.deletePgmAuthData	*/
+		DELETE FROM COM_PGM_AUTH
+	    WHERE COMP_ID = #{templateCompId}
+	      AND PGM_ID = #{pgmId}
+
+	</delete>
+	
+	<insert id="insertPgmAuthData" parameterType="menuDeployMngVO">
+		/*	메뉴관리 메뉴권한 생성	superMng.superMng.menuDeployMng.insertPgmAuthData	*/
+		INSERT INTO COM_PGM_AUTH(
+			COMP_ID,
+			PGM_ID,
+			AUTH_GUBUN,
+			CREATE_DT)
+    VALUES (
+			#{templateCompId},
+			#{pgmId},
+			#{authGubun},
+			SYSDATE
+			)
+
+	</insert>
+	
+	<update id="updateReSortOrder" parameterType="menuDeployMngVO">
+		/*	메뉴관리 정렬순서 resort 수정	superMng.superMng.menuDeployMng.updateReSortOrder	*/
+		UPDATE COM_PGM
+		SET REAL_ORDER = #{realOrder},
+		    IS_LEAF = #{isLeaf},
+		    PGM_LEVEL_ID = #{pgmLevelId},
+		    FULL_PGM_ID = #{fullPgmId}
+		WHERE 1=1
+			AND COMP_ID=#{templateCompId}
+			AND PGM_ID=#{pgmId}
+
+	</update>
+	
+	<update id="updateFullName" parameterType="menuDeployMngVO">
+		/*	메뉴관리 full 명 resort 수정	superMng.superMng.menuDeployMng.updateFullName	*/
+		UPDATE COM_PGM_NM
+		SET FULL_PGM_NM = #{fullPgmNm}
+		WHERE 1=1
+			AND COMP_ID=#{templateCompId}
+			AND PGM_ID=#{pgmId}
+			AND LANG=#{inputLang}
+
+	</update>
+	
+	<update id="updateCompReSortOrder" parameterType="menuDeployMngVO">
+		/*	메뉴관리 정렬순서 resort 수정	superMng.superMng.menuDeployMng.updateCompReSortOrder	*/
+		UPDATE ${targetDbId}.COM_PGM
+		SET REAL_ORDER = #{realOrder},
+		    IS_LEAF = #{isLeaf},
+		    PGM_LEVEL_ID = #{pgmLevelId},
+		    FULL_PGM_ID = #{fullPgmId}
+		WHERE 1=1
+			AND COMP_ID=#{tempCompId}
+			AND PGM_ID=#{pgmId}
+
+	</update>
+	
+	<update id="updateCompFullName" parameterType="menuDeployMngVO">
+		/*	메뉴관리 full 명 resort 수정	superMng.superMng.menuDeployMng.updateCompFullName	*/
+		UPDATE ${targetDbId}.COM_PGM_NM
+		SET FULL_PGM_NM = #{fullPgmNm}
+		WHERE 1=1
+			AND COMP_ID=#{tempCompId}
+			AND PGM_ID=#{pgmId}
+			AND LANG=#{inputLang}
+
+	</update>
+</mapper>
+

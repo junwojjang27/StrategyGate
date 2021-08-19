@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="idgen">
+	<select id="selectNextSeq" parameterType="idGenVO" resultType="int">
+		/* SEQ 채번	idgen.selectNextId */
+		SELECT	NVL(MAX(SEQ), 0) + 1
+		FROM	COM_SEQ
+		WHERE	TABLE_NAME = #{tableName}
+			AND	YEAR = #{year}
+	</select>
+	
+	<insert id="insertNextSeq" parameterType="idGenVO">
+		/* SEQ 정보 등록	idgen.insertNextSeq */
+		INSERT INTO	COM_SEQ	(
+			TABLE_NAME, YEAR, SEQ
+		) VALUES (
+			#{tableName}, #{year}, #{seq}
+		)
+	</insert>
+	
+	<update id="updateNextSeq" parameterType="idGenVO">
+		/* SEQ 정보 수정	idgen.updateNextSeq */
+		UPDATE	COM_SEQ
+			SET	SEQ = #{seq}
+		WHERE	TABLE_NAME = #{tableName}
+			AND	YEAR = #{year}
+	</update>
+	
+</mapper>

@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.code.codeGrp">
+	<select id="selectList" parameterType="codeGrpVO" resultType="codeGrpVO">
+		/*	공통코그룹관리 조회	codeGrp.selectList */
+		 SELECT A.CODE_GRP_ID,
+				NVL(C.CODE_GRP_NM,A.CODE_GRP_NM) AS CODE_GRP_NM,
+				A.CODE_DEF_ID,
+				A.CODE_GBN_ID,
+				A.YEAR_YN,
+				A.CONTENT,
+				A.MODIFY_YN,
+				CB.CODE_NM AS MODIFY_YN_NM,
+				NVL(B.CODE_CNT,0) AS CODE_CNT,
+				D.CODE_ALL_CNT,
+				T.CODE_GRP_NM_LANG,
+				CASE WHEN A.DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN
+		   FROM COM_CODE_GRP A
+			    LEFT OUTER JOIN (SELECT V.CODE_GRP_ID, V.YEAR, COUNT(1) AS CODE_CNT
+			                       FROM COM_CODE V
+			                      WHERE V.DELETE_DT IS NULL
+	                              GROUP BY V.CODE_GRP_ID, V.YEAR
+			                    )B
+			    ON A.CODE_GRP_ID = B.CODE_GRP_ID
+	         	AND B.YEAR = CASE WHEN A.YEAR_YN = 'Y' THEN #{findYear} ELSE '9999' END
+	         	LEFT OUTER JOIN (SELECT V.CODE_GRP_ID, V.YEAR, COUNT(1) AS CODE_ALL_CNT
+			                       FROM COM_CODE V
+			                      WHERE V.DELETE_DT IS NULL
+	                              GROUP BY V.CODE_GRP_ID, V.YEAR
+			                    )D
+			    ON A.CODE_GRP_ID = D.CODE_GRP_ID
+			    AND D.YEAR = CASE WHEN A.YEAR_YN = 'Y' THEN #{findYear} ELSE '9999' END
+	         	LEFT OUTER JOIN COM_CODE_GRP_NM C
+	         	ON A.CODE_GRP_ID = C.CODE_GRP_ID
+	         	AND C.LANG=#{lang}
+	         	LEFT OUTER JOIN(SELECT A.CODE_GRP_ID,
+	         						   <choose>
+									     	<when test="langList.size != 0">
+									           <foreach collection="langList" item="langList" separator="||" close="AS CODE_GRP_NM_LANG">
+											       #{langList.lang}||'#$%'||MAX(CASE WHEN B.LANG = #{langList.lang} THEN B.CODE_GRP_NM END)||'$%^'
+											   </foreach>
+									     	</when>
+									     	<otherwise>
+									           '' AS CODE_GRP_NM_LANG
+									     	</otherwise>
+									    </choose>
+								  FROM COM_CODE_GRP A
+								       INNER JOIN COM_CODE_GRP_NM B
+								       ON A.CODE_GRP_ID = B.CODE_GRP_ID
+								 WHERE 1=1
+								 GROUP BY A.CODE_GRP_ID
+								 ORDER BY A.CODE_GRP_ID
+	         					) T
+	         	 ON A.CODE_GRP_ID = T.CODE_GRP_ID
+	         	 <include refid="common.func.getCodeJoin">
+			        <property name="pYear" value="#{findYear}"/>
+			       	<property name="pCodeGrpId" value="'002'"/>
+			       	<property name="pAlias" value="CA"/>
+			       	<property name="pCompareColumn" value="A.CODE_GBN_ID"/>
+			     </include>
+	         	 <include refid="common.func.getCodeJoin">
+			        <property name="pYear" value="#{findYear}"/>
+			       	<property name="pCodeGrpId" value="'366'"/>
+			       	<property name="pAlias" value="CB"/>
+			       	<property name="pCompareColumn" value="A.MODIFY_YN"/>
+			     </include>
+		  WHERE 1=1
+			<if test='findUseYn != null and findUseYn == "Y"'>
+		    AND A.DELETE_DT IS NULL
+		    </if>
+		    <if test='findUseYn != null and findUseYn == "N"'>
+		    AND A.DELETE_DT IS NOT NULL
+			</if>
+	      ORDER BY CB.SORT_ORDER, CA.SORT_ORDER, A.CODE_GRP_ID
+
+	</select>
+
+	<select id="selectLangList" parameterType="codeGrpVO" resultType="codeGrpVO">
+		/*	표준언어조회	 	codeGrp.selectLangList	*/
+		SELECT	L.LANG, L.LANG_NM
+		FROM	COM_COMP_LANG  CL
+				LEFT JOIN	COM_LANG L
+					ON	CL.LANG = L.LANG
+		WHERE	L.LANG
+	</select>
+
+	<update id="deleteCodeGrp" parameterType="codeGrpVO">
+		/*	공통코그룹관리 삭제	codeGrp.deleteCodeGrp	*/
+		UPDATE COM_CODE_GRP
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND CODE_GRP_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+
+	</update>
+
+	<delete id="deleteCodeGrpNm" parameterType="codeGrpVO">
+		/*	공통코그룹관리 삭제	codeGrp.deleteCodeGrpNm	*/
+		DELETE FROM COM_CODE_GRP_NM
+		WHERE 1=1
+			AND CODE_GRP_ID = #{codeGrpId}
+
+	</delete>
+
+	<insert id="insertData" parameterType="codeGrpVO">
+		/*	공통코그룹관리 저장	codeGrp.insertData	*/
+		INSERT INTO COM_CODE_GRP(
+								CODE_GRP_ID,
+								CODE_GRP_NM,
+								CODE_GBN_ID,
+								CODE_DEF_ID,
+								YEAR_YN,
+								MODIFY_YN,
+								CONTENT,
+								CREATE_DT,
+								DELETE_DT)
+
+					VALUES (
+								#{codeGrpId},
+								#{codeGrpNm},
+								#{codeGbnId},
+								#{codeDefId},
+								#{yearYn},
+								#{modifyYn},
+								#{content},
+								SYSDATE,
+								CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END)
+
+	</insert>
+
+	<insert id="insertCodeGrpNm" parameterType="codeGrpVO">
+		/*	공통코그룹관리 저장	codeGrp.insertCodeGrpNm	*/
+		INSERT INTO COM_CODE_GRP_NM(
+								LANG,
+								CODE_GRP_ID,
+								CODE_GRP_NM,
+								CREATE_DT)
+					VALUES (
+								#{inputLang},
+								#{codeGrpId},
+								#{codeGrpNm},
+								SYSDATE)
+
+	</insert>
+
+	<update id="updateData" parameterType="codeGrpVO">
+		/*	공통코그룹관리 수정	codeGrp.updateData	*/
+		UPDATE COM_CODE_GRP
+		SET
+			CODE_GRP_NM=CASE WHEN CODE_GRP_NM IS NULL THEN #{codeGrpNm}
+			             <!--
+			             WHEN 고객사 기본언어일때  #{codeGrpNm}
+			             -->
+			             ELSE CODE_GRP_NM END,
+			CODE_GBN_ID=#{codeGbnId},
+			CODE_DEF_ID=#{codeDefId},
+			YEAR_YN=#{yearYn},
+			MODIFY_YN=#{modifyYn},
+			CONTENT=#{content},
+			DELETE_DT=CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END
+		WHERE 1=1
+			AND CODE_GRP_ID=#{codeGrpId}
+
+	</update>
+
+
+	<select id="selectCodeList" parameterType="codeGrpVO" resultType="codeGrpVO">
+		/*	공통코드관리 조회	codeGrp.selectList */
+		 	SELECT A.CODE_GRP_ID,
+			       A.CODE_ID,
+			       NVL(B.CODE_NM,A.CODE_NM) AS CODE_NM,
+			       A.YEAR,
+			       A.CONTENT,
+			       A.ETC1,
+			       A.ETC2,
+			       A.SORT_ORDER,
+			       T.CODE_NM_LANG,
+			       CASE WHEN A.DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN
+			  FROM COM_CODE A
+			       LEFT OUTER JOIN COM_CODE_NM B
+			       ON A.CODE_GRP_ID = B.CODE_GRP_ID
+			       AND A.CODE_ID = B.CODE_ID
+			       AND A.YEAR = B.YEAR
+			       AND B.LANG = #{lang}
+			       INNER JOIN (SELECT X.CODE_GRP_ID, X.YEAR_YN
+			                     FROM COM_CODE_GRP X
+			                    WHERE 1=1
+			                   ) D
+			       ON A.CODE_GRP_ID = D.CODE_GRP_ID
+			       LEFT OUTER JOIN(SELECT A.CODE_GRP_ID,
+			                              A.CODE_ID,
+		         						   <choose>
+										     	<when test="langList.size != 0">
+										           <foreach collection="langList" item="langList" separator="||" close="AS CODE_NM_LANG">
+												       #{langList.lang}||'#$%'||MAX(CASE WHEN B.LANG = #{langList.lang} THEN B.CODE_NM END)||'$%^'
+												   </foreach>
+										     	</when>
+										     	<otherwise>
+										           '' AS CODE_NM_LANG
+										     	</otherwise>
+										    </choose>
+									  FROM COM_CODE A
+									       INNER JOIN COM_CODE_NM B
+									       ON A.CODE_GRP_ID = B.CODE_GRP_ID
+									       AND A.CODE_ID = B.CODE_ID
+									       AND A.YEAR = B.YEAR
+									 WHERE A.CODE_GRP_ID = #{codeGrpId}
+									 GROUP BY A.CODE_GRP_ID, A.CODE_ID
+									 ORDER BY A.CODE_GRP_ID, A.CODE_ID
+		         					) T
+		         	 ON A.CODE_GRP_ID = T.CODE_GRP_ID
+		         	 AND A.CODE_ID = T.CODE_ID
+			 WHERE A.CODE_GRP_ID = #{codeGrpId}
+			   AND A.YEAR = CASE WHEN D.YEAR_YN = 'Y' THEN #{findYear} ELSE '9999' END
+			   <if test='findCodeUseYn != null and findCodeUseYn == "Y"'>
+			   	AND A.DELETE_DT IS NULL
+			   </if>
+			   <if test='findCodeUseYn != null and findCodeUseYn == "N"'>
+			   	AND A.DELETE_DT IS NOT NULL
+			   </if>
+			ORDER BY A.SORT_ORDER
+
+	</select>
+
+	<select id="selectCodeExistYn" parameterType="codeGrpVO" resultType="java.lang.String">
+
+		SELECT CASE WHEN COUNT(1) > 0 THEN 'Y' ELSE 'N' END AS EXIST_YN
+		  FROM COM_CODE
+		 WHERE CODE_GRP_ID = #{codeGrpId}
+		   AND YEAR = CASE WHEN #{yearYn}='Y' THEN #{findYear} ELSE '9999' END
+		   AND CODE_ID = #{codeId}
+
+	</select>
+
+	<update id="deleteCode" parameterType="codeGrpVO">
+		/*	공통코드관리 삭제	codeGrp.deleteCode	*/
+		UPDATE COM_CODE
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND CODE_GRP_ID = #{codeGrpId}
+			AND YEAR = CASE WHEN #{yearYn}='Y' THEN #{findYear} ELSE '9999' END
+			AND CODE_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+
+	</update>
+
+	<delete id="deleteCodeNm" parameterType="codeGrpVO">
+		/*	공통코드관리 삭제	codeGrp.deleteCodeNm	*/
+		DELETE FROM COM_CODE_NM
+		WHERE 1=1
+			AND CODE_GRP_ID = #{codeGrpId}
+			AND CODE_ID = #{codeId}
+			AND YEAR = CASE WHEN #{yearYn}='Y' THEN #{findYear} ELSE '9999' END
+
+	</delete>
+
+	<insert id="insertCodeData" parameterType="codeGrpVO">
+		/*	공통코드관리 저장	codeGrp.insertCodeData	*/
+		INSERT INTO COM_CODE(
+								CODE_GRP_ID,
+								CODE_ID,
+								CODE_NM,
+								YEAR,
+								SORT_ORDER,
+								CONTENT,
+								ETC1,
+								ETC2,
+								CREATE_DT,
+								DELETE_DT)
+
+					VALUES (
+								#{codeGrpId},
+								#{codeId},
+								#{codeNm},
+								CASE WHEN #{yearYn}='Y' THEN #{findYear} ELSE '9999' END,
+								#{sortOrder},
+								#{content},
+								#{etc1},
+								#{etc2},
+								SYSDATE,
+								CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END)
+
+	</insert>
+
+	<insert id="insertCodeNm" parameterType="codeGrpVO">
+		/*	공통코드관리 저장	codeGrp.insertCodeNm	*/
+		INSERT INTO COM_CODE_NM(
+								LANG,
+								CODE_GRP_ID,
+								YEAR,
+								CODE_ID,
+								CODE_NM,
+								CREATE_DT)
+
+					VALUES (
+								#{inputLang},
+								#{codeGrpId},
+								CASE WHEN #{yearYn}='Y' THEN #{findYear} ELSE '9999' END,
+								#{codeId},
+								#{codeNm},
+								SYSDATE)
+
+	</insert>
+
+	<update id="updateCodeData" parameterType="codeGrpVO">
+		/*	공통코드관리 수정	codeGrp.updateCodeData	*/
+		UPDATE COM_CODE
+		SET
+			CODE_NM=CASE WHEN CODE_NM IS NULL THEN #{codeNm}
+			             <!--
+			             WHEN 고객사 기본언어일때  #{codeNm}
+			             -->
+			             ELSE CODE_NM END,
+			SORT_ORDER=#{sortOrder},
+			ETC1=#{etc1},
+			ETC2=#{etc2},
+			CONTENT=#{content},
+			YEAR = CASE WHEN #{yearYn}='Y' THEN #{findYear} ELSE '9999' END,
+			DELETE_DT=CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END
+		WHERE 1=1
+			AND CODE_GRP_ID=#{codeGrpId}
+			AND CODE_ID=#{codeId}
+			AND YEAR= CASE WHEN #{yearYn}='Y' THEN #{findYear} ELSE '9999' END
+
+	</update>
+
+	<select id="selectNextSeq" parameterType="codeGrpVO" resultType="java.lang.String">
+
+		SELECT LPAD(NVL(MAX(TO_NUMBER(CODE_ID)),0)+1,NVL(MAX(B.LEN),3),'0')
+		  FROM COM_CODE
+		       LEFT OUTER JOIN (SELECT LENGTH(CODE_ID) LEN
+								  FROM COM_CODE
+								 WHERE CODE_GRP_ID = #{codeGrpId}
+								   AND YEAR = CASE WHEN #{yearYn}='Y' THEN #{findYear} ELSE '9999' END
+                                   AND DELETE_DT IS NULL
+                                   AND ROWNUM = 1
+                                   ) B
+			   ON 1=1
+		 WHERE CODE_GRP_ID = #{codeGrpId}
+		   AND YEAR = CASE WHEN #{yearYn}='Y' THEN #{findYear} ELSE '9999' END
+
+	</select>
+
+</mapper>
+

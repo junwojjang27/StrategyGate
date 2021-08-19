@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="base.scDept.scDeptMapping">
+	<select id="selectScDeptList" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	매핑용 성과조직 목록	scDept.scDept.scDeptMapping.selectScDeptList	*/
+		SELECT	D.YEAR,	D.SC_DEPT_ID	AS DEPT_ID,
+				D.SC_DEPT_NM	AS DEPT_NM,	D.UP_SC_DEPT_ID	AS UP_DEPT_ID,	D.SORT_ORDER,
+				D.LEVEL_ID,	D.IS_LEAF,
+				NVL(M.MAPPING_CNT, 0)	AS MAPPING_CNT
+		FROM	BSC_SC_DEPT D
+				LEFT JOIN	(
+								SELECT	YEAR,	SC_DEPT_ID,	COUNT(1)	AS MAPPING_CNT
+								FROM	BSC_SC_DEPT_MAPPING
+								WHERE	YEAR = #{findYear}
+								GROUP BY	YEAR,	SC_DEPT_ID
+							) M
+						ON	D.YEAR = M.YEAR
+						AND	D.SC_DEPT_ID = M.SC_DEPT_ID
+		WHERE	D.YEAR = #{findYear}
+			AND	D.DELETE_DT IS NULL
+		ORDER BY	D.REAL_SORT_ORDER
+	</select>
+	
+	<select id="selectDeptList" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	매핑용 인사조직 목록	scDept.scDept.scDeptMapping.selectDeptList	*/
+		SELECT	D.DEPT_ID,	D.DEPT_NM,	D.UP_DEPT_ID,	D.REAL_SORT_ORDER	AS SORT_ORDER,
+				D.CHIEF_ID,	D.CHIEF_NM,	D.DEPT_LEVEL_ID	AS DEPT_LEVEL,	D.IS_LEAF,
+				NVL(M.MAPPING_CNT, 0)	AS MAPPING_CNT
+		FROM	V_DEPTINFO D
+				LEFT JOIN	(
+								SELECT	YEAR,	DEPT_ID,	COUNT(1)	AS MAPPING_CNT
+								FROM	BSC_SC_DEPT_MAPPING
+								WHERE	1=1
+										AND	YEAR = #{findYear}
+								GROUP BY	YEAR,	DEPT_ID
+							) M
+						ON	D.DEPT_ID = M.DEPT_ID
+		WHERE	D.YEAR = #{findYear}
+		ORDER BY	D.REAL_SORT_ORDER
+	</select>
+
+	<select id="selectMappingList" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	매핑 목록	scDept.scDept.scDeptMapping.selectMappingList	*/
+		SELECT
+				A.YEAR,	A.SC_DEPT_ID,	A.DEPT_ID
+		FROM	BSC_SC_DEPT_MAPPING A
+		WHERE	1=1
+			AND	YEAR = #{findYear}
+			<choose>
+				<when test='findMappingBase == null or findMappingBase == "" or findMappingBase=="1"'>
+					AND	SC_DEPT_ID = #{baseDeptId}
+				</when>
+				<otherwise>
+					AND	DEPT_ID = #{baseDeptId}
+				</otherwise>
+			</choose>
+	</select>
+	
+	<delete id="deleteMapping" parameterType="scDeptVO">
+		/*	매핑 정보 삭제	scDept.scDept.scDeptMapping.deleteMapping	*/
+		DELETE	FROM	BSC_SC_DEPT_MAPPING
+		WHERE	YEAR = #{findYear}
+			<choose>
+				<when test='findMappingBase == null or findMappingBase == "" or findMappingBase=="1"'>
+					AND	SC_DEPT_ID = #{baseDeptId}
+				</when>
+				<otherwise>
+					AND	DEPT_ID = #{baseDeptId}
+				</otherwise>
+			</choose>
+	</delete>
+	
+	<insert id="insertMapping" parameterType="scDeptVO">
+		/*	매핑 정보 등록	scDept.scDept.scDeptMapping.insertMapping	*/
+		INSERT	INTO	BSC_SC_DEPT_MAPPING	(
+			YEAR,	SC_DEPT_ID,	DEPT_ID,	CREATE_DT
+		)
+		<choose>
+			<when test='findMappingBase == null or findMappingBase == "" or findMappingBase=="1"'>
+				<foreach collection="deptIds" item="item" separator="UNION ALL">
+					SELECT	#{findYear},	#{baseDeptId},	#{item},	SYSDATE	FROM DUAL
+				</foreach>
+			</when>
+			<otherwise>
+				SELECT	#{findYear},	#{deptIds[0]},	#{baseDeptId},	SYSDATE	FROM DUAL
+			</otherwise>
+		</choose>
+	</insert>
+	
+	<select id="selectMappingListForExcel" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	엑셀다운로드용 매핑 목록 (성과조직 기준)	scDept.scDept.scDeptMapping.selectMappingListForExcel	*/
+		SELECT	S.YEAR,	S.SC_DEPT_ID,	S.SC_DEPT_NM,
+				D.DEPT_ID,	D.DEPT_NM
+		FROM	BSC_SC_DEPT S
+				LEFT JOIN	BSC_SC_DEPT_MAPPING M
+					ON	S.YEAR = M.YEAR
+					AND	S.SC_DEPT_ID = M.SC_DEPT_ID
+				LEFT JOIN	V_DEPTINFO D
+					ON	M.YEAR = D.YEAR
+					AND	M.DEPT_ID = D.DEPT_ID
+		WHERE	S.YEAR = #{findYear}
+			AND	S.DELETE_DT IS NULL
+		ORDER BY	S.REAL_SORT_ORDER
+	</select>
+	
+	<select id="selectMappingListForExcel2" parameterType="scDeptVO" resultType="scDeptVO">
+		/*	엑셀다운로드용 매핑 목록 (인사조직 기준)	scDept.scDept.scDeptMapping.selectMappingListForExcel2	*/
+		SELECT	D.YEAR,	D.DEPT_ID,	D.DEPT_NM,
+				S.SC_DEPT_ID,	S.SC_DEPT_NM
+		FROM	V_DEPTINFO D
+				LEFT JOIN	BSC_SC_DEPT_MAPPING M
+					ON	D.YEAR = M.YEAR
+					AND	D.DEPT_ID = M.SC_DEPT_ID
+				LEFT JOIN	BSC_SC_DEPT S
+					ON	M.YEAR = S.YEAR
+					AND	M.SC_DEPT_ID = S.SC_DEPT_ID
+					AND	S.DELETE_DT IS NULL
+		WHERE	D.YEAR = #{findYear}
+		ORDER BY	D.REAL_SORT_ORDER
+	</select>
+</mapper>

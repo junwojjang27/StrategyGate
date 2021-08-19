@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mon.org.scDeptDiag">
+	<select id="selectList" parameterType="scDeptDiagVO" resultType="scDeptDiagVO">
+		/*	성과조직도 지표 목록 조회	mon.org.scDeptDiag.selectList	*/
+		SELECT	MS.METRIC_ID,	MS.METRIC_NM,	C1.CODE_NM	AS EVAL_CYCLE,
+				MS.WEIGHT,		C2.CODE_NM	AS UNIT,
+				NVL(MS.ACTUAL, 0)	AS ACTUAL,		NVL(MS.FINAL_SCORE, 0)	AS FINAL_SCORE,	MS.STATUS,
+				S.COLOR,		MS.SORT_ORDER
+		FROM	BSC_METRICSCORE MS
+				<if test='findMonitoringRootScDeptId != null'>
+					JOIN	BSC_SC_DEPT	SD
+						ON	MS.YEAR = SD.YEAR
+						AND	MS.SC_DEPT_ID = SD.SC_DEPT_ID
+						AND	SD.FULL_SC_DEPT_ID LIKE '%' || #{findMonitoringRootScDeptId} || '%'
+				</if>
+				JOIN	BSC_METRIC M
+					ON	MS.YEAR = M.YEAR
+					AND	MS.SC_DEPT_ID = M.SC_DEPT_ID
+					AND	MS.METRIC_ID = M.METRIC_ID
+					AND	M.DELETE_DT IS NULL
+				LEFT JOIN	COM_SIGNAL_STATUS S
+					ON	MS.YEAR = S.YEAR
+					AND	MS.STATUS = S.STATUS_ID
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="'008'"/>
+					<property name="pAlias" value="C1"/>
+					<property name="pCompareColumn" value="MS.EVAL_CYCLE"/>
+				</include>
+				<include refid="common.func.getCodeJoin">
+					<property name="pYear" value="#{findYear}"/>
+					<property name="pCodeGrpId" value="'013'"/>
+					<property name="pAlias" value="C2"/>
+					<property name="pCompareColumn" value="MS.UNIT"/>
+				</include>
+		WHERE	MS.YEAR = #{findYear}
+			AND	MS.MON = #{findMon}
+			AND	MS.ANAL_CYCLE = #{findAnalCycle}
+			AND	MS.SC_DEPT_ID = #{findScDeptId}
+		ORDER BY	MS.SORT_ORDER
+	</select>
+	
+	<select id="selectChartData" parameterType="scDeptDiagVO" resultType="scDeptDiagVO">
+		/*	성과조직도 차트 조회	mon.org.scDeptDiag.selectChartData	*/
+		SELECT	MS.MON,
+				NVL(TARGET, 0)	AS TARGET,
+				NVL(ACTUAL, 0)	AS ACTUAL,
+				NVL(FINAL_SCORE, 0)	AS FINAL_SCORE
+		FROM	BSC_METRICSCORE MS
+				<if test='findMonitoringRootScDeptId != null'>
+					JOIN	BSC_SC_DEPT	SD
+						ON	MS.YEAR = SD.YEAR
+						AND	MS.SC_DEPT_ID = SD.SC_DEPT_ID
+						AND	SD.FULL_SC_DEPT_ID LIKE '%' || #{findMonitoringRootScDeptId} || '%'
+				</if>
+		WHERE	MS.YEAR = #{findYear}
+			AND	MS.ANAL_CYCLE = #{findAnalCycle}
+			AND	MS.SC_DEPT_ID = #{findScDeptId}
+			AND	MS.METRIC_ID = #{findMetricId}
+		ORDER BY	MS.MON
+	</select>
+</mapper>

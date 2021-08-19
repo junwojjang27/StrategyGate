@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+	version="2.0">
+
+	<description>Common 유틸</description>
+	<display-name>commonUtil JSTL </display-name>
+	<tlib-version>1.0</tlib-version>
+	<short-name>commonUtil</short-name>
+	<function>
+		<name>getNumberFormat1</name>
+		<function-class>kr.ispark.common.util.CommonUtil</function-class>
+		<function-signature>java.lang.String getNumberFormat(java.lang.String)</function-signature>
+	</function>
+	<function>
+		<name>getNumberFormat2</name>
+		<function-class>kr.ispark.common.util.CommonUtil</function-class>
+		<function-signature>java.lang.String getNumberFormat(java.lang.String,java.lang.Integer)</function-signature>
+	</function>
+	<function>
+		<name>getNumberFormat3</name>
+		<function-class>kr.ispark.common.util.CommonUtil</function-class>
+		<function-signature>java.lang.String getNumberFormat(java.lang.String,java.lang.Integer,java.lang.Boolean)</function-signature>
+	</function>
+	<function>
+		<name>getNumberComma</name>
+		<function-class>kr.ispark.common.util.CommonUtil</function-class>
+		<function-signature>java.lang.String getNumberComma(java.lang.String)</function-signature>
+	</function>
+	<function>
+		<name>getNumberCommaRemoveZeros</name>
+		<function-class>kr.ispark.common.util.CommonUtil</function-class>
+		<function-signature>java.lang.String getNumberCommaRemoveZeros(java.lang.String)</function-signature>
+	</function>
+</taglib>

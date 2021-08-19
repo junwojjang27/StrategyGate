@@ -1,0 +1,2 @@
+calculation.selectChkData : ERROR - ORA-01476: 제수가 0 입니다
+

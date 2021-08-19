@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+						http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd">
+	
+	<!-- 환경설정 기본정보를 globals.properties 에서 참조하도록 propertyConfigurer 설정 -->
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:/egovframework/egovProps/globals.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- datasource 설정(propertyConfigurer 활용) -->
+	<alias name="dataSource-${Globals.DbType}" alias="dataSource"/>
+	<alias name="dataSource-${Globals.DbType}" alias="egov.dataSource"/>
+
+	<!-- Oracle -->
+	<bean id="dataSource-oracle" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${Globals.DriverClassName}"/>
+		<property name="url" value="${Globals.Url}"/>
+		<property name="username" value="${Globals.UserName}"/>
+		<property name="password" value="${Globals.Password}"/>
+		<property name="validationQuery" value="select 1 from dual"/>
+		<property name="testWhileIdle" value="true"/>
+		<property name="testOnBorrow" value="false"/>
+		<property name="timeBetweenEvictionRunsMillis" value="1800000"/>
+	</bean>
+
+	<!-- 
+	<bean id="dataSource-oracle" class="com.atomikos.jdbc.AtomikosDataSourceBean" init-method="init" destroy-method="close">  
+        <property name="uniqueResourceName">  
+            <value>oracle/master</value>  
+        </property>  
+        <property name="xaDataSourceClassName">  
+            <value>${Globals.DriverClassName}</value>  
+        </property>  
+        <property name="xaProperties">  
+            <props>  
+                <prop key="URL">${Globals.Url}</prop>  
+                <prop key="user">${Globals.UserName}</prop>  
+                <prop key="password">${Globals.Password}</prop>  
+            </props>  
+        </property>  
+       <property name="testQuery" value="select 1 form dual" />  
+        <property name="poolSize">  
+            <value>100</value>  
+        </property>  
+        <property name="maxPoolSize">  
+            <value>200</value>  
+        </property>  
+        <property name="borrowConnectionTimeout"><value>3</value></property>
+        <property name="maxLifetime"><value>5</value></property> 
+     </bean>
+     
+     <bean id="customIspark" class="com.atomikos.jdbc.AtomikosDataSourceBean" init-method="init" destroy-method="close">  
+        <property name="uniqueResourceName">  
+            <value>oracle/ispark</value>  
+        </property>  
+        <property name="xaDataSourceClassName">  
+            <value>${Globals.DriverClassName}</value>  
+        </property>  
+        <property name="xaProperties">  
+            <props>  
+                <prop key="URL">${Globals.Url}</prop>  
+                <prop key="user">CUSTOM_ISPARK</prop>  
+                <prop key="password">CUSTOM_ISPARK_ADMIN</prop>  
+            </props>  
+        </property>  
+        <property name="testQuery" value="select 1 form dual" />  
+        <property name="poolSize">  
+            <value>100</value>  
+        </property>  
+        <property name="maxPoolSize">  
+            <value>200</value>  
+        </property>  
+        <property name="borrowConnectionTimeout"><value>3</value></property> 
+        <property name="maxLifetime"><value>5</value></property> 
+     </bean>
+     -->
+     
+     <!-- 
+     <bean id="dataSource-mariadb" class="com.atomikos.jdbc.AtomikosDataSourceBean" init-method="init" destroy-method="close">  
+        <property name="uniqueResourceName">  
+            <value>mysql/master</value>  
+        </property>  
+        <property name="xaDataSourceClassName">  
+            <value>${jta.driver.className}</value>  
+        </property>  
+        <property name="xaProperties">  
+            <props>  
+                <prop key="url">${Globals.Url}</prop>  
+                <prop key="user">${Globals.UserName}</prop>  
+                <prop key="password">${Globals.Password}</prop>  
+            </props>  
+        </property>  
+        <property name="testQuery" value="select 1" />  
+        <property name="poolSize">  
+            <value>30</value>  
+        </property>  
+        <property name="maxPoolSize">  
+            <value>50</value>  
+        </property>  
+     </bean>      
+     -->
+
+	<!-- 
+	<bean id="dataSource-oracle-test" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${Globals.DriverClassName}"/>
+		<property name="url" value="${Globals.Url}"/>
+		<property name="username" value="BSCV6_TEST"/>
+		<property name="password" value="BSCV6_TEST"/>
+		<property name="validationQuery" value="select 1 from dual"/>
+		<property name="testWhileIdle" value="true"/>
+		<property name="testOnBorrow" value="false"/>
+		<property name="timeBetweenEvictionRunsMillis" value="1800000"/>
+	</bean>
+	-->
+
+	<!-- cubrid -->
+	<bean id="dataSource-cubrid" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${Globals.DriverClassName}"/>
+		<property name="url" value="${Globals.Url}"/>
+		<property name="username" value="${Globals.UserName}"/>
+		<property name="password" value="${Globals.Password}"/>
+	</bean>
+	<!-- mariadb -->
+	
+	<bean id="dataSource-mariadb" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${Globals.DriverClassName}"/>
+		<property name="url" value="${Globals.Url}"/>
+		<property name="username" value="${Globals.UserName}"/>
+		<property name="password" value="${Globals.Password}"/>
+	</bean>
+	
+	<!-- Tibero -->
+	<bean id="dataSource-tibero" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${Globals.DriverClassName}"/>
+		<property name="url" value="${Globals.Url}" />
+		<property name="username" value="${Globals.UserName}"/>
+		<property name="password" value="${Globals.Password}"/>
+	</bean>
+	
+</beans>

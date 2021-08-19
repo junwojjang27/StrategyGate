@@ -1,0 +1,22 @@
+*해야할일
+
+181022 시큐어코딩 수정
+	- IMPROPER_CHECK_FOR_UNUSUAL_OR_EXCEPTIONAL_CONDITION 내용 수정
+
+181123
+1. 고객사  database 정보 자동 loading 프로세스 추가
+   파일 재생성 전에 connection 체크함.
+   문제없으면 백업파일 만들고 dbinfo.txt 만들고 이후 정보 reloding 처리
+2. 고객사 계정에 master 계정의 특정 테이블 조회 권한 적용   
+
+181126
+* cloud 
+	1. process 년도별 적용 
+	   이미 만들어진 html 상에 event를 bind 한 후(jquery element.click) html 다시만들면 해당 event 적용 안됨.
+	  empty 실행 시 지워지는 html에 bind 된 event가 삭제되는 문제이므로 기준element.on('click',targetelement,function(){}) 으로 해결
+	   이는 기준 element는 삭제되지않아야함. 삭제되지않은 element 기준으로 다시 targetelement를 인식하는 구조이므로 이와같은 상황에서 사용하면 됨.
+	2. COM_COMPINFO_DETAIL 테이블 MASTER 테이블 보도록 일괄적용    
+* 농식품부 프로젝트
+1.  평가항목관리개발
+    
+    	

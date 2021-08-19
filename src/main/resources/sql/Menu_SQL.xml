@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="menu">
+	<select id="selectList" resultType="menuVO">
+		/*	메뉴 조회	menu.selectList */
+		SELECT	DISTINCT
+				P.REAL_ORDER	AS RNUM,
+				P.PGM_ID,
+				NVL(N.PGM_NM, P.PGM_NM)	AS PGM_NM,
+				P.UP_PGM_ID,
+				P.URL,
+				CASE	WHEN	P.URL_PATTERN IS NULL AND P.URL IS NOT NULL
+						THEN	SUBSTR(P.URL, 0, INSTR(P.URL, '/', -1)) || '*.do'
+						ELSE	P.URL_PATTERN
+				END	AS	URL_PATTERN,
+				CASE	WHEN	P.URL IS NULL THEN NULL
+						  ELSE	SUBSTR(P.URL, INSTR(P.URL, '/', -1)+1, INSTR(P.URL, '.', 1)-INSTR(P.URL, '/', -1)-1)
+				END	AS	URL_PAGE,
+				P.SORT_ORDER,
+				P.PGM_LEVEL_ID AS LEVEL_ID
+		FROM	COM_PGM P
+				JOIN	(
+							SELECT	PGM_ID, PGM_NM, UP_PGM_ID,	URL,	URL_PATTERN,
+									PGM_LEVEL_ID,	SORT_ORDER, FULL_PGM_ID, REAL_ORDER
+							FROM	COM_PGM
+									WHERE	DELETE_DT IS NULL
+										AND	IS_LEAF = 'Y'
+										AND PGM_ID IN	(
+															SELECT	DISTINCT	A.PGM_ID
+															FROM	COM_PGM_AUTH A
+																JOIN	COM_ADMIN B
+																	ON	((B.USER_ID = #{userId} AND A.AUTH_GUBUN = B.AUTH_GUBUN) OR A.AUTH_GUBUN = '99')
+																JOIN 	COM_CODE C
+																	ON	B.AUTH_GUBUN = C.CODE_ID
+																	AND C.CODE_GRP_ID = '018'
+																	AND C.DELETE_DT IS NULL
+															WHERE	1=1
+														)
+						) P2
+					ON	(
+							P.PGM_ID = P2.PGM_ID
+							OR P.PGM_ID = SUBSTR(P2.FULL_PGM_ID,INSTR(P2.FULL_PGM_ID,'/',1,1)+1,7)
+							OR P.PGM_ID = SUBSTR(P2.FULL_PGM_ID,INSTR(P2.FULL_PGM_ID,'/',1,2)+1,7)
+							OR P.PGM_ID = SUBSTR(P2.FULL_PGM_ID,INSTR(P2.FULL_PGM_ID,'/',1,3)+1,7)
+						)
+				INNER JOIN (SELECT SERVICE_TYPE FROM COM_COMPINFO_DETAIL WHERE CURRENT_SEQ = 'Y') SERVICE
+				ON INSTR(SERVICE.SERVICE_TYPE,P.PGM_GBN_ID) > 0
+				LEFT JOIN	COM_PGM_NM N
+						ON	P.PGM_ID = N.PGM_ID
+						AND	N.LANG = #{lang}
+		ORDER BY P.REAL_ORDER
+		
+	</select>
+
+	<!-- 메뉴 접근 로그 등록 -->
+	<insert id="insertMenuAccessLog" parameterType="menuVO">
+		/* 메뉴 접근 로그 등록	menu.insertMenuAccessLog */
+		INSERT	INTO	COM_MENU_ACCESS_LOG	(
+			LOG_SEQ,	PGM_ID,	USER_ID,
+			IP,			ACCESS_DT,	YEAR,	MON,
+			DAY,		URL
+		)	VALUES	(
+			MENU_ACCESS_LOG_SEQ.NEXTVAL,	#{pgmId},	#{userId},
+			#{ip},		SYSDATE,	TO_CHAR(SYSDATE, 'YYYY'),	TO_CHAR(SYSDATE, 'MM'),
+			TO_CHAR(SYSDATE, 'DD'),	#{url}
+		)
+	</insert>
+	
+	<select id="selectGuideCommentList" parameterType="menuVO" resultType="menuVO">
+		/*	도움말 조회	menu.selectGuideCommentList	*/
+		SELECT	PGM_ID,	GUIDE_COMMENT
+		FROM	COM_PGM
+		WHERE	DELETE_DT IS NULL
+			AND	GUIDE_COMMENT IS NOT NULL
+	</select>
+	
+</mapper>

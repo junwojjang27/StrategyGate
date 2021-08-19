@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mon.dashboard.dashboard">
+	<select id="selectList" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectList */
+		SELECT
+			YEAR,
+			MON,
+			ANAL_CYCLE,
+			METRIC_ID,
+			METRIC_NM,
+			SC_DEPT_ID,
+			SC_DEPT_NM,
+			METRIC_GRP_ID,
+			METRIC_GRP_NM,
+			PERSPECTIVE_ID,
+			PERSPECTIVE_NM,
+			STRATEGY_ID,
+			STRATEGY_NM,
+			TARGET,
+			ACTUAL,
+			SCORE,
+			FINAL_SCORE,
+			WEIGHT_SCORE,
+			STATUS,
+			UNIT,
+			UNIT_NM,
+			EVAL_CYCLE,
+			EVAL_CYCLE_NM,
+			DEPT_ROLLUP,
+			DEPT_ROLLUP_NM,
+			PROPERTY_ID,
+			PROPERTY_NM,
+			TYPE_ID,
+			TYPE_NM,
+			WEIGHT,
+			ACT_CAL_TYPE,
+			SCORE_CAL_TYPE_GUBUN,
+			SCORE_CAL_TYPE_ID,
+			SCORE_CAL_TYPE_NM,
+			DESCRIPTION,
+			GUBUN,
+			GUBUN_NM,
+			UP_METRIC_ID,
+			UP_METRIC_NM,
+			TAM_SHARE_YN,
+			SORT_ORDER,
+			CONTENT,
+			KPI_INSERT_USER_ID,
+			KPI_INSERT_USER_NM,
+			ACT_INSERT_USER_ID,
+			ACT_INSERT_USER_NM,
+			ACT_APPROVE_USER_ID,
+			ACT_APPROVE_USER_NM,
+			UP_SC_DEPT_ID,
+			SC_DEPT_GRP_ID,
+			LEVEL_ID,
+			CREATE_DT
+		FROM BSC_METRICSCORE
+		WHERE 1=1
+
+	</select>
+	
+	<select id="selectItemList" parameterType="dashboardVO" resultType="dashboardVO">
+		
+		/*	dashboard 조회	mon.dashboard.dashboard.selectItemList */
+		SELECT A.ITEM_ID, A.ITEM_NM, A.URL, A.WIDTH, A.HEIGHT, A.CLASS_NM,
+		       CASE WHEN B.ITEM_ID IS NULL THEN 'N' ELSE 'Y' END AS CHECK_YN
+		  FROM BSC_DASHBOARD_ITEM A
+		       LEFT OUTER JOIN BSC_DASHBOARD_ITEM_USER B
+		       ON A.ITEM_ID = B.ITEM_ID
+		       AND B.USER_ID = #{loginUserId}
+		 WHERE 1=1
+		 ORDER BY A.ITEM_ID
+
+	</select>
+	
+	<select id="selectItemUserList" parameterType="dashboardVO" resultType="dashboardVO">
+		
+		/*	dashboard 조회	mon.dashboard.dashboard.selectItemUserList */
+		SELECT B.USER_ID, A.ITEM_ID, A.ITEM_NM, A.URL, A.WIDTH, A.HEIGHT, A.CLASS_NM
+		  FROM BSC_DASHBOARD_ITEM A
+		       INNER JOIN BSC_DASHBOARD_ITEM_USER B
+		       ON A.ITEM_ID = B.ITEM_ID
+		       AND USER_ID = #{loginUserId}
+		 WHERE 1=1
+		 ORDER BY B.SORT_ORDER
+
+	</select>
+	
+	<select id="selectMetricTop5List" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectMetricTop5List */
+		SELECT SC.SC_DEPT_ID,
+		       SC.SC_DEPT_NM,
+		       A.METRIC_ID,
+		       A.METRIC_NM,
+		       B.WEIGHT,
+		       B.ACTUAL,
+		       B.TARGET,
+		       B.SCORE,
+		       B.FINAL_SCORE,
+		       B.STATUS,
+		       C.COLOR
+		 FROM BSC_METRIC A
+		      INNER JOIN BSC_SC_DEPT SC
+		      ON A.YEAR = SC.YEAR
+		      AND A.SC_DEPT_ID = SC.SC_DEPT_ID
+		      AND SC.DELETE_DT IS NULL
+		      LEFT OUTER JOIN BSC_METRICSCORE B
+		      ON A.YEAR = B.YEAR
+		      AND B.MON = #{findMon}
+		      AND B.ANAL_CYCLE = #{findAnalCycle}
+		      AND A.METRIC_ID = B.METRIC_ID
+		      LEFT OUTER JOIN COM_SIGNAL_STATUS C
+		      ON B.YEAR = C.YEAR
+		      AND B.STATUS = C.STATUS_ID
+		WHERE A.YEAR = #{findYear}
+		  AND A.SC_DEPT_ID = #{userScDeptId}
+		  AND A.DELETE_DT IS NULL
+		ORDER BY B.SCORE DESC NULLS LAST, B.SORT_ORDER		
+	</select>
+	
+	<select id="selectOrgScore" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectOrgScore*/
+		SELECT A.SC_DEPT_ID, 
+		       A.SC_DEPT_NM,
+		       B.SCORE,
+		       100-B.SCORE AS REST_SCORE
+		  FROM BSC_SC_DEPT A
+		       INNER JOIN (SELECT A.YEAR, A.SC_DEPT_ID, A.SCORE
+	                         FROM BSC_DEPTSCORE A
+	                        WHERE A.YEAR = #{findYear}
+	                          AND A.MON = #{findMon}
+	                          AND A.ANAL_CYCLE = #{findAnalCycle}
+	                          AND A.SC_DEPT_ID = CASE WHEN NVL(#{userScDeptId},'') = '' THEN (SELECT SC_DEPT_ID FROM BSC_SC_DEPT WHERE YEAR = #{findYear} AND UP_SC_DEPT_ID IS NULL)
+	                           				     ELSE #{userScDeptId} END) B
+		       ON A.YEAR = B.YEAR
+		       AND A.SC_DEPT_ID = B.SC_DEPT_ID
+ 		 WHERE A.YEAR = #{findYear}
+		   AND A.DELETE_DT IS NULL
+	</select>
+	
+	<select id="selectPerspectiveScoreList" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectPerspectiveScoreList */
+		SELECT A.PERSPECTIVE_ID, 
+		       A.PERSPECTIVE_NM,
+		       B.SCORE
+		  FROM BSC_PERSPECTIVE A
+		       LEFT OUTER JOIN (SELECT A.YEAR, A.PERSPECTIVE_ID, A.SCORE
+		                          FROM BSC_PERSSCORE A
+		                         WHERE A.YEAR = #{findYear}
+		                           AND A.MON = #{findMon}
+		                           AND A.ANAL_CYCLE = #{findAnalCycle}
+		                           AND A.SC_DEPT_ID = CASE WHEN NVL(#{userScDeptId},'') = '' THEN (SELECT SC_DEPT_ID FROM BSC_SC_DEPT WHERE YEAR = #{findYear} AND UP_SC_DEPT_ID IS NULL)
+		                           				      ELSE #{userScDeptId} END) B
+		       ON A.YEAR = B.YEAR
+		       AND A.PERSPECTIVE_ID = B.PERSPECTIVE_ID
+ 		 WHERE A.YEAR = #{findYear}
+           AND A.DELETE_DT IS NULL
+         ORDER BY A.SORT_ORDER
+	</select>
+	
+	<select id="selectMainMetricList" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectMainMetricList */
+		SELECT SC.SC_DEPT_ID,
+		       SC.SC_DEPT_NM,
+		       A.METRIC_ID,
+		       A.METRIC_NM,
+		       A.WEIGHT,
+		       C.ACTUAL,
+		       C.TARGET,
+		       C.SCORE,
+		       C.FINAL_SCORE,
+		       C.UNIT_NM,
+		       C.STATUS,
+		       D.COLOR,
+		       CASE WHEN C.TARGET <![CDATA[<]]> C.ACTUAL THEN 'up' 
+		            WHEN C.TARGET <![CDATA[>]]> C.ACTUAL THEN 'down'
+		            ELSE 'equal' END AS DIRECTION
+		  FROM BSC_METRIC A
+		       INNER JOIN BSC_DASHBOARD_METRIC_USER B
+		       ON B.USER_ID = #{loginUserId}
+		       AND A.YEAR = B.YEAR
+		       AND A.METRIC_ID = B.METRIC_ID
+		       INNER JOIN BSC_SC_DEPT SC
+		       ON A.YEAR = SC.YEAR
+		       AND A.SC_DEPT_ID = SC.SC_DEPT_ID
+		       AND SC.DELETE_DT IS NULL
+		       LEFT OUTER JOIN BSC_METRICSCORE C
+		       ON A.YEAR = C.YEAR
+		       AND C.MON = #{findMon}
+		       AND C.ANAL_CYCLE = #{findAnalCycle}
+		       AND A.METRIC_ID = C.METRIC_ID
+		       LEFT OUTER JOIN COM_SIGNAL_STATUS D
+		       ON C.YEAR = D.YEAR
+		       AND C.STATUS = D.STATUS_ID
+		 WHERE A.YEAR = #{findYear}
+		   AND A.DELETE_DT IS NULL
+		 ORDER BY B.SORT_ORDER ASC	
+	</select>
+	
+	<select id="selectUserMetricList" parameterType="dashBoardVO" resultType="dashBoardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectUserMetricList */
+		SELECT A.METRIC_ID,
+		       A.METRIC_NM,
+		       CASE WHEN B.METRIC_ID IS NULL THEN 'N'
+		            ELSE 'Y' END AS CHECK_YN,
+		       B.SORT_ORDER
+		  FROM BSC_METRIC A
+		       LEFT OUTER JOIN BSC_DASHBOARD_METRIC_USER B
+		       ON A.YEAR = B.YEAR
+		       AND A.METRIC_ID = B.METRIC_ID
+		       AND B.USER_ID = #{loginUserId}
+		 WHERE A.YEAR = #{findYear}
+		   AND A.SC_DEPT_ID = #{userScDeptId}
+		   AND A.TYPE_ID = '01'
+		   AND A.DELETE_DT IS NULL
+		 ORDER BY A.SORT_ORDER
+	</select>
+	
+	<select id="selectEvalGrpList" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectEvalGrpList */
+		 SELECT A.SC_DEPT_ID,
+		        A.FULL_ASC_SC_DEPT_NM AS SC_DEPT_NM,
+		        B.SCORE,
+		        B.CONVERSION_SCORE,
+		        1 AS GBN
+		   FROM BSC_SC_DEPT A
+		        LEFT OUTER JOIN BSC_DEPTSCORE B
+		        ON A.YEAR = B.YEAR
+		        AND B.MON = #{findMon}
+		        AND B.ANAL_CYCLE = #{findAnalCycle}
+		        AND A.SC_DEPT_ID = B.SC_DEPT_ID
+		  WHERE A.YEAR = #{findYear}
+		    AND A.SC_DEPT_ID = #{userScDeptId}
+		    AND A.SC_DEPT_GRP_ID = #{findScDeptGrpId}
+		    AND A.DELETE_DT IS NULL
+		 UNION ALL   
+		 SELECT A.SC_DEPT_ID,
+		        A.FULL_ASC_SC_DEPT_NM AS SC_DEPT_NM,
+		        B.SCORE,
+		        B.CONVERSION_SCORE,
+		        2 AS GBN
+		   FROM BSC_SC_DEPT A
+		        LEFT OUTER JOIN BSC_DEPTSCORE B
+		        ON A.YEAR = B.YEAR
+		        AND B.MON = #{findMon}
+		        AND B.ANAL_CYCLE = #{findAnalCycle}
+		        AND A.SC_DEPT_ID = B.SC_DEPT_ID
+		  WHERE A.YEAR = #{findYear}
+		    AND A.SC_DEPT_GRP_ID = #{findScDeptGrpId}
+		    AND A.SC_DEPT_ID != #{userScDeptId} 
+		    AND A.DELETE_DT IS NULL
+		  ORDER BY GBN ASC, SCORE DESC NULLS LAST		
+	</select>
+	
+	<select id="selectGovList" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectGovList */
+		SELECT Y.YEAR AS YEAR,
+		       SUM(A.WEIGHT) AS WEIGHT,
+		       SUM(B.GOV_SCORE) AS GOV_SCORE
+		  FROM (SELECT #{findYear} AS YEAR FROM DUAL UNION ALL SELECT TO_CHAR(#{findYear}-1) FROM DUAL UNION ALL SELECT TO_CHAR(#{findYear}-2) FROM DUAL) Y
+		       LEFT OUTER JOIN GOV_METRIC A
+		       ON A.YEAR = Y.YEAR
+		       AND A.UP_GOV_METRIC_ID IS NULL
+		       AND A.DELETE_DT IS NULL
+		       LEFT OUTER JOIN GOV_METRIC_RESULT B
+		       ON A.YEAR = B.YEAR
+		       AND A.GOV_METRIC_ID = B.GOV_METRIC_ID
+		       AND A.DELETE_DT IS NULL
+		 WHERE 1=1
+		 GROUP BY Y.YEAR
+		 ORDER BY Y.YEAR	
+	</select>
+	
+	<select id="selectMetricList" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectMetricList */
+		SELECT METRIC_ID, METRIC_NM
+		  FROM BSC_METRIC		
+		 WHERE YEAR = #{findYear}
+		   AND SC_DEPT_ID = CASE WHEN NVL(#{userScDeptId},'') = '' THEN (SELECT SC_DEPT_ID FROM BSC_SC_DEPT WHERE YEAR = #{findYear} AND UP_SC_DEPT_ID IS NULL)
+		                    ELSE #{userScDeptId} END
+		   AND DELETE_DT IS NULL
+		 ORDER BY SORT_ORDER, METRIC_NM
+	</select>
+	
+	<select id="selectMetricDetail" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectMetricDetail */
+		SELECT A.METRIC_ID,
+		       A.METRIC_NM,
+		       B.TARGET,
+		       B.ACTUAL,
+		       B.SCORE,
+		       B.FINAL_SCORE,
+		       CASE WHEN B.TARGET <![CDATA[<]]> B.ACTUAL THEN 'up' 
+		            WHEN B.TARGET <![CDATA[>]]> B.ACTUAL THEN 'down'
+		            ELSE 'equal' END AS DIRECTION
+		  FROM BSC_METRIC A
+		       LEFT OUTER JOIN BSC_METRICSCORE B
+		       ON A.YEAR = B.YEAR
+		       AND B.MON = #{findMon}
+		       AND B.ANAL_CYCLE = #{findAnalCycle}
+		       AND A.METRIC_ID = B.METRIC_ID
+		 WHERE A.YEAR = #{findYear}
+		   AND A.METRIC_ID = #{findMetricId}
+		   AND A.DELETE_DT IS NULL		
+	</select>
+	
+	<select id="selectChartTarget" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectChartTarget */
+		SELECT	A.METRIC_ID
+				, MAX(A.UNIT) AS UNIT
+				, ROUND(SUM(CASE WHEN A.MON = '01'	THEN A.TARGET END) ,1) MON01
+				, ROUND(SUM(CASE WHEN A.MON = '02'	THEN A.TARGET END) ,1) MON02
+				, ROUND(SUM(CASE WHEN A.MON = '03'	THEN A.TARGET END) ,1) MON03
+				, ROUND(SUM(CASE WHEN A.MON = '04'	THEN A.TARGET END) ,1) MON04
+				, ROUND(SUM(CASE WHEN A.MON = '05'	THEN A.TARGET END) ,1) MON05
+				, ROUND(SUM(CASE WHEN A.MON = '06'	THEN A.TARGET END) ,1) MON06
+				, ROUND(SUM(CASE WHEN A.MON = '07'	THEN A.TARGET END) ,1) MON07
+				, ROUND(SUM(CASE WHEN A.MON = '08'	THEN A.TARGET END) ,1) MON08
+				, ROUND(SUM(CASE WHEN A.MON = '09'	THEN A.TARGET END) ,1) MON09
+				, ROUND(SUM(CASE WHEN A.MON = '10'	THEN A.TARGET END) ,1) MON10
+				, ROUND(SUM(CASE WHEN A.MON = '11'	THEN A.TARGET END) ,1) MON11
+				, ROUND(SUM(CASE WHEN A.MON = '12'	THEN A.TARGET END) ,1) MON12
+		   FROM	BSC_METRICSCORE A
+		  WHERE	A.YEAR = #{findYear}
+			AND A.METRIC_ID = #{findMetricId}
+			AND A.ANAL_CYCLE = #{findAnalCycle}
+		  GROUP BY A.METRIC_ID		
+	</select>
+	
+	<select id="selectChartActual" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectChartActual */
+		SELECT	A.METRIC_ID
+				, MAX(A.UNIT) AS UNIT
+				, ROUND(SUM(CASE WHEN A.MON = '01'	THEN A.ACTUAL END) ,1) MON01
+				, ROUND(SUM(CASE WHEN A.MON = '02'	THEN A.ACTUAL END) ,1) MON02
+				, ROUND(SUM(CASE WHEN A.MON = '03'	THEN A.ACTUAL END) ,1) MON03
+				, ROUND(SUM(CASE WHEN A.MON = '04'	THEN A.ACTUAL END) ,1) MON04
+				, ROUND(SUM(CASE WHEN A.MON = '05'	THEN A.ACTUAL END) ,1) MON05
+				, ROUND(SUM(CASE WHEN A.MON = '06'	THEN A.ACTUAL END) ,1) MON06
+				, ROUND(SUM(CASE WHEN A.MON = '07'	THEN A.ACTUAL END) ,1) MON07
+				, ROUND(SUM(CASE WHEN A.MON = '08'	THEN A.ACTUAL END) ,1) MON08
+				, ROUND(SUM(CASE WHEN A.MON = '09'	THEN A.ACTUAL END) ,1) MON09
+				, ROUND(SUM(CASE WHEN A.MON = '10'	THEN A.ACTUAL END) ,1) MON10
+				, ROUND(SUM(CASE WHEN A.MON = '11'	THEN A.ACTUAL END) ,1) MON11
+				, ROUND(SUM(CASE WHEN A.MON = '12'	THEN A.ACTUAL END) ,1) MON12
+		   FROM	BSC_METRICSCORE A
+		  WHERE	A.YEAR = #{findYear}
+			AND A.METRIC_ID = #{findMetricId}
+			AND A.ANAL_CYCLE = #{findAnalCycle}
+		  GROUP BY	A.METRIC_ID		
+	</select>
+	
+	<select id="selectChartScore" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectChartScore */
+		SELECT	A.METRIC_ID
+				, ROUND(SUM(CASE WHEN A.MON = '01'	THEN A.FINAL_SCORE END) ,1) MON01
+				, ROUND(SUM(CASE WHEN A.MON = '02'	THEN A.FINAL_SCORE END) ,1) MON02
+				, ROUND(SUM(CASE WHEN A.MON = '03'	THEN A.FINAL_SCORE END) ,1) MON03
+				, ROUND(SUM(CASE WHEN A.MON = '04'	THEN A.FINAL_SCORE END) ,1) MON04
+				, ROUND(SUM(CASE WHEN A.MON = '05'	THEN A.FINAL_SCORE END) ,1) MON05
+				, ROUND(SUM(CASE WHEN A.MON = '06'	THEN A.FINAL_SCORE END) ,1) MON06
+				, ROUND(SUM(CASE WHEN A.MON = '07'	THEN A.FINAL_SCORE END) ,1) MON07
+				, ROUND(SUM(CASE WHEN A.MON = '08'	THEN A.FINAL_SCORE END) ,1) MON08
+				, ROUND(SUM(CASE WHEN A.MON = '09'	THEN A.FINAL_SCORE END) ,1) MON09
+				, ROUND(SUM(CASE WHEN A.MON = '10'	THEN A.FINAL_SCORE END) ,1) MON10
+				, ROUND(SUM(CASE WHEN A.MON = '11'	THEN A.FINAL_SCORE END) ,1) MON11
+				, ROUND(SUM(CASE WHEN A.MON = '12'	THEN A.FINAL_SCORE END) ,1) MON12
+		   FROM	BSC_METRICSCORE A
+		  WHERE	A.YEAR = #{findYear}
+			AND A.METRIC_ID = #{findMetricId}
+			AND A.ANAL_CYCLE = #{findAnalCycle}
+	 	  GROUP BY A.METRIC_ID	
+	</select>
+	
+	<select id="selectScoreAnalysis" parameterType="dashBoardVO" resultType="dashBoardVO">
+		/*	dashboard 조회	mon.dashboard.dashboard.selectScoreAnalysis */
+		SELECT	DEPT_SCORE,	STD_SCORE,
+				AVG_SCORE,	DEPT_SCORE - AVG_SCORE	AS	DEPT_AVG_SCORE,
+				MAX_SCORE,	DEPT_SCORE - MAX_SCORE	AS	DEPT_MAX_SCORE,
+				MIN_SCORE,	DEPT_SCORE - MIN_SCORE	AS	DEPT_MIN_SCORE
+		FROM	(
+					SELECT	NVL(SUM(NVL(CASE	WHEN	D.SC_DEPT_ID = #{userScDeptId}	THEN	DS.CONVERSION_SCORE	ELSE	0	END, 0)), 0)	AS DEPT_SCORE,
+							NVL(MAX(NVL(DS.CONVERSION_SCORE, 0)), 0)	AS MAX_SCORE,
+							NVL(MIN(NVL(DS.CONVERSION_SCORE, 0)), 0)	AS MIN_SCORE,
+							NVL(AVG(NVL(DS.CONVERSION_SCORE, 0)), 0)	AS AVG_SCORE,
+							NVL(STDDEV(NVL(DS.CONVERSION_SCORE, 0)), 0)	AS STD_SCORE
+					FROM	BSC_SC_DEPT D
+							LEFT JOIN	BSC_DEPTSCORE DS
+								ON	D.YEAR = DS.YEAR
+								AND	D.SC_DEPT_ID = DS.SC_DEPT_ID
+								AND	DS.MON = #{findMon}
+								AND	DS.ANAL_CYCLE = #{findAnalCycle}
+					WHERE	D.YEAR = #{findYear}
+						AND	D.SC_DEPT_GRP_ID = (SELECT SC_DEPT_GRP_ID FROM BSC_SC_DEPT WHERE YEAR = #{findYear} AND SC_DEPT_ID = #{userScDeptId} AND DELETE_DT IS NULL)
+				)
+	</select>
+	
+	<select id="selectDetail" parameterType="dashboardVO" resultType="dashboardVO">
+		/*	dashboard 상세 조회	 	mon.dashboard.dashboard.selectDetail	*/
+		SELECT
+			YEAR,
+			MON,
+			ANAL_CYCLE,
+			METRIC_ID,
+			METRIC_NM,
+			SC_DEPT_ID,
+			SC_DEPT_NM,
+			METRIC_GRP_ID,
+			METRIC_GRP_NM,
+			PERSPECTIVE_ID,
+			PERSPECTIVE_NM,
+			STRATEGY_ID,
+			STRATEGY_NM,
+			TARGET,
+			ACTUAL,
+			SCORE,
+			FINAL_SCORE,
+			WEIGHT_SCORE,
+			STATUS,
+			UNIT,
+			UNIT_NM,
+			EVAL_CYCLE,
+			EVAL_CYCLE_NM,
+			DEPT_ROLLUP,
+			DEPT_ROLLUP_NM,
+			PROPERTY_ID,
+			PROPERTY_NM,
+			TYPE_ID,
+			TYPE_NM,
+			WEIGHT,
+			ACT_CAL_TYPE,
+			SCORE_CAL_TYPE_GUBUN,
+			SCORE_CAL_TYPE_ID,
+			SCORE_CAL_TYPE_NM,
+			DESCRIPTION,
+			GUBUN,
+			GUBUN_NM,
+			UP_METRIC_ID,
+			UP_METRIC_NM,
+			TAM_SHARE_YN,
+			SORT_ORDER,
+			CONTENT,
+			KPI_INSERT_USER_ID,
+			KPI_INSERT_USER_NM,
+			ACT_INSERT_USER_ID,
+			ACT_INSERT_USER_NM,
+			ACT_APPROVE_USER_ID,
+			ACT_APPROVE_USER_NM,
+			UP_SC_DEPT_ID,
+			SC_DEPT_GRP_ID,
+			LEVEL_ID,
+			CREATE_DT
+		FROM BSC_METRICSCORE
+		WHERE 1=1
+			AND YEAR=#{year}
+			AND MON=#{mon}
+			AND ANAL_CYCLE=#{analCycle}
+			AND METRIC_ID=#{metricId}
+
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="dashboardVO">
+	    /*	dashboard 정렬순서저장	 dashboard.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteDashboard" parameterType="dashboardVO">
+		/*	dashboard 삭제	mon.dashboard.dashboard.deleteDashboard	*/
+		DELETE FROM BSC_DASHBOARD_ITEM_USER
+		WHERE 1=1
+			AND USER_ID=#{loginUserId}
+
+	</update>
+
+	<insert id="insertData" parameterType="dashboardVO">
+		/*	dashboard 저장	mon.dashboard.dashboard.insertData	*/
+		INSERT INTO BSC_DASHBOARD_ITEM_USER(
+			USER_ID,
+			ITEM_ID,
+			SORT_ORDER)
+		VALUES (
+			#{loginUserId},
+			#{itemId},
+			#{sortOrder})
+
+	</insert>
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="dashboardVO">
+	    /*	dashboard 정렬순서저장	 dashboard.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteItemCData" parameterType="dashboardVO">
+		/*	dashboard 삭제	mon.dashboard.dashboard.deleteItemCDate	*/
+		DELETE FROM BSC_DASHBOARD_METRIC_USER
+		WHERE 1=1
+			AND USER_ID=#{loginUserId}
+
+	</update>
+
+	<insert id="insertItemCData" parameterType="dashboardVO">
+		/*	dashboard 저장	mon.dashboard.dashboard.insertItemCData	*/
+		INSERT INTO BSC_DASHBOARD_METRIC_USER(
+			YEAR,
+			USER_ID,
+			METRIC_ID,
+			SORT_ORDER)
+		VALUES (
+			#{findYear},
+			#{loginUserId},
+			#{metricId},
+			#{sortOrder})
+
+	</insert>
+	
+</mapper>
+

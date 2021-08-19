@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.survey.survReg">
+	<select id="selectList" parameterType="survRegVO" resultType="survRegVO">
+		/*	설문등록 조회	system.survey.survReg.selectList */
+		SELECT
+			A.SURVEY_ID,
+			A.SURVEY_NM,
+			A.SURVEY_TYPE_ID,
+			CA.CODE_NM AS SURVEY_TYPE_NM,
+			TO_CHAR(TO_DATE(A.START_DT,'YYYYMMDD'),'YYYY.MM.DD') AS START_DT,
+			TO_CHAR(TO_DATE(A.END_DT,'YYYYMMDD'),'YYYY.MM.DD') AS END_DT,
+			A.CLOSE_YN,
+			A.SURVEY_YEAR,
+			A.CREATE_DT,
+			A.MODIFY_DT,
+			A.DELETE_DT,
+			(SELECT COUNT(0) FROM SUR_TARGET_USER WHERE SURVEY_ID=A.SURVEY_ID) AS USER_CNT,
+			(SELECT COUNT(0) FROM SUR_SURVEY_QUES WHERE SURVEY_ID=A.SURVEY_ID) AS QUES_CNT
+		FROM SUR_SURVEY A
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'373'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="A.SURVEY_TYPE_ID"/>
+		</include>
+		WHERE 1=1
+		<if test='findUseYn != null and findUseYn == "Y"'>
+		AND A.DELETE_DT IS NULL
+		</if>
+		<if test='findUseYn != null and findUseYn == "N"'>
+		AND A.DELETE_DT IS NOT NULL
+		</if>
+		ORDER BY A.START_DT DESC, A.END_DT DESC, A.SURVEY_ID
+
+	</select>
+
+	<select id="selectDetail" parameterType="survRegVO" resultType="survRegVO">
+		/*	설문등록 상세 조회	 	system.survey.survReg.selectDetail	*/
+		SELECT
+			SURVEY_ID,
+			SURVEY_NM,
+			SURVEY_TYPE_ID,
+			START_CONTENT,
+			END_CONTENT,
+			TO_CHAR(TO_DATE(START_DT,'YYYYMMDD'),'YYYY.MM.DD') AS START_DT,
+			TO_CHAR(TO_DATE(END_DT,'YYYYMMDD'),'YYYY.MM.DD') AS END_DT,
+			CLOSE_YN,
+			SURVEY_YEAR,
+			CREATE_DT,
+			MODIFY_DT,
+			DELETE_DT,
+			CASE WHEN DELETE_DT IS NULL THEN 'Y' ELSE 'N' END AS USE_YN
+		FROM SUR_SURVEY
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+
+	</select>
+
+	<update id="deleteSurvReg" parameterType="survRegVO">
+		/*	설문등록 삭제	system.survey.survReg.deleteSurvReg	*/
+		UPDATE SUR_SURVEY
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND SURVEY_ID IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+
+	</update>
+
+	<insert id="insertData" parameterType="survRegVO">
+		/*	설문등록 저장	system.survey.survReg.insertData	*/
+		INSERT INTO SUR_SURVEY(
+			SURVEY_ID,
+			SURVEY_NM,
+			SURVEY_TYPE_ID,
+			START_CONTENT,
+			END_CONTENT,
+			START_DT,
+			END_DT,
+			CLOSE_YN,
+			SURVEY_YEAR,
+			CREATE_DT,
+			DELETE_DT
+		) VALUES (
+			#{surveyId},
+			#{surveyNm},
+			#{surveyTypeId},
+			#{startContent},
+			#{endContent},
+			#{startDt},
+			#{endDt},
+			'N',
+			#{surveyYear},
+			SYSDATE,
+			CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END
+		)
+
+	</insert>
+
+	<update id="updateData" parameterType="survRegVO">
+		/*	설문등록 수정	system.survey.survReg.updateData	*/
+		UPDATE SUR_SURVEY
+		SET
+			SURVEY_NM=#{surveyNm},
+			SURVEY_TYPE_ID=#{surveyTypeId},
+			START_CONTENT=#{startContent},
+			END_CONTENT=#{endContent},
+			START_DT=#{startDt},
+			END_DT=#{endDt},
+			SURVEY_YEAR=#{surveyYear},
+			MODIFY_DT=SYSDATE,
+			DELETE_DT=CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END
+		WHERE 1=1
+			AND SURVEY_ID=#{surveyId}
+
+	</update>
+
+	<insert id="insertSurveyCopy" parameterType="survRegVO">
+		/*	설문복사	system.survey.survReg.insertSurveyCopy	*/
+		INSERT INTO SUR_SURVEY
+		SELECT
+			#{newSurveyId},
+			SURVEY_NM || '-COPY',
+			SURVEY_TYPE_ID,
+			START_CONTENT,
+			END_CONTENT,
+			START_DT,
+			END_DT,
+			'N',
+			SURVEY_YEAR,
+			SYSDATE,
+			NULL,
+			NULL
+		FROM SUR_SURVEY
+		WHERE 1=1
+		AND SURVEY_ID=#{copySurveyId}
+
+	</insert>
+
+	<insert id="insertQuesCopy" parameterType="survRegVO">
+		/*	설문질문복사	system.survey.survReg.insertQuesCopy	*/
+		INSERT INTO SUR_SURVEY_QUES
+		SELECT
+			  #{newSurveyId}
+			, QUES_ID
+			, QUES_SEQ
+			, QUES_NM
+			, QUES_GBN_ID
+			, ITEM_CNT_ID
+			, ITEM_CHECK_GBN_ID
+			, QUES_LINK_YN
+			, QUES_GRP_ID
+			, SYSDATE
+		FROM SUR_SURVEY_QUES
+		WHERE 1=1
+		AND SURVEY_ID=#{copySurveyId}
+
+	</insert>
+
+	<insert id="insertAnsCopy" parameterType="survRegVO">
+		/*	설문답변복사	system.survey.survReg.insertAnsCopy	*/
+		INSERT INTO SUR_SURVEY_ITEM
+		SELECT
+			  #{newSurveyId}
+			, QUES_ID
+			, QUES_ITEM_ID
+			, ITEM_NUM
+			, ITEM_CONTENT
+			, LINK_QUES_ID
+		FROM SUR_SURVEY_ITEM
+		WHERE 1=1
+		AND SURVEY_ID=#{copySurveyId}
+
+	</insert>
+
+	<insert id="insertGrpCopy" parameterType="survRegVO">
+		/*	설문질문그룹복사	system.survey.survReg.insertGrpCopy	*/
+		INSERT INTO SUR_QUES_GRP
+		SELECT
+			  #{newSurveyId}
+			, QUES_GRP_ID
+			, QUES_GRP_NM
+			, SORT_ORDER
+			, SYSDATE
+		FROM SUR_QUES_GRP
+		WHERE 1=1
+		AND SURVEY_ID=#{copySurveyId}
+
+	</insert>
+</mapper>
+

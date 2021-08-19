@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+    "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+    "http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+
+    <formset>
+        <form name="scDeptDiagMngVO">
+            <field property='year' depends='maxlength'>
+        	<arg0 key='word.year' resource='true'/>
+        	<arg1 key='4' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>4</var-value>
+        	</var>
+        </field>
+        <field property='scDeptId' depends='maxlength'>
+        	<arg0 key='word.scDeptCode' resource='true'/>
+        	<arg1 key='7' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>7</var-value>
+        	</var>
+        </field>
+        <field property='scDeptNm' depends='maxByteLength'>
+        	<arg0 key='word.scDeptNm2' resource='true'/>
+        	<arg1 key='150' resource='false'/>
+        	<var>
+        	<var-name>maxByteLength</var-name>
+        	<var-value>150</var-value>
+        	</var>
+        </field>
+        <field property='upScDeptId' depends='maxlength'>
+        	<arg0 key='word.upScOrgCd' resource='true'/>
+        	<arg1 key='7' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>7</var-value>
+        	</var>
+        </field>
+        <field property='levelId' depends='maxlength'>
+        	<arg0 key='word.deptLevel' resource='true'/>
+        	<arg1 key='7' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>7</var-value>
+        	</var>
+        </field>
+        <field property='scDeptGrpId' depends='maxlength'>
+        	<arg0 key='word.orgEvalGrp ' resource='true'/>
+        	<arg1 key='7' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>7</var-value>
+        	</var>
+        </field>
+        <field property='bscUserId' depends='maxlength'>
+        	<arg0 key='word.deptInCharge2' resource='true'/>
+        	<arg1 key='16' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>16</var-value>
+        	</var>
+        </field>
+        <field property='managerUserId' depends='maxlength'>
+        	<arg0 key='word.manager' resource='true'/>
+        	<arg1 key='16' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>16</var-value>
+        	</var>
+        </field>
+        <field property='sortOrder' depends='maxlength'>
+        	<arg0 key='word.sortOrder' resource='true'/>
+        	<arg1 key='22' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>22</var-value>
+        	</var>
+        </field>
+        <field property='deptKind' depends='maxlength'>
+        	<arg0 key='word.deptDiagramShape2' resource='true'/>
+        	<arg1 key='7' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>7</var-value>
+        	</var>
+        </field>
+        <field property='content' depends='maxByteLength'>
+        	<arg0 key='word.note' resource='true'/>
+        	<arg1 key='4000' resource='false'/>
+        	<var>
+        	<var-name>maxByteLength</var-name>
+        	<var-value>4000</var-value>
+        	</var>
+        </field>
+        <field property='cbeGrpId' depends='maxlength'>
+        	<arg0 key='CBE_GRP_ID' resource='false'/>
+        	<arg1 key='2' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>2</var-value>
+        	</var>
+        </field>
+        <field property='realSortOrder' depends='maxlength'>
+        	<arg0 key='word.sortOrder' resource='false'/>
+        	<arg1 key='22' resource='false'/>
+        	<var>
+        	<var-name>maxlength</var-name>
+        	<var-value>22</var-value>
+        	</var>
+        </field>
+        <field property='scDeptFullNm' depends='maxByteLength'>
+        	<arg0 key='SC_DEPT_FULL_NM' resource='false'/>
+        	<arg1 key='500' resource='false'/>
+        	<var>
+        	<var-name>maxByteLength</var-name>
+        	<var-value>500</var-value>
+        	</var>
+        </field>
+        
+        </form>
+    </formset>
+
+</form-validation>
