@@ -79,8 +79,10 @@
 		<typeAlias alias="deployDataVO"	type="kr.ispark.superMng.superMng.superMng.deployData.service.DeployDataVO"/>
 		<typeAlias alias="systemSettingVO"	type="kr.ispark.system.system.comp.systemSetting.service.SystemSettingVO"/>
 
+		<typeAlias alias="ideaSingleVO"	type="kr.ispark.system.system.menu.ideaSingle.service.IdeaSingleVO"/>
 	</typeAliases>
 </configuration>
+
 
 
 

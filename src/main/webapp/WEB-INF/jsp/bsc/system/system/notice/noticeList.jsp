@@ -385,4 +385,3 @@ function doDeleteData() {
 		</div>
 	</div>
 </form:form>
-
