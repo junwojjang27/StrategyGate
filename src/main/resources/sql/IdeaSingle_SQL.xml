@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.menu.ideaSingle">
+	<select id="selectList" parameterType="ideaSingleVO" resultType="ideaSingleVO">
+		/*	간단제안 조회	system.menu.ideaSingle.selectList */
+		SELECT
+			IDEA_CD,
+			YEAR,
+			USER_ID,
+			CATEGORY,
+			TITLE,
+			CONTENT,
+			STATE,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			START_DT,
+			END_DT,
+			ATCH_FILE_ID,
+			IDEA_GBN_CD,
+			DEGREE,
+			EVAL_STATE
+		FROM IDEA_INFO
+		WHERE 1=1
+
+	</select>
+	
+	<select id="selectDetail" parameterType="ideaSingleVO" resultType="ideaSingleVO">
+		/*	간단제안 상세 조회	 	system.menu.ideaSingle.selectDetail	*/
+		SELECT
+			IDEA_CD,
+			YEAR,
+			USER_ID,
+			CATEGORY,
+			TITLE,
+			CONTENT,
+			STATE,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			START_DT,
+			END_DT,
+			ATCH_FILE_ID,
+			IDEA_GBN_CD,
+			DEGREE,
+			EVAL_STATE
+		FROM IDEA_INFO
+		WHERE 1=1
+			AND IDEA_CD=#{ideaCd}
+			AND YEAR=#{year}
+			AND CREATE_DT=#{createDt}
+
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="ideaSingleVO">
+	    /*	간단제안 정렬순서저장	 ideaSingle.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteIdeaSingle" parameterType="ideaSingleVO">
+		/*	간단제안 삭제	system.menu.ideaSingle.deleteIdeaSingle	*/
+		UPDATE IDEA_INFO
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND IDEA_CD=#{ideaCd}
+			AND YEAR=#{year}
+			AND CREATE_DT=#{createDt}
+
+	</update>
+
+	<insert id="insertData" parameterType="ideaSingleVO">
+		/*	간단제안 저장	system.menu.ideaSingle.insertData	*/
+		INSERT INTO IDEA_INFO(
+			IDEA_CD,
+			YEAR,
+			USER_ID,
+			CATEGORY,
+			TITLE,
+			CONTENT,
+			STATE,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			START_DT,
+			END_DT,
+			ATCH_FILE_ID,
+			IDEA_GBN_CD,
+			DEGREE,
+			EVAL_STATE)
+		
+VALUES (
+			#{ideaCd},
+			#{year},
+			#{userId},
+			#{category},
+			#{title},
+			#{content},
+			#{state},
+			#{createDt},
+			#{updateDt},
+			#{deleteDt},
+			#{startDt},
+			#{endDt},
+			#{atchFileId},
+			#{ideaGbnCd},
+			#{degree},
+			#{evalState})
+
+	</insert>
+
+	<update id="updateData" parameterType="ideaSingleVO">
+		/*	간단제안 수정	system.menu.ideaSingle.updateData	*/
+		UPDATE IDEA_INFO
+		SET
+			USER_ID=#{userId},
+			CATEGORY=#{category},
+			TITLE=#{title},
+			CONTENT=#{content},
+			STATE=#{state},
+			UPDATE_DT=#{updateDt},
+			DELETE_DT=#{deleteDt},
+			START_DT=#{startDt},
+			END_DT=#{endDt},
+			ATCH_FILE_ID=#{atchFileId},
+			IDEA_GBN_CD=#{ideaGbnCd},
+			DEGREE=#{degree},
+			EVAL_STATE=#{evalState}
+		WHERE 1=1
+			AND IDEA_CD=#{ideaCd}
+			AND YEAR=#{year}
+			AND CREATE_DT=#{createDt}
+
+	</update>
+</mapper>
+
