@@ -26,7 +26,7 @@ $(function(){
 		width		:	"${jqgrid_width}",
 		height		:	"${jqgrid_height}",
 		colModel	:	[
-						{name:"ideaCd",	index:"ideaCd",	width:100,	align:"center",	label:"제안코드",
+						/*{name:"ideaCd",	index:"ideaCd",	width:100,	align:"center",	label:"제안코드",
 							formatter:function(cellvalue, options, rowObject) {
 								return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
 							},
@@ -37,13 +37,18 @@ $(function(){
 								return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.year) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
 							},
 							unformat:linkUnformatter
+						},*/
+						{name:"userId",	index:"userId",	width:100,	align:"center",	label:"아이디", hidden:true},
+						{name:"category",	index:"category",	width:20,	align:"center",	label:"<spring:message code="word.category"/>"},
+						{name:"title",	index:"title",	width:100,	align:"center",	label:"<spring:message code="word.title"/>",
+							formatter:function(cellvalue, options, rowObject) {
+								return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
+							},
+							unformat:linkUnformatter
 						},
-						{name:"userId",	index:"userId",	width:100,	align:"center",	label:"아이디"},
-						{name:"category",	index:"category",	width:100,	align:"center",	label:"카테고리"},
-						{name:"title",	index:"title",	width:100,	align:"center",	label:"제목"},
-						{name:"content",	index:"content",	width:100,	align:"center",	label:"내용"},
-						{name:"state",	index:"state",	width:100,	align:"center",	label:"상태(접수/승인/반려)"},
-						{name:"createDt",	index:"createDt",	width:100,	align:"center",	label:"생성일자",
+						//{name:"content",	index:"content",	width:100,	align:"center",	label:"내용"},
+						//{name:"state",	index:"state",	width:100,	align:"center",	label:"상태(접수/승인/반려)"},
+						/*{name:"createDt",	index:"createDt",	width:100,	align:"center",	label:"생성일자",
 							formatter:function(cellvalue, options, rowObject) {
 								return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.createDt) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
 							},
@@ -56,16 +61,24 @@ $(function(){
 						{name:"atchFileId",	index:"atchFileId",	width:100,	align:"center",	label:"첨부파일ID"},
 						{name:"ideaGbnCd",	index:"ideaGbnCd",	width:100,	align:"center",	label:"평가구분코드"},
 						{name:"degree",	index:"degree",	width:100,	align:"center",	label:"차수"},
-						{name:"evalState",	index:"evalState",	width:100,	align:"center",	label:"평가상태(대기/진행/종료)"}
+						{name:"evalState",	index:"evalState",	width:100,	align:"center",	label:"평가상태(대기/진행/종료)"}	*/
+						{name:"userNm",	index:"userNm",	width:50,	align:"center",	label:"<spring:message code="word.insertUser"/>"},
+						{name:"DeptNm",	index:"DeptNm",	width:50,	align:"center",	label:"<spring:message code="word.deptNm"/>"},
+						{name:"CreateDt",	index:"CreatDt",	width:50,	align:"center",	label:"<spring:message code="word.insertDT"/>"}
 
 						],
-		rowNum		: ${jqgrid_rownum_max},
+		//rowNum		: ${jqgrid_rownum_max},
 		pager		: "pager",
+        rowNum      : 10,
 		sortname	: "sortOrder",
 		sortorder	: "asc",
 		cellEdit	: true,
 		multiselect	: true,
+
 		loadComplete : function() {
+
+			//alert($("#findCategory").text());
+			//alert($("#findCategory").val());
 		}
 	});
 	
@@ -77,20 +90,21 @@ function searchList() {
 	$("#newForm").hide();
  	reloadGrid("list", "form");
 }
-
+/*
 // 엑셀 다운로드
 function excelDownload() {
 	var f = document.form;
 	f.action = "${context_path}/system/system/menu/ideaSingle/excelDownload.do";
 	f.submit();
 }
-
+*/
 // 상세 조회
-function showDetail(parameter) {
+//function showDetail(parameter) {
+function showDetail(ideaCd, year) {
 	var f = document.form;
 	f.ideaCd.value = ideaCd;
 	f.year.value = year;
-	f.createDt.value = createDt;
+	//f.createDt.value = createDt;
 
 	
 	sendAjax({
@@ -104,11 +118,15 @@ function showDetail(parameter) {
 function setDetail(data) {
 	$("#newForm").show();
 	var dataVO = data.dataVO;
+	//var userId = "${sessionScope.loginVO.userId}";
+
+	//document.getElementById("userNm").innerHTML = dataVO.userNm;
+	//document.getElementById("deptNm").innerHTML = dataVO.deptNm;
 	
-	$("#titleIdeaSingleNm").text("간단제안 : " + dataVO.userId);
-	
-	voToForm(dataVO, "form", ["ideaCd","userId","category","title","content","state","createDt","updateDt","deleteDt","startDt","endDt","atchFileId","ideaGbnCd","degree","evalState"]);
-	$("#userId").focus();
+	//$("#titleIdeaSingleNm").text("간단제안 : " + dataVO.userId);
+	voToForm(dataVO, "form", ["title","ideaCd","userId","category"]);
+	$("#content").val(dataVO.content);
+	$("#content").focus();
 }
 
 // 정렬순서저장
@@ -126,30 +144,66 @@ function saveSortOrder() {
 function addData() {
 	$("#newForm").show();
 	
-	$("#titleIdeaSingleNm").text("간단제안");
+	//$("#titleIdeaSingleNm").text("간단제안");
 	
-	resetForm("form", ["ideaCd","userId","category","title","content","state","createDt","updateDt","deleteDt","startDt","endDt","atchFileId","ideaGbnCd","degree","evalState"]);
+	//resetForm("form", ["ideaCd","userId","category","title","content","state","createDt","updateDt","deleteDt","startDt","endDt","atchFileId","ideaGbnCd","degree","evalState"]);
+	resetForm("form", ["category","title", "userNm", "DeptNm", "createDt", "content"]);
+
 	$("#year").val($("#findYear").val());
-	$("#userId").focus();
+	$("#title").focus();
+
+	//byte check
+	showBytes("content", "contentBytes");
 }
 
 // 저장
 function saveData() {
 	var f = document.form;
-	if(!validatePerspectiveVO(f)) {
+	if(!validateIdeaSingleVO(f)) {
 		return;
 	}
 	
 	sendAjax({
 		"url" : "${context_path}/system/system/menu/ideaSingle/saveIdeaSingle.do",
 		"data" : getFormData("form"),
-		"doneCallbackFunc" : "searchList"
+		//"doneCallbackFunc" : "searchList",
+        "doneCallbackFunc" : "checkResult",
+		"failCallbackFunc" : "checkResult"
+
 	});
+}
+
+//저장 callback
+function checkResult(data) {
+	$(window).scrollTop(0);
+	$.showMsgBox(data.msg);
+	if(data.result == AJAX_SUCCESS) {
+		searchList();
+	}
+	else{
+        $("#content").val("jkl");
+    }
 }
 
 // 삭제
 function deleteData() {
-	if(deleteDataToForm("list", "userId", "form")) {
+	/*if(deleteDataToForm("list", "userId", "form")) {
+		$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
+	}*/
+	var ids = $("#list").jqGrid("getGridParam", "selarrrow");
+	var rowData;
+	var isUse = false;
+	$(ids).each(function(i,v){
+		rowData = $("#list").jqGrid("getRowData",v);
+		if(Number(rowData.metricCnt) > 0){
+			isUse = true;
+		}
+	});
+	if(isUse){
+		$.showMsgBox("<spring:message code="bsc.system.calTypeMng.noDelete"/>",null);
+		return false;
+	}
+	if(deleteDataToForm("list", "ideaCd", "form")) {
 		$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
 	}
 }
@@ -186,12 +240,33 @@ function doDeleteData() {
 				<form:select path="findUseYn" class="select wx80" items="${codeUtil:getCodeList('011')}" itemLabel="codeNm" itemValue="codeId">
 				</form:select>
 			</li>
+
+			<li>
+				<label for="category"><spring:message code="word.category"/></label>
+				<form:select path="findCategory" class="select wx100" items="${codeUtil:getCodeList('385')}" itemLabel="codeNm" itemValue="codeId">
+				</form:select>
+			</li>
+			<li>
+				<label for="findSearch"><spring:message code="word.search"/></label>
+				<form:select path="findSearch" class="select wx100">
+					<form:option value="subject"><spring:message code="word.title"/></form:option>
+					<form:option value="content"><spring:message code="word.content"/></form:option>
+				</form:select>
+				<span class="searchBar"><form:input path="searchKeyword" class="t-box01 wx200" maxlength="20"/> </span>
+			</li>
 		</ul>
 		<a href="#" class="btn-sch" onclick="searchList();return false;"><spring:message code="button.search"/></a>
 	</div>
+
+	<div class="btn-dw">
+	</div>
+
+	<%--
 	<div class="btn-dw">
 		<a href="#" class="excel" onclick="excelDownload();return false;"><span><spring:message code="button.excelDownload"/></span></a>
 	</div>
+	--%>
+
 	<div class="gridContainer">
 		<table id="list"></table>
 		<div id="pager"></div>
@@ -205,8 +280,9 @@ function doDeleteData() {
 	</div>
 	<div class="page-noti">
 		<ul>
-			<li></li>
-			<li></li>
+			<li>간단 아이디어를 제안하는 페이지 입니다.</li>
+			<li>직원복지, 환경미화 등 간단한 아이디어만 제시해주세요.</li>
+			<li>제안 검토가 완료 된 제안은 수정할 수 없습니다.</li>
 		</ul>
 	</div>
 
@@ -220,27 +296,38 @@ function doDeleteData() {
 					<col width="80%"/>
 				</colgroup>
 				<tbody>
-					<tr> 
+					<%-- <tr>
 						<th scope="row"><label for="ideaCd">제안코드</label><span class="red">(*)</span></th> 
 						<td ><form:input path="ideaCd" class="t-box01"/></td> 
 					</tr> 
 					<tr> 
 						<th scope="row"><label for="userId">아이디</label></th> 
 						<td ><form:input path="userId" class="t-box01"/></td> 
-					</tr> 
+					</tr> --%>
+
+
+
 					<tr> 
-						<th scope="row"><label for="category">카테고리</label></th> 
-						<td ><form:input path="category" class="t-box01"/></td> 
+						<!--<th scope="row"><label for="category">카테고리</label><span class="red">(*)</span></th>-->
+                        <th scope="row"><label for="category"><spring:message code="word.category"/></label><span class="red">(*)</span></th>
+						<td colspan="3">
+							<form:select path="category" class="select" items="${codeUtil:getCodeList('385')}" itemLabel="codeNm" itemValue="codeId">
+							</form:select>
+						</td>
 					</tr> 
-					<tr> 
-						<th scope="row"><label for="title">제목</label></th> 
+					<tr>
+                        <th scope="row"><label for="title"><spring:message code="word.title"/></label><span class="red">(*)</span></th>
 						<td ><form:input path="title" class="t-box01"/></td> 
 					</tr> 
-					<tr> 
-						<th scope="row"><label for="content">내용</label></th> 
-						<td ><form:input path="content" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
+					<tr>
+                        <th scope="row"><label for="content"><spring:message code="word.content" /></label><span class="red">(*)</span></th>
+						<td colspan="3">
+							<p><form:textarea path="content" maxlength="4000"/></p>
+							<p class="byte"><label id="contentBytes">0</label><label> / 4000byte</label></p>
+						</td>
+					</tr>
+
+					<%-- <tr>
 						<th scope="row"><label for="state">상태(접수/승인/반려)</label></th> 
 						<td ><form:input path="state" class="t-box01"/></td> 
 					</tr> 
@@ -279,7 +366,7 @@ function doDeleteData() {
 					<tr> 
 						<th scope="row"><label for="evalState">평가상태(대기/진행/종료)</label></th> 
 						<td ><form:input path="evalState" class="t-box01"/></td> 
-					</tr> 
+					</tr> --%>
 
 				</tbody>
 			</table>

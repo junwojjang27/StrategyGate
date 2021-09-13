@@ -14,6 +14,11 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import egovframework.com.cmm.service.EgovFileMngService;
+import egovframework.com.cmm.service.FileVO;
+import kr.ispark.bsc.system.system.notice.service.NoticeVO;
+import kr.ispark.common.security.service.UserVO;
+import kr.ispark.common.util.SessionUtil;
 import org.springframework.stereotype.Service;
 
 import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
@@ -81,14 +86,22 @@ public class IdeaSingleServiceImpl extends EgovAbstractServiceImpl {
 	 * @throws	Exception
 	 */
 	public int saveData(IdeaSingleVO dataVO) throws Exception {
+
+		UserVO uvo = SessionUtil.getUserVO();
+		//dataVO.setSeq(seq);
+		dataVO.setUserId(uvo!=null?uvo.getUserId():null);
+		//dataVO.setInsertUserIp(uvo!=null?uvo.getIp():null);
+
 		String key = "";
-		if(CommonUtil.isEmpty(dataVO.getUserId())) {
-			key = idgenService.selectNextSeqByYear("originalTableName", dataVO.getYear(), "S", 6, "0");
-			dataVO.setUserId(key);
+		if(CommonUtil.isEmpty(dataVO.getIdeaCd())) {
+			key = idgenService.selectNextSeqByYear("IDEA_INFO", dataVO.getYear(), "S", 6, "0");
+			dataVO.setIdeaCd(key);
 			return ideaSingleDAO.insertData(dataVO);
 		} else {
 			return ideaSingleDAO.updateData(dataVO);
 		}
 	}
+
+
 }
 

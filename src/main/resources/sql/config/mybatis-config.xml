@@ -80,8 +80,10 @@
 		<typeAlias alias="systemSettingVO"	type="kr.ispark.system.system.comp.systemSetting.service.SystemSettingVO"/>
 
 		<typeAlias alias="ideaSingleVO"	type="kr.ispark.system.system.menu.ideaSingle.service.IdeaSingleVO"/>
+		<typeAlias alias="ideaUsVO"	type="kr.ispark.system.system.menu.ideaUs.service.IdeaUsVO"/>
 	</typeAliases>
 </configuration>
+
 
 
 

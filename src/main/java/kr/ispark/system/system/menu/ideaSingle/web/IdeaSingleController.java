@@ -105,6 +105,7 @@ public class IdeaSingleController extends BaseController {
 	public ModelAndView selectDetail(@ModelAttribute("searchVO") IdeaSingleVO searchVO) throws Exception {
 		return makeJsonData(ideaSingleService.selectDetail(searchVO));
 	}
+
 	
 	/**
 	 * 간단제안 정렬순서저장
@@ -151,8 +152,16 @@ public class IdeaSingleController extends BaseController {
 		if(bindingResult.hasErrors()){
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
+/*추가한부분*/
+		int resultCnt = ideaSingleService.saveData(dataVO);
+		if(resultCnt == 0) {
+			return makeFailJsonData();
+		}
+		/**/
+		//return makeJsonDataByResultCnt(ideaSingleService.saveData(dataVO));
+		return makeSuccessJsonData();
 
-		return makeJsonDataByResultCnt(ideaSingleService.saveData(dataVO));
+		//return makeJsonDataByResultCnt(ideaSingleService.saveData(dataVO));
 	}
 }
 

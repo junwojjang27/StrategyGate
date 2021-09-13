@@ -67,7 +67,7 @@ public class IdeaSingleDAO extends EgovComAbstractDAO {
 	 * @throws	Exception
 	 */
 	public int insertData(IdeaSingleVO searchVO) throws Exception {
-		return insert("system.menu.ideaSingle.insertData", searchVO);
+		return update("system.menu.ideaSingle.insertData", searchVO);
 	}
 
 	/**

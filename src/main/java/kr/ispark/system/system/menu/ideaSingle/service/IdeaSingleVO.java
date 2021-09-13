@@ -23,6 +23,9 @@ public class IdeaSingleVO extends CommonVO {
 	private String ideaCd;
 	private String userId;
 	private String category;
+
+	private String findCategory;
+
 	private String title;
 	private String content;
 	private String state;
@@ -35,6 +38,8 @@ public class IdeaSingleVO extends CommonVO {
 	private String ideaGbnCd;
 	private String degree;
 	private String evalState;
+
+	private String findSearch;
 
 	
 	private List<IdeaSingleVO> gridDataList;
