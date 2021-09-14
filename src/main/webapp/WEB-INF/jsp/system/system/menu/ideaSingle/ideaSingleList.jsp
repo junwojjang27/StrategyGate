@@ -26,53 +26,24 @@ $(function(){
 		width		:	"${jqgrid_width}",
 		height		:	"${jqgrid_height}",
 		colModel	:	[
-						/*{name:"ideaCd",	index:"ideaCd",	width:100,	align:"center",	label:"제안코드",
-							formatter:function(cellvalue, options, rowObject) {
-								return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
-							},
-							unformat:linkUnformatter
-						},
-						{name:"year",	index:"year",	width:100,	align:"center",	label:"기준년도",
-							formatter:function(cellvalue, options, rowObject) {
-								return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.year) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
-							},
-							unformat:linkUnformatter
-						},*/
 						{name:"userId",	index:"userId",	width:100,	align:"center",	label:"아이디", hidden:true},
-						{name:"category",	index:"category",	width:20,	align:"center",	label:"<spring:message code="word.category"/>"},
+						{name:"categoryNm",	index:"categoryNm",	width:20,	align:"center",	label:"<spring:message code="word.category"/>"},
 						{name:"title",	index:"title",	width:100,	align:"center",	label:"<spring:message code="word.title"/>",
 							formatter:function(cellvalue, options, rowObject) {
 								return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
 							},
 							unformat:linkUnformatter
 						},
-						//{name:"content",	index:"content",	width:100,	align:"center",	label:"내용"},
-						//{name:"state",	index:"state",	width:100,	align:"center",	label:"상태(접수/승인/반려)"},
-						/*{name:"createDt",	index:"createDt",	width:100,	align:"center",	label:"생성일자",
-							formatter:function(cellvalue, options, rowObject) {
-								return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.createDt) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
-							},
-							unformat:linkUnformatter
-						},
-						{name:"updateDt",	index:"updateDt",	width:100,	align:"center",	label:"수정일자"},
-						{name:"deleteDt",	index:"deleteDt",	width:100,	align:"center",	label:"삭제일자"},
-						{name:"startDt",	index:"startDt",	width:100,	align:"center",	label:"평가시작일자"},
-						{name:"endDt",	index:"endDt",	width:100,	align:"center",	label:"평가종료일자"},
-						{name:"atchFileId",	index:"atchFileId",	width:100,	align:"center",	label:"첨부파일ID"},
-						{name:"ideaGbnCd",	index:"ideaGbnCd",	width:100,	align:"center",	label:"평가구분코드"},
-						{name:"degree",	index:"degree",	width:100,	align:"center",	label:"차수"},
-						{name:"evalState",	index:"evalState",	width:100,	align:"center",	label:"평가상태(대기/진행/종료)"}	*/
 						{name:"userNm",	index:"userNm",	width:50,	align:"center",	label:"<spring:message code="word.insertUser"/>"},
-						{name:"DeptNm",	index:"DeptNm",	width:50,	align:"center",	label:"<spring:message code="word.deptNm"/>"},
-						{name:"CreateDt",	index:"CreatDt",	width:50,	align:"center",	label:"<spring:message code="word.insertDT"/>"}
+						{name:"deptNm",	index:"deptNm",	width:50,	align:"center",	label:"<spring:message code="word.deptNm"/>"},
+						{name:"createDt",	index:"creatDt",	width:50,	align:"center",	label:"<spring:message code="word.insertDT"/>"}
 
 						],
 		//rowNum		: ${jqgrid_rownum_max},
 		pager		: "pager",
         rowNum      : 10,
 		sortname	: "sortOrder",
-		sortorder	: "asc",
-		cellEdit	: true,
+		sortorder	: "desc",
 		multiselect	: true,
 
 		loadComplete : function() {
@@ -100,7 +71,7 @@ function excelDownload() {
 */
 // 상세 조회
 //function showDetail(parameter) {
-function showDetail(ideaCd, year) {
+function showDetail(ideaCd) {
 	var f = document.form;
 	f.ideaCd.value = ideaCd;
 	f.year.value = year;
@@ -119,12 +90,7 @@ function setDetail(data) {
 	$("#newForm").show();
 	var dataVO = data.dataVO;
 	//var userId = "${sessionScope.loginVO.userId}";
-
-	//document.getElementById("userNm").innerHTML = dataVO.userNm;
-	//document.getElementById("deptNm").innerHTML = dataVO.deptNm;
-	
-	//$("#titleIdeaSingleNm").text("간단제안 : " + dataVO.userId);
-	voToForm(dataVO, "form", ["title","ideaCd","userId","category"]);
+	voToForm(dataVO, "form", ["title","category", "year"]);
 	$("#content").val(dataVO.content);
 	$("#content").focus();
 }
@@ -147,7 +113,7 @@ function addData() {
 	//$("#titleIdeaSingleNm").text("간단제안");
 	
 	//resetForm("form", ["ideaCd","userId","category","title","content","state","createDt","updateDt","deleteDt","startDt","endDt","atchFileId","ideaGbnCd","degree","evalState"]);
-	resetForm("form", ["category","title", "userNm", "DeptNm", "createDt", "content"]);
+	resetForm("form", ["category","title", "userId", "createDt", "content"]);
 
 	$("#year").val($("#findYear").val());
 	$("#title").focus();
@@ -180,9 +146,6 @@ function checkResult(data) {
 	if(data.result == AJAX_SUCCESS) {
 		searchList();
 	}
-	else{
-        $("#content").val("jkl");
-    }
 }
 
 // 삭제
@@ -190,6 +153,8 @@ function deleteData() {
 	/*if(deleteDataToForm("list", "userId", "form")) {
 		$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
 	}*/
+
+
 	var ids = $("#list").jqGrid("getGridParam", "selarrrow");
 	var rowData;
 	var isUse = false;
@@ -217,8 +182,9 @@ function doDeleteData() {
 	
 	sendAjax({
 		"url" : "${context_path}/system/system/menu/ideaSingle/deleteIdeaSingle.do",
+		//"formId" : "form",
 		"data" : getFormData("form"),
-		"doneCallbackFunc" : "searchList"
+		"doneCallbackFunc" : "checkResult"
 	});
 }
 </script>
@@ -317,7 +283,7 @@ function doDeleteData() {
 					</tr> 
 					<tr>
                         <th scope="row"><label for="title"><spring:message code="word.title"/></label><span class="red">(*)</span></th>
-						<td ><form:input path="title" class="t-box01"/></td> 
+						<td ><form:input path="title" class="t-box01" maxlength="300"/></td>
 					</tr> 
 					<tr>
                         <th scope="row"><label for="content"><spring:message code="word.content" /></label><span class="red">(*)</span></th>

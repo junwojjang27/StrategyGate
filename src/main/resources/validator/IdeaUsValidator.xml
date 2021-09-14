@@ -6,7 +6,7 @@
 <form-validation>
 	<formset>
 		<form name="ideaUsVO">
-			<field property="ideaCd" depends="maxlength">
+			<!--<field property="ideaCd" depends="maxlength">
 				<arg0 key="제안코드" resource="true"/>
 				<arg1 key="7" resource="false"/>
 				<var>
@@ -21,7 +21,7 @@
 					<var-name>maxlength</var-name>
 					<var-value>20</var-value>
 				</var>
-			</field>
+			</field>-->
 			<field property="category" depends="maxlength">
 				<arg0 key="카테고리" resource="true"/>
 				<arg1 key="20" resource="false"/>
@@ -54,7 +54,7 @@
 					<var-value>20</var-value>
 				</var>
 			</field>
-			<field property="createDt" depends="maxlength">
+			<!--<field property="createDt" depends="maxlength">
 				<arg0 key="생성일자" resource="true"/>
 				<arg1 key="7" resource="false"/>
 				<var>
@@ -93,7 +93,7 @@
 					<var-name>maxlength</var-name>
 					<var-value>7</var-value>
 				</var>
-			</field>
+			</field>-->
 			<field property="atchFileId" depends="maxlength">
 				<arg0 key="첨부파일ID" resource="true"/>
 				<arg1 key="20" resource="false"/>
@@ -102,7 +102,7 @@
 					<var-value>20</var-value>
 				</var>
 			</field>
-			<field property="ideaGbnCd" depends="maxlength">
+			<!--<field property="ideaGbnCd" depends="maxlength">
 				<arg0 key="평가구분코드" resource="true"/>
 				<arg1 key="20" resource="false"/>
 				<var>
@@ -125,7 +125,7 @@
 					<var-name>maxlength</var-name>
 					<var-value>20</var-value>
 				</var>
-			</field>
+			</field>-->
 
 		</form>
 	</formset>

@@ -1,14 +1,14 @@
 /*************************************************************************
-* CLASS 명	: IdeaSingleVO
+* CLASS 명	: IdeaUsVO
 * 작 업 자	: 하성준
-* 작 업 일	: 2021-09-07
-* 기	능	: 간단제안 VO
+* 작 업 일	: 2021-09-08
+* 기	능	: 혁신제안 VO
 * ---------------------------- 변 경 이 력 --------------------------------
 * 번호	작 업 자		작	업	일			변 경 내 용				비고
 * ----	---------	----------------	---------------------	-----------
-*	1	하성준		2021-09-07
+*	1	하성준		2021-09-08
 **************************************************************************/
-package kr.ispark.system.system.menu.ideaSingle.service;
+package kr.ispark.system.system.menu.ideaUs.service;
 
 import java.util.List;
 
@@ -17,11 +17,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class IdeaSingleVO extends CommonVO {
+public class IdeaUsVO extends CommonVO {
 	private static final long serialVersionUID = -7555616568320156540L;
 
 	private String ideaCd;
 	private String userId;
+
+	private String userNm;
+
+
 	private String category;
 
 	private String findCategory;
@@ -39,13 +43,14 @@ public class IdeaSingleVO extends CommonVO {
 	private String degree;
 	private String evalState;
 
-	private String findSearch;
+	private String findUseYn;
 
-	private String userNm;
 	private String deptNm;
 
 	private String categoryNm;
+
+	private String findSearch;
 	
-	private List<IdeaSingleVO> gridDataList;
+	private List<IdeaUsVO> gridDataList;
 }
 

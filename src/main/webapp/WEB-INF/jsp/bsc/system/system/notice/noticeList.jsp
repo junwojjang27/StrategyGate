@@ -27,7 +27,7 @@ $(function(){
 							formatter:function(cellvalue, options, rowObject) {//(넘어온값, )
 								return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.id) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
 							},//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
-			we				unformat:linkUnformatter
+							unformat:linkUnformatter
 						},
 						{name:"popPreview",		index:"popPreview",	width:100,	align:"center",	label:"<spring:message code="word.preview"/>",
 							formatter:function(cellvalue, options, rowObject) {

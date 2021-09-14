@@ -88,17 +88,15 @@ public class IdeaSingleServiceImpl extends EgovAbstractServiceImpl {
 	public int saveData(IdeaSingleVO dataVO) throws Exception {
 
 		UserVO uvo = SessionUtil.getUserVO();
-		//dataVO.setSeq(seq);
 		dataVO.setUserId(uvo!=null?uvo.getUserId():null);
-		//dataVO.setInsertUserIp(uvo!=null?uvo.getIp():null);
 
 		String key = "";
-		if(CommonUtil.isEmpty(dataVO.getIdeaCd())) {
+		if(!CommonUtil.isEmpty(dataVO.getIdeaCd())) {
+			return ideaSingleDAO.updateData(dataVO);
+		} else {
 			key = idgenService.selectNextSeqByYear("IDEA_INFO", dataVO.getYear(), "S", 6, "0");
 			dataVO.setIdeaCd(key);
 			return ideaSingleDAO.insertData(dataVO);
-		} else {
-			return ideaSingleDAO.updateData(dataVO);
 		}
 	}
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="system.menu.ideaSingle">
-	<select id="selectList" parameterType="ideaSingleVO" resultType="ideaSingleVO">
-		/*	간단제안 조회	system.menu.ideaSingle.selectList */
+<mapper namespace="system.menu.ideaUs">
+	<select id="selectList" parameterType="ideaUsVO" resultType="ideaUsVO">
+		/*	혁신제안 조회	system.menu.ideaUs.selectList */
 		SELECT
 			A.IDEA_CD,
 			A.YEAR,
@@ -33,7 +33,7 @@
 			</include>
 		LEFT JOIN V_ROLE_USER B
 		ON A.USER_ID = B.USER_ID
-		WHERE A.IDEA_GBN_CD = '001'
+		WHERE A.IDEA_GBN_CD = '002'
 			<if test='findUseYn != null and findUseYn == "Y"'>
 				AND A.DELETE_DT IS NULL
 			</if>
@@ -44,56 +44,50 @@
 
 	</select>
 	
-	<select id="selectDetail" parameterType="ideaSingleVO" resultType="ideaSingleVO">
-		/*	간단제안 상세 조회	 	system.menu.ideaSingle.selectDetail	*/
+	<select id="selectDetail" parameterType="ideaUsVO" resultType="ideaUsVO">
+		/*	혁신제안 상세 조회	 	system.menu.ideaUs.selectDetail	*/
 		SELECT
-		A.CATEGORY,
-		A.TITLE,
-		A.CONTENT
+			A.CATEGORY,
+			A.TITLE,
+			A.CONTENT,
+		    A.ATCH_FILE_ID,
+		    A.STATE,
+			B.USER_NM,
+			B.DEPT_NM
 		FROM IDEA_INFO A
-		WHERE 1=1
-			AND A.IDEA_CD=#{ideaCd}
-			AND A.YEAR=#{findYear}
+				 LEFT JOIN V_ROLE_USER B
+						   ON A.USER_ID = B.USER_ID
+		WHERE A.IDEA_GBN_CD = '002'
+			<if test='findUseYn != null and findUseYn == "Y"'>
+				AND A.DELETE_DT IS NULL
+			</if>
+			<if test='findUseYn != null and findUseYn == "N"'>
+				AND A.DELETE_DT IS NOT NULL
+			</if>
 
 	</select>	
 	
 	<!-- 
-	<update id="updateSortOrder" parameterType="ideaSingleVO">
-	    /*	간단제안 정렬순서저장	 ideaSingle.updateSortOrder	*/
+	<update id="updateSortOrder" parameterType="ideaUsVO">
+	    /*	혁신제안 정렬순서저장	 ideaUs.updateSortOrder	*/
 		updateSortOrderQuery
 	</update>
 	-->
-	<!--
-	<update id="deleteIdeaSingle" parameterType="ideaSingleVO">
-		/*	간단제안 삭제	system.menu.ideaSingle.deleteIdeaSingle	*/
+	
+	<update id="deleteIdeaUs" parameterType="ideaUsVO">
+		/*	혁신제안 삭제	system.menu.ideaUs.deleteIdeaUs	*/
 		UPDATE IDEA_INFO
 		SET
 			DELETE_DT = SYSDATE
 		WHERE 1=1
 			AND IDEA_CD=#{ideaCd}
-
-	</update>-->
-
-	<update id="deleteIdeaSingle" parameterType="ideaSingleVO">
-		/*	간단제안 삭제	system.menu.ideaSingle.deleteIdeaSingle	*/
-		UPDATE IDEA_INFO A
-		SET
-		A.DELETE_DT = SYSDATE
-		WHERE A.YEAR = #{findYear}
-		AND A.IDEA_CD IN
-		<foreach collection="keys" item="key" open="(" close=")" separator=",">
-			#{key}
-		</foreach>
-		<!--DELETE_DT = SYSDATE
-    WHERE 1=1
-        AND IDEA_CD=#{ideaCd}
-        AND YEAR=#{year}
-        AND CREATE_DT=#{createDt}-->
+			AND YEAR=#{year}
+			AND CREATE_DT=#{createDt}
 
 	</update>
 
-	<insert id="insertData" parameterType="ideaSingleVO">
-		/*	간단제안 저장	system.menu.ideaSingle.insertData	*/
+	<insert id="insertData" parameterType="ideaUsVO">
+		/*	혁신제안 저장	system.menu.ideaUs.insertData	*/
 		INSERT INTO IDEA_INFO(
 			IDEA_CD,
 			YEAR,
@@ -126,23 +120,33 @@ VALUES (
 			#{startDt},
 			#{endDt},
 			#{atchFileId},
-			'001',
+			'002',
 			#{degree},
 			#{evalState})
 
 	</insert>
 
-	<update id="updateData" parameterType="ideaSingleVO">
-		/*	간단제안 수정	system.menu.ideaSingle.updateData	*/
-		UPDATE IDEA_INFO A
+	<update id="updateData" parameterType="ideaUsVO">
+		/*	혁신제안 수정	system.menu.ideaUs.updateData	*/
+		UPDATE IDEA_INFO
 		SET
-		    A.UPDATE_DT=SYSDATE,
-			A.CATEGORY=#{category},
-			A.TITLE=#{title},
-			A.CONTENT=#{content},
+			USER_ID=#{userId},
+			CATEGORY=#{category},
+			TITLE=#{title},
+			CONTENT=#{content},
+			STATE=#{state},
+			UPDATE_DT=#{updateDt},
+			DELETE_DT=#{deleteDt},
+			START_DT=#{startDt},
+			END_DT=#{endDt},
+			ATCH_FILE_ID=#{atchFileId},
+			IDEA_GBN_CD=#{ideaGbnCd},
+			DEGREE=#{degree},
+			EVAL_STATE=#{evalState}
 		WHERE 1=1
-			AND A.IDEA_CD=#{ideaCd},
-		    AND A.YEAR=#{findyear}
+			AND IDEA_CD=#{ideaCd}
+			AND YEAR=#{year}
+			AND CREATE_DT=#{createDt}
 
 	</update>
 </mapper>

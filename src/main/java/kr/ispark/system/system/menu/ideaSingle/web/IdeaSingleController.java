@@ -54,46 +54,7 @@ public class IdeaSingleController extends BaseController {
 		List<IdeaSingleVO> dataList = ideaSingleService.selectList(searchVO);
 		return makeGridJsonData(dataList, dataList.size(), searchVO);
 	}
-	
-	//excelDownload
-	/**
-	 * 엑셀양식다운로드
-	 * @param	IdeaSingleVO searchVO
-	 * @param	Model model
-	 * @return	ModelAndView
-	 * @throws	Exception
-	 */
-	@RequestMapping("/system/system/menu/ideaSingle/excelDownload.do")
-	public String excelDownload(@ModelAttribute("searchVO") IdeaSingleVO searchVO, Model model) throws Exception {
-		
-		/*
-		 * 현재페이지 화면에 맞게 반드시 수정할 것.
-		 */
-		
-		List<IdeaSingleVO> dataList = ideaSingleService.selectList(searchVO);
-		
-		// 타이틀
-		model.addAttribute("title", egovMessageSource.getMessage("word.ideaSingleManage"));
-		
-		// 검색조건
-		model.addAttribute("year", egovMessageSource.getMessage("word.year"));
-		model.addAttribute("findYear", searchVO.getFindYear());
-		
-		// header
-		model.addAttribute("ideaSingleNm", egovMessageSource.getMessage("word.ideaSingleNm"));	// 간단제안
-		model.addAttribute("sortOrder", egovMessageSource.getMessage("word.sortOrder"));			// 정렬순서
-		
-		// 조직 데이터
-		model.addAttribute("dataList", dataList);
-		
-		// 시트명
-		model.addAttribute("sheetName", egovMessageSource.getMessage("word.ideaSingleNm"));
-		
-		model.addAttribute("destJxlsFileName", egovMessageSource.getMessage("word.ideaSingleNm") + "_" + EgovStringUtil.getTimeStamp()+".xlsx");
-		model.addAttribute("templateJxlsFileName", "ideaSingleList.xlsx");
 
-		return "excelDownloadView";
-	}
 
 	/**
 	 * 간단제안 조회
@@ -152,16 +113,12 @@ public class IdeaSingleController extends BaseController {
 		if(bindingResult.hasErrors()){
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
-/*추가한부분*/
+
 		int resultCnt = ideaSingleService.saveData(dataVO);
 		if(resultCnt == 0) {
 			return makeFailJsonData();
 		}
-		/**/
-		//return makeJsonDataByResultCnt(ideaSingleService.saveData(dataVO));
 		return makeSuccessJsonData();
-
-		//return makeJsonDataByResultCnt(ideaSingleService.saveData(dataVO));
 	}
 }
 
