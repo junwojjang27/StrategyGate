@@ -1,17 +1,9 @@
-/*************************************************************************
-* CLASS 명	: IdeaSingleController
-* 작 업 자	: 하성준
-* 작 업 일	: 2021-09-07
-* 기	능	: 간단제안 Controller
-* ---------------------------- 변 경 이 력 --------------------------------
-* 번호	작 업 자		작	업	일			변 경 내 용				비고
-* ----	---------	----------------	---------------------	-----------
-*	1	하성준		2021-09-07
-**************************************************************************/
 package kr.ispark.system.system.menu.ideaSingle.web;
 
 import java.util.List;
 
+import kr.ispark.bsc.system.system.notice.service.NoticeVO;
+import kr.ispark.common.util.CommonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,9 +22,9 @@ import kr.ispark.common.web.BaseController;
 public class IdeaSingleController extends BaseController {
 	@Autowired
 	private IdeaSingleServiceImpl ideaSingleService;
-	
+
 	/**
-	 * 간단제안 목록 화면
+	 * 간단 IDEA+ 목록 화면
 	 * @param	IdeaSingleVO searchVO
 	 * @param	Model model
 	 * @return	String
@@ -42,9 +34,9 @@ public class IdeaSingleController extends BaseController {
 	public String ideaSingleList(@ModelAttribute("searchVO") IdeaSingleVO searchVO, Model model) throws Exception {
 		return "/system/system/menu/ideaSingle/ideaSingleList." + searchVO.getLayout();
 	}
-	
+
 	/**
-	 * 간단제안 그리드 조회(json)
+	 * 간단 IDEA+ 그리드 조회(json)
 	 * @param	IdeaSingleVO searchVO
 	 * @return	ModelAndView
 	 * @throws	Exception
@@ -55,9 +47,8 @@ public class IdeaSingleController extends BaseController {
 		return makeGridJsonData(dataList, dataList.size(), searchVO);
 	}
 
-
 	/**
-	 * 간단제안 조회
+	 * 간단 IDEA+ 조회
 	 * @param	IdeaSingleVO searchVO
 	 * @return	ModelAndView
 	 * @throws	Exception
@@ -67,9 +58,8 @@ public class IdeaSingleController extends BaseController {
 		return makeJsonData(ideaSingleService.selectDetail(searchVO));
 	}
 
-	
 	/**
-	 * 간단제안 정렬순서저장
+	 * 간단 IDEA+ 정렬순서저장
 	 * @param	IdeaSingleVO dataVO
 	 * @param	Model model
 	 * @param	BindingResult bindingResult
@@ -83,12 +73,12 @@ public class IdeaSingleController extends BaseController {
 		if(bindingResult.hasErrors()) {
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
-		
+
 		return makeJsonDataByResultCnt(ideaSingleService.updateSortOrder(dataVO));
 	}
-	
+
 	/**
-	 * 간단제안 삭제
+	 * 간단 IDEA+ 삭제
 	 * @param	IdeaSingleVO dataVO
 	 * @param	Model model
 	 * @return	ModelAndView
@@ -96,11 +86,16 @@ public class IdeaSingleController extends BaseController {
 	 */
 	@RequestMapping("/system/system/menu/ideaSingle/deleteIdeaSingle.do")
 	public ModelAndView deleteIdeaSingle(@ModelAttribute("dataVO") IdeaSingleVO dataVO, Model model) throws Exception {
-		return makeJsonDataByResultCnt(ideaSingleService.deleteIdeaSingle(dataVO));
+		//return makeJsonDataByResultCnt(ideaSingleService.deleteIdeaSingle(dataVO));
+		int resultCnt = ideaSingleService.deleteIdeaSingle(dataVO);
+		if(resultCnt == 0) {
+			return makeFailJsonData();
+		}
+		return makeSuccessJsonData();
 	}
-	
+
 	/**
-	 * 간단제안 저장
+	 * 간단 IDEA+ 저장
 	 * @param	IdeaSingleVO dataVO
 	 * @param	Model model
 	 * @param	BindingResult bindingResult
@@ -113,12 +108,15 @@ public class IdeaSingleController extends BaseController {
 		if(bindingResult.hasErrors()){
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
+		//return makeJsonDataByResultCnt(ideaSingleService.saveData(dataVO));
 
 		int resultCnt = ideaSingleService.saveData(dataVO);
 		if(resultCnt == 0) {
 			return makeFailJsonData();
 		}
+
+
 		return makeSuccessJsonData();
+
 	}
 }
-

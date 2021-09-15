@@ -1,22 +1,9 @@
-/*************************************************************************
-* CLASS 명	: IdeaSingleServiceIpml
-* 작 업 자	: 하성준
-* 작 업 일	: 2021-09-07
-* 기	능	: 간단제안 ServiceIpml
-* ---------------------------- 변 경 이 력 --------------------------------
-* 번호	작 업 자		작	업	일			변 경 내 용				비고
-* ----	---------	----------------	---------------------	-----------
-*	1	하성준		2021-09-07
-**************************************************************************/
 package kr.ispark.system.system.menu.ideaSingle.service.impl;
 
 import java.util.List;
 
 import javax.annotation.Resource;
 
-import egovframework.com.cmm.service.EgovFileMngService;
-import egovframework.com.cmm.service.FileVO;
-import kr.ispark.bsc.system.system.notice.service.NoticeVO;
 import kr.ispark.common.security.service.UserVO;
 import kr.ispark.common.util.SessionUtil;
 import org.springframework.stereotype.Service;
@@ -31,12 +18,12 @@ public class IdeaSingleServiceImpl extends EgovAbstractServiceImpl {
 
 	@Resource
 	private IdGenServiceImpl idgenService;
-	
+
 	@Resource
 	private IdeaSingleDAO ideaSingleDAO;
 
 	/**
-	 * 간단제안 목록 조회
+	 * 간단 IDEA+ 목록 조회
 	 * @param	IdeaSingleVO searchVO
 	 * @return	List<IdeaSingleVO>
 	 * @throws	Exception
@@ -44,9 +31,9 @@ public class IdeaSingleServiceImpl extends EgovAbstractServiceImpl {
 	public List<IdeaSingleVO> selectList(IdeaSingleVO searchVO) throws Exception {
 		return ideaSingleDAO.selectList(searchVO);
 	}
-	
+
 	/**
-	 * 간단제안 상세 조회
+	 * 간단 IDEA+ 상세 조회
 	 * @param	IdeaSingleVO searchVO
 	 * @return	IdeaSingleVO
 	 * @throws	Exception
@@ -54,9 +41,9 @@ public class IdeaSingleServiceImpl extends EgovAbstractServiceImpl {
 	public IdeaSingleVO selectDetail(IdeaSingleVO searchVO) throws Exception {
 		return ideaSingleDAO.selectDetail(searchVO);
 	}
-	
+
 	/**
-	 * 간단제안 정렬순서저장
+	 * 간단 IDEA+ 정렬순서저장
 	 * @param	IdeaSingleVO searchVO
 	 * @return	int
 	 * @throws	Exception
@@ -70,7 +57,7 @@ public class IdeaSingleServiceImpl extends EgovAbstractServiceImpl {
 	}
 
 	/**
-	 * 간단제안 삭제
+	 * 간단 IDEA+ 삭제
 	 * @param	IdeaSingleVO searchVO
 	 * @return	int
 	 * @throws	Exception
@@ -78,15 +65,16 @@ public class IdeaSingleServiceImpl extends EgovAbstractServiceImpl {
 	public int deleteIdeaSingle(IdeaSingleVO dataVO) throws Exception {
 		return ideaSingleDAO.deleteIdeaSingle(dataVO);
 	}
-	
+
 	/**
-	 * 간단제안 저장
+	 * 간단 IDEA+ 저장
 	 * @param	IdeaSingleVO searchVO
 	 * @return	int
 	 * @throws	Exception
 	 */
 	public int saveData(IdeaSingleVO dataVO) throws Exception {
 
+		//id setting
 		UserVO uvo = SessionUtil.getUserVO();
 		dataVO.setUserId(uvo!=null?uvo.getUserId():null);
 
@@ -95,11 +83,9 @@ public class IdeaSingleServiceImpl extends EgovAbstractServiceImpl {
 			return ideaSingleDAO.updateData(dataVO);
 		} else {
 			key = idgenService.selectNextSeqByYear("IDEA_INFO", dataVO.getYear(), "S", 6, "0");
+			//key = idgenService.selectNextSeq("IDEA_INFO", 3);
 			dataVO.setIdeaCd(key);
 			return ideaSingleDAO.insertData(dataVO);
 		}
 	}
-
-
 }
-

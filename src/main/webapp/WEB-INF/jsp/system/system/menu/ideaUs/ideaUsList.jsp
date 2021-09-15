@@ -1,286 +1,271 @@
-<!-- 
-*************************************************************************
-* CLASS 명	: IdeaUsList
-* 작 업 자	: 하성준
-* 작 업 일	: 2021-09-08
-* 기	능	: 혁신제안 List
-* ---------------------------- 변 경 이 력 --------------------------------
-* 번호	작 업 자		작	업	일			변 경 내 용				비고
-* ----	---------	----------------	---------------------	-----------
-*	1	하성준		2021-09-08				최 초 작 업
-**************************************************************************
--->
-
-<!--
-필독 : 다국어 지원기능에 의해서 화면에 나타나는 한글명칭은 message properties파일을 이용하여 수정할 것. 
- -->
-
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="/WEB-INF/jsp/common/common-taglibs.jsp"%>
 <validator:javascript formName="ideaUsVO" staticJavascript="false" xhtml="true" cdata="false"/>
 <script type="text/javascript">
-$(function(){
-	$("#list").jqGrid({
-		url			:	"${context_path}/system/system/menu/ideaUs/ideaUsList_json.do",
-		postData	:	getFormData("form"),
-		width		:	"${jqgrid_width}",
-		height		:	"${jqgrid_height}",
-		colModel	:	[
-			/*{name:"ideaCd",	index:"ideaCd",	width:100,	align:"center",	label:"제안코드",
-                formatter:function(cellvalue, options, rowObject) {
-                    return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
-                },
-                unformat:linkUnformatter
-            },
-            {name:"year",	index:"year",	width:100,	align:"center",	label:"기준년도",
-                formatter:function(cellvalue, options, rowObject) {
-                    return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.year) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
-                },
-                unformat:linkUnformatter
-            },
-            {name:"userId",	index:"userId",	width:100,	align:"center",	label:"아이디"},		*/
-			{name:"userId",	index:"userId",	width:100,	align:"center",	label:"아이디", hidden:true},
-			{name:"categoryNm",	index:"categoryNm",	width:20,	align:"center",	label:"<spring:message code="word.category"/>"},
-			{name:"title",	index:"title",	width:100,	align:"center",	label:"<spring:message code="word.title"/>",
-				formatter:function(cellvalue, options, rowObject) {
-					return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
+	$(function(){
+		$("#list").jqGrid({
+			url			:	"${context_path}/system/system/menu/ideaUs/ideaUsList_json.do",
+			postData	:	getFormData("form"),
+			width		:	"${jqgrid_width}",
+			height		:	"${jqgrid_height}",
+			colModel	:	[
+				{name:"ideaCd",		index:"ideaCd",	hidden:true},
+				{name:"year",		index:"year",	hidden:true},
+				{name:"state",		index:"state",	hidden:true},
+				{name:"findUseYn",		index:"findUseYn",	hidden:true},
+				{name:"category",	index:"category",	width:30,	align:"center",	label:"<spring:message code="word.category"/>"},
+				{name:"title",	index:"title",	width:200,	align:"center",	label:"<spring:message code="word.title"/>",
+					formatter:function(cellvalue, options, rowObject) {//(넘어온값, )
+						return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
+					},//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
+					unformat:linkUnformatter
 				},
-				unformat:linkUnformatter
+				{name:"userNm",	index:"userNm",	width:50,	align:"center",	label:"<spring:message code="word.insertUser"/>"},
+				{name:"deptNm",	index:"deptNm",	width:50,	align:"center",	label:"<spring:message code="word.deptNm"/>"},
+				{name:"createDt",	index:"creatDt",	width:50,	align:"center",	label:"<spring:message code="word.insertDT"/>"},
+			],
+			rowNum		: 10,
+			pager		: "pager",
+			sortname	: "createDt",
+			sortorder	: "asc",
+			multiselect	: true,
+			loadComplete : function() {
+			}
+		});
+		/***** 사용여부 미사용시 삭제 버튼 숨김 *****/
+		<c:choose>
+		<c:when test="${searchVO.findUseYn == 'N'}">
+		$(".delete").hide();
+		</c:when>
+		<c:otherwise>
+		$(".delete").show();
+		</c:otherwise>
+		</c:choose>
+		$("#findUseYn").on("change", function() {
+			if($(this).val() == "N"){
+				$(".delete").hide();
+			}else{
+				$(".delete").show();
+			}
+		});
+		/***** 사용여부 미사용시 삭제 버튼 숨김 end *****/
+
+		$("#newForm").hide();
+	});
+	// 목록 조회
+	function searchList() {
+		$("#newForm").hide();
+		reloadGrid("list", "form");
+	}
+	// 상세 조회
+	function showDetail(ideaCd) {
+		var f = document.form;
+		f.ideaCd.value = ideaCd;
+
+		sendAjax({
+			"url" : "${context_path}/system/system/menu/ideaUs/selectDetail.do",
+			"data" : getFormData("form"),
+			"doneCallbackFunc" : "setDetail"
+		});
+	}
+	var upload1;
+	// 상세 조회 값 세팅
+	function setDetail(data) {
+		$("#newForm").show();
+		var dataVO = data.dataVO;
+
+
+		voToForm(dataVO, "form", ["year","category","title"]);
+		$("#title").val(dataVO.title);
+		$("#content").val(dataVO.content);
+
+		$("#useYn").val($("#findUseYn").val());
+
+
+		$("#userNm").empty();
+		$("#userNm").text(dataVO.userNm);
+		$("#deptNm").empty();
+		$("#deptNm").text(dataVO.deptNm);
+
+
+
+		$("#title").focus();
+
+
+		var modifyYn = "Y";
+		//첨부파일 ajax
+		$.ajax({
+			url : "${context_path}/system/system/menu/ideaUs/ideaUsDetail.do",
+			data : {
+				"modifyYn" : modifyYn,
+				"atchFileId" : dataVO.atchFileKey,
+				"_csrf" : getCsrf("form")
 			},
-			//{name:"content",	index:"content",	width:100,	align:"center",	label:"내용"},
-			//{name:"state",	index:"state",	width:100,	align:"center",	label:"상태(접수/승인/반려)"},
-			/*{name:"createDt",	index:"createDt",	width:100,	align:"center",	label:"생성일자",
-                formatter:function(cellvalue, options, rowObject) {
-                    return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.createDt) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
-                },
-                unformat:linkUnformatter
-            },
-            {name:"updateDt",	index:"updateDt",	width:100,	align:"center",	label:"수정일자"},
-            {name:"deleteDt",	index:"deleteDt",	width:100,	align:"center",	label:"삭제일자"},
-            {name:"startDt",	index:"startDt",	width:100,	align:"center",	label:"평가시작일자"},
-            {name:"endDt",	index:"endDt",	width:100,	align:"center",	label:"평가종료일자"},
-            {name:"atchFileId",	index:"atchFileId",	width:100,	align:"center",	label:"첨부파일ID"},
-            {name:"ideaGbnCd",	index:"ideaGbnCd",	width:100,	align:"center",	label:"평가구분코드"},
-            {name:"degree",	index:"degree",	width:100,	align:"center",	label:"차수"},
-            {name:"evalState",	index:"evalState",	width:100,	align:"center",	label:"평가상태(대기/진행/종료)"}	*/
-			{name:"userNm",	index:"userNm",	width:20,	align:"center",	label:"<spring:message code="word.insertUser"/>"},
-			{name:"deptNm",	index:"deptNm",	width:20,	align:"center",	label:"<spring:message code="word.deptNm"/>"},
-			{name:"createDt",	index:"createDt",	width:20,	align:"center",	label:"<spring:message code="word.insertDT"/>"}
-
-		],
-		rowNum		: ${jqgrid_rownum_max},
-		pager		: "pager",
-		rowNum		: 10,
-		sortname	: "sortOrder",
-		sortorder	: "asc",
-		cellEdit	: true,
-		multiselect	: true,
-		loadComplete : function() {
-		}
-	});
-
-	$("#newForm").hide();
-});
-
-// 목록 조회
-function searchList() {
-	$("#newForm").hide();
- 	reloadGrid("list", "form");
-}
-/*
-// 엑셀 다운로드
-function excelDownload() {
-	var f = document.form;
-	f.action = "${context_path}/system/system/menu/ideaUs/excelDownload.do";
-	f.submit();
-}
-*/
-// 상세 조회
-function showDetail(ideaCd, year) {
-	var f = document.form;
-	f.ideaCd.value = ideaCd;
-	f.year.value = year;
-	//f.createDt.value = createDt;
-
-
-	sendAjax({
-		"url" : "${context_path}/system/system/menu/ideaUs/selectDetail.do",
-		"data" : getFormData("form"),
-		"doneCallbackFunc" : "setDetail"
-	});
-}
-
-// 상세 조회 값 세팅
-function setDetail(data) {
-	$("#newForm").show();
-	var dataVO = data.dataVO;
-
-	//var userId = "${sessionScope.loginVO.userId}";
-
-	//document.getElementById("userNm").innerHTML = dataVO.userNm;
-	//document.getElementById("deptNm").innerHTML = dataVO.deptNm;
-
-	//$("#titleIdeaUsNm").text("창의제안 : " + dataVO.userId);
-
-	//voToForm(dataVO, "form", ["ideaCd","userId","category","title","content","state","createDt","updateDt","deleteDt","startDt","endDt","atchFileId","ideaGbnCd","degree","evalState"]);
-    voToForm(dataVO, "form", ["ideaCd","category","title"]);
-
-    $("#title").val(dataVO.title);
-    $("#content").val(dataVO.content);
-    $("#title").focus();
-
-    if(isNotEmpty(upload1)) {
-        upload1.destroy();
-    }
-    upload1 = new SGFileUploader({"targetId" : "spanAttachFile", "inputName" : "upFile1"});
-    <c:import url="/common/fileList.do" charEncoding="utf-8">
-    <c:param name="moduleName" value="upload1"/>
-    <%--<c:param name="param_atchFileId" value= "${dataVO["atchFileKey"]}"/>--%>
-    </c:import>
-
-	var modifyYn = "Y";
-	//첨부파일 ajax
-	$.ajax({
-		url : "${context_path}/system/system/menu/ideaUs/ideaUsDetail.do",
-		data : {
-			"modifyYn" : modifyYn,
-			"atchFileId" : dataVO.atchFileKey,
-			"_csrf" : getCsrf("form")
-		},
-		method : "POST",
-		cache : false,
-		dataType : "html"
-	}).done(function(html) {
-		$("#spanAttachFile").html(html);
-	}).fail(function(jqXHR, textStatus) {
-		try{
-			var json = JSON.parse(jqXHR.responseText);
-			if(!isEmpty(json.msg)) {
-				$.showMsgBox(json.msg);
-			} else {
+			method : "POST",
+			cache : false,
+			dataType : "html"
+		}).done(function(html) {
+			$("#spanAttachFile").html(html);
+		}).fail(function(jqXHR, textStatus) {
+			try{
+				var json = JSON.parse(jqXHR.responseText);
+				if(!isEmpty(json.msg)) {
+					$.showMsgBox(json.msg);
+				} else {
+					$.showMsgBox(getMessage("errors.processing"));
+				}
+			}catch(e) {
 				$.showMsgBox(getMessage("errors.processing"));
 			}
-		}catch(e) {
-			$.showMsgBox(getMessage("errors.processing"));
+		});
+		//byte check
+		showBytes("content", "contentBytes");
+	}
+
+	// 등록
+	function addData() {
+		$("#newForm").show();
+
+		resetForm("form", ["ideaCd", "category","title","content","atchFileId","useYn", "userNm", "deptNm"]);
+		$("#year").val($("#findYear").val());
+		$("#title").focus();
+
+        var userNm = "${sessionScope.loginVO.userNm}";
+		var deptNm = "${sessionScope.loginVO.deptNm}";
+
+		$("#userNm").empty();
+		$("#userNm").text(userNm);
+		$("#deptNm").empty();
+		$("#deptNm").text(deptNm);
+
+
+		/*이부분 만져서 사용자의 이름, 부서 띄워보기*/
+
+		//document.getElementById("userNm").innerHTML = dataVO.userNm;
+		//document.getElementById("deptNm").innerHTML = dataVO.deptNm;
+
+		//$("#userNm").val(dataVO.userNm);
+		//$("#deptNm").val(dataVO.deptNm);
+
+
+
+		var modifyYn = "Y";
+		//첨부파일 ajax
+		$.ajax({
+			url : "${context_path}/system/system/menu/ideaUs/ideaUsDetail.do",
+			data : {
+				"modifyYn" : modifyYn,
+				"_csrf" : getCsrf("form")
+			},
+			method : "POST",
+			cache : false,
+			dataType : "html"
+		}).done(function(html) {
+			$("#spanAttachFile").empty();
+			$("#spanAttachFile").html(html);
+		}).fail(function(jqXHR, textStatus) {
+			try{
+				var json = JSON.parse(jqXHR.responseText);
+				if(!isEmpty(json.msg)) {
+					$.showMsgBox(json.msg);
+				} else {
+					$.showMsgBox(getMessage("errors.processing"));
+				}
+			}catch(e) {
+				$.showMsgBox(getMessage("errors.processing"));
+			}
+		});
+
+		//byte
+		showBytes("content", "contentBytes");
+	}
+	// 저장
+	function saveData() {
+		var f = document.form;
+		if(!validateIdeaUsVO(f)) {
+			return;
 		}
-	});
 
-	//byte check
-	showBytes("content", "contentBytes");
-}
+		// if($("#ideaCd").val() != null) //제안을 수정하는 경우
+		// 	checkState();//진행상태 체크
+		//
+		// if(isUse){ //검토가 완료된 제안을 수정하는 경우 수정불가
+		// 	$.showMsgBox("검토가 완료된 제안은 수정할 수 없습니다.",null); //메세지 수정 必
+		// 	return false;
+		// }
 
-// 정렬순서저장
-function saveSortOrder() {
-	if(!gridToForm("list", "form", true)) return false;
-
-	sendAjax({
-		"url" : "${context_path}/system/system/menu/ideaUs/saveSortOrder.do",
-		"data" : getFormData("form"),
-		"doneCallbackFunc" : "searchList"
-	});
-}
-
-// 등록
-function addData() {
-	$("#newForm").show();
-
-    //var userId = "${sessionScope.loginVO.userId}";
-    //System.out.println(userId + "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-
-    //document.getElementById("userNm").innerHTML = userId;
-
-	//$("#titleIdeaUsNm").text("혁신제안");
-
-	//resetForm("form", ["ideaCd","userId","category","title","content","state","createDt","updateDt","deleteDt","startDt","endDt","atchFileId","ideaGbnCd","degree","evalState"]);
-	resetForm("form", ["category","title", "atchFileId", "useYn", "content"]);
-	$("#year").val($("#findYear").val());
-	$("#title").focus();
-	//$("#userId").focus();
-
-    upload1 = new SGFileUploader({"targetId" : "spanAttachFile", "inputName" : "upFile1", "maxFileCnt" : 5, "maxTotalSize" : "5MB"});
-    <c:import url="/common/fileList.do" charEncoding="utf-8">
-    <c:param name="moduleName" value="upload1"/>
-    <c:param name="param_atchFileId" value="${searchVO.atchFileId}"/>
-    </c:import>
-
-    //byte check
-    showBytes("content", "contentBytes");
-
-
-}
-
-// 저장
-function saveData() {
-	var f = document.form;
-	if(!validateIdeaUsVO(f)) {
-		return;
+		sendMultipartForm({
+			"url" : "${context_path}/system/system/menu/ideaUs/saveIdeaUs.do",
+			"formId" : "form",
+			"fileModules" : [upload1],"doneCallbackFunc" :"searchList"
+			// "doneCallbackFunc" : "checkResult",
+			// "failCallbackFunc" : "checkResult"
+		});
 	}
-
-	/*sendAjax({
-		"url" : "${context_path}/system/system/menu/ideaUs/saveIdeaUs.do",
-		"data" : getFormData("form"),
-		"doneCallbackFunc" : "checkResult",
-		"failCallbackFunc" : "checkResult"
-	});*/
-    sendMultipartForm({
-        "url" : "${context_path}/system/system/menu/ideaUs/saveIdeaUs.do",
-        "formId" : "form",
-        "fileModules" : [upload1],
-        "doneCallbackFunc" : "checkResult",
-        "failCallbackFunc" : "checkResult"
-    });
-
-}
-
-//저장 callback
-function checkResult(data) {
-	$(window).scrollTop(0);
-	$.showMsgBox(data.msg);
-	if(data.result == AJAX_SUCCESS) {
-		searchList();
-	}
-}
-
-// 삭제
-function deleteData() {
-	/*if(deleteDataToForm("list", "userId", "form")) {
-		$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
-	}*/
-	var ids = $("#list").jqGrid("getGridParam", "selarrrow");
-	var rowData;
-	var isUse = false;
-	$(ids).each(function(i,v){
-		rowData = $("#list").jqGrid("getRowData",v);
-		if(Number(rowData.metricCnt) > 0){
-			isUse = true;
+	//저장 callback
+	function checkResult(data) {
+		$(window).scrollTop(0);
+		$.showMsgBox(data.msg);
+		if(data.result == AJAX_SUCCESS) {
+			searchList();
 		}
-	});
-	if(isUse){
-		$.showMsgBox("<spring:message code="bsc.system.calTypeMng.noDelete"/>",null);
-		return false;
 	}
-	if(deleteDataToForm("list", "ideaCd", "form")) {
-		$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
+	// 삭제
+	function deleteData() {
+
+		var ids = $("#list").jqGrid("getGridParam", "selarrrow"); //선택된 jqgrid의 행을 배열로 가져온다.
+		var rowData;
+		var isUse = false;
+		$(ids).each(function(i,v){ //배열의 처음부터 마지막까지 반복한다.
+			rowData = $("#list").jqGrid("getRowData",v);
+			if(rowData.state != '001'){// 검토 진행상태를 확인한다. 001:대기 002:승인 003:반려
+				isUse = true;
+			}
+		});
+
+		if(isUse){
+			$.showMsgBox("검토가 완료된 제안은 삭제할 수 없습니다.",null); //메세지 수정 必
+			return false;
+		}
+
+		if(deleteDataToForm("list", "ideaCd", "form")) {
+			$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
+		}
+
 	}
-}
+	// 삭제 처리
+	function doDeleteData() {
 
-// 삭제 처리
-function doDeleteData() {
-	var delList = [];
-	$("#form").find("[name=keys]").each(function(i, e) {
-		delList.push($(this).val());
-	});
+		sendAjax({
+			"url" : "${context_path}/system/system/menu/ideaUs/deleteIdeaUs.do",
+			"data" : getFormData("form"),
+			"doneCallbackFunc" : "checkResult"
+		});
+	}
 
-	sendAjax({
-		"url" : "${context_path}/system/system/menu/ideaUs/deleteIdeaUs.do",
-		"data" : getFormData("form"),
-		"doneCallbackFunc" : "searchList"
-	});
-}
+	//평가상태
+	var isUse;
+	function checkState() { //현재 진행상태를 확인하는 함수
+
+		var num = $("#list").getGridParam("reccount");
+		var rowData;
+		isUse = false;
+		for (var n = 1; n <= num; n++) { //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
+			rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
+			if(rowData.ideaCd == $("#ideaCd").val()){ //세부사항을 조회한 제안과 아이디가 동일한 경우
+				if (rowData.state != '001') { // 검토 진행상태를 확인한다. 001:대기 002:승인 003:반려
+					//제안이 검토가 완료된 상태인 경우 전역변수에 true를 저장한 후 반복을 종료한다.
+					isUse = true;
+					return;
+				}
+			}
+		}
+
+	}
 </script>
 
 <form:form commandName="searchVO" id="form" name="form" method="post">
- 	<form:hidden path="ideaCd"/>
+	<form:hidden path="ideaCd"/>
 	<form:hidden path="year"/>
 	<form:hidden path="createDt"/>
 
@@ -297,37 +282,36 @@ function doDeleteData() {
 				</form:select>
 			</li>
 			<li>
-				<label for="category"><spring:message code="word.category"/></label>
+				<label for="findCategory"><spring:message code="word.category"/></label>
 				<form:select path="findCategory" class="select wx100" items="${codeUtil:getCodeList('385')}" itemLabel="codeNm" itemValue="codeId">
 				</form:select>
 			</li>
 			<li>
-				<label for="findSearch"><spring:message code="word.search"/></label>
-				<form:select path="findSearch" class="select wx100">
-					<form:option value="subject"><spring:message code="word.title"/></form:option>
-					<form:option value="content"><spring:message code="word.content"/></form:option>
+				<label for="colName"><spring:message code="word.search" /></label>
+				<form:select path="colName" class="select wx100">
+					<form:option value="title"><spring:message code="word.title"/></form:option>
+					<form:option value="userNm"><spring:message code="word.insertUser"/></form:option>
 				</form:select>
 				<span class="searchBar"><form:input path="searchKeyword" class="t-box01 wx200" maxlength="20"/> </span>
 			</li>
 		</ul>
 		<a href="#" class="btn-sch" onclick="searchList();return false;"><spring:message code="button.search"/></a>
 	</div>
+	<div class="btn-dw"></div>
 	<div class="gridContainer">
 		<table id="list"></table>
 		<div id="pager"></div>
 	</div>
 	<div class="tbl-bottom tbl-bottom2">
 		<div class="tbl-btn">
-			<a href="#" class="save" onclick="saveSortOrder();return false;"><spring:message code="button.saveAll"/></a>
 			<a href="#" class="new" onclick="addData();return false;"><spring:message code="button.add"/></a>
 			<a href="#" class="delete" onclick="deleteData();return false;"><spring:message code="button.delete"/></a>
 		</div>
 	</div>
 	<div class="page-noti">
 		<ul>
-			<li>개인,부서별,동아리별 프로젝트 단위의 아이디어를 제안하는 페이지 입니다.</li>
-			<li>공모전에 참가하실 팀은 게시판에서 관련 폼을 다운받아 제출하시기 바랍니다.</li>
-			<li>개인으로 제안하실 분은 카테고리를 개인으로 설정하여 제출하시기 바랍니다.</li>
+			<li></li>
+			<li></li>
 		</ul>
 	</div>
 
@@ -337,45 +321,49 @@ function doDeleteData() {
 			<table summary="">
 				<caption></caption>
 				<colgroup>
-					<col width="20%"/>
-					<col width="30%"/>
-					<col width="20%"/>
-					<col width="30%"/>
+					<col width="15%"/>
+					<col width="35%"/>
+					<col width="15%"/>
+					<col width="35%"/>
 				</colgroup>
 				<tbody>
-					<tr>
-						<th scope="row"><label for="userNm">등록자</label></th>
-                        <td ><form:input path="userNm" class="t-box01"/></td>
-						<th scope="row"><label for="deptNm">부서</label></th>
-                        <td ><form:input path="deptNm" class="t-box01"/></td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="category">카테고리</label><span class="red">(*)</span></th>
-						<td>
-							<form:select path="category" class="select wx80" items="${codeUtil:getCodeList('385')}" itemLabel="codeNm" itemValue="codeId">
-							</form:select>
-						</td>
-						<th scope="row"><label for="state"><spring:message code="word.useYn"/></label><span class="red">(*)</span></th>
-						<td ><form:select path="state" class="select wx80" items="${codeUtil:getCodeList('011')}" itemLabel="codeNm" itemValue="codeId">
-						</form:select></td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="title">제목</label><span class="red">(*)</span></th>
-						<td colspan="3"><form:input path="title" class="t-box01"/></td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="content">내용</label><span class="red">(*)</span><br>ex) 배경, 현황 및 문제점, 개선방안, 기대효과</th>
-						<td colspan="3">
-							<p><form:textarea path="content" maxlength="4000"/></p>
-							<p class="byte"><label id="contentBytes">0</label><label> / 4000byte</label></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label><spring:message code="word.atchFile"/></label></th>
-						<td colspan="3">
-							<span id="spanAttachFile"></span>
-						</td>
-					</tr>
+				<tr>
+					<th scope="row"><label for="userNm"><spring:message code="word.insertUser"/></label></th>
+					<td><span id="userNm"/></td>
+					<th scope="row"><label for="deptNm"><spring:message code="word.dept"/></label></th>
+					<td><span id="deptNm"/></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="category"><spring:message code="word.category"/></label><span class="red">(*)</span></th>
+					<td>
+						<form:select path="category" class="select wx100" items="${codeUtil:getCodeList('385')}" itemLabel="codeNm" itemValue="codeId">
+						</form:select>
+					</td>
+					<th scope="row"><label for="useYn"><spring:message code="word.useYn"/></label><span class="red">(*)</span></th>
+					<td>
+						<form:select path="useYn" class="select wx80" items="${codeUtil:getCodeList('011')}" itemLabel="codeNm" itemValue="codeId">
+						</form:select>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="title"><spring:message code="word.title"/></label><span class="red">(*)</span></th>
+					<td colspan="3"><form:input path="title" class="t-box01"/></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="content"><spring:message code="word.content"/></label><span class="red">(*)</span></th>
+					<td colspan="3">
+						<p><form:textarea path="content" maxlength="4000"/></p>
+						<p class="byte"><label id="contentBytes">0</label><label> / 4000byte</label></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label><spring:message code="word.atchFile"/></label></th>
+					<td colspan="3">
+						<span id="spanAttachFile"></span>
+					</td>
+				</tr>
+
+
 				</tbody>
 			</table>
 		</div>
@@ -387,5 +375,4 @@ function doDeleteData() {
 			</div>
 		</div>
 	</div>
-</form:form>
-
+</form:form>r

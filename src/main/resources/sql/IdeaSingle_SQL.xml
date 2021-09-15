@@ -2,80 +2,79 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="system.menu.ideaSingle">
 	<select id="selectList" parameterType="ideaSingleVO" resultType="ideaSingleVO">
-		/*	간단제안 조회	system.menu.ideaSingle.selectList */
+		/*	간단 IDEA+ 조회	system.menu.ideaSingle.selectList */
 		SELECT
-			A.IDEA_CD,
-			A.YEAR,
-			A.USER_ID,
-			A.CATEGORY,
-			CA.CODE_NM AS CATEGORY_NM,
-			A.TITLE,
-			A.CONTENT,
-			A.STATE,
-			<!--CREATE_DT,-->
-			TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
-			A.UPDATE_DT,
-			A.DELETE_DT,
-			A.START_DT,
-			A.END_DT,
-			A.ATCH_FILE_ID,
-			A.IDEA_GBN_CD,
-			A.DEGREE,
-			A.EVAL_STATE,
-			B.USER_NM,
-			B.DEPT_NM
+		A.IDEA_CD,
+		A.YEAR,
+		A.USER_ID,
+		CA.CODE_NM AS CATEGORY,
+		A.TITLE,
+		A.CONTENT,
+		A.STATE,
+		<!--CREATE_DT,-->
+		TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
+		A.UPDATE_DT,
+		A.DELETE_DT,
+		A.START_DT,
+		A.END_DT,
+		A.ATCH_FILE_ID,
+		A.IDEA_GBN_CD,
+		A.DEGREE,
+		A.EVAL_STATE,
+		B.USER_NM,
+		B.DEPT_NM
 		FROM IDEA_INFO A
-			<include refid="common.func.getCodeJoin">
-				<property name="pYear" value="#{findYear}"/>
-				<property name="pCodeGrpId" value="'385'"/>
-				<property name="pAlias" value="CA"/>
-				<property name="pCompareColumn" value="A.CATEGORY"/>
-			</include>
 		LEFT JOIN V_ROLE_USER B
 		ON A.USER_ID = B.USER_ID
-		WHERE A.IDEA_GBN_CD = '001'
-			<if test='findUseYn != null and findUseYn == "Y"'>
-				AND A.DELETE_DT IS NULL
-			</if>
-			<if test='findUseYn != null and findUseYn == "N"'>
-				AND A.DELETE_DT IS NOT NULL
-			</if>
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'385'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="A.CATEGORY"/>
+		</include>
+		WHERE A.IDEA_GBN_CD ='001'
+		<if test='findUseYn != null and findUseYn == "Y"'>
+			AND A.DELETE_DT IS NULL
+		</if>
+		<if test='findUseYn != null and findUseYn == "N"'>
+			AND A.DELETE_DT IS NOT NULL
+		</if>
+		<if test='colName == "title"'>
+			AND UPPER(A.TITLE) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
+		</if>
+		<if test='colName == "userNm"'>
+			AND UPPER(B.USER_NM) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
+		</if>
+		AND UPPER(A.YEAR) LIKE  '%' || TRIM(UPPER(#{findYear})) ||'%'
+		AND UPPER(A.CATEGORY) LIKE  '%' || TRIM(UPPER(#{findCategory})) ||'%'
+		ORDER BY	A.CREATE_DT DESC
+
 
 
 	</select>
-	
+
 	<select id="selectDetail" parameterType="ideaSingleVO" resultType="ideaSingleVO">
-		/*	간단제안 상세 조회	 	system.menu.ideaSingle.selectDetail	*/
+		/*	간단 IDEA+ 상세 조회	 	system.menu.ideaSingle.selectDetail	*/
 		SELECT
-		A.CATEGORY,
-		A.TITLE,
-		A.CONTENT
+			A.CATEGORY,
+			A.TITLE,
+			A.CONTENT
 		FROM IDEA_INFO A
 		WHERE 1=1
-			AND A.IDEA_CD=#{ideaCd}
-			AND A.YEAR=#{findYear}
+		  AND A.IDEA_CD=#{ideaCd}
+		  AND A.YEAR=#{findYear}
 
-	</select>	
-	
-	<!-- 
+	</select>
+
+	<!--
 	<update id="updateSortOrder" parameterType="ideaSingleVO">
-	    /*	간단제안 정렬순서저장	 ideaSingle.updateSortOrder	*/
+	    /*	간단 IDEA+ 정렬순서저장	 ideaSingle.updateSortOrder	*/
 		updateSortOrderQuery
 	</update>
 	-->
-	<!--
-	<update id="deleteIdeaSingle" parameterType="ideaSingleVO">
-		/*	간단제안 삭제	system.menu.ideaSingle.deleteIdeaSingle	*/
-		UPDATE IDEA_INFO
-		SET
-			DELETE_DT = SYSDATE
-		WHERE 1=1
-			AND IDEA_CD=#{ideaCd}
-
-	</update>-->
 
 	<update id="deleteIdeaSingle" parameterType="ideaSingleVO">
-		/*	간단제안 삭제	system.menu.ideaSingle.deleteIdeaSingle	*/
+		/*	간단 IDEA+ 삭제	system.menu.ideaSingle.deleteIdeaSingle	*/
 		UPDATE IDEA_INFO A
 		SET
 		A.DELETE_DT = SYSDATE
@@ -84,16 +83,10 @@
 		<foreach collection="keys" item="key" open="(" close=")" separator=",">
 			#{key}
 		</foreach>
-		<!--DELETE_DT = SYSDATE
-    WHERE 1=1
-        AND IDEA_CD=#{ideaCd}
-        AND YEAR=#{year}
-        AND CREATE_DT=#{createDt}-->
-
 	</update>
 
 	<insert id="insertData" parameterType="ideaSingleVO">
-		/*	간단제안 저장	system.menu.ideaSingle.insertData	*/
+		/*	간단 IDEA+ 저장	system.menu.ideaSingle.insertData	*/
 		INSERT INTO IDEA_INFO(
 			IDEA_CD,
 			YEAR,
@@ -111,39 +104,38 @@
 			IDEA_GBN_CD,
 			DEGREE,
 			EVAL_STATE)
-		
-VALUES (
-			#{ideaCd},
-			#{year},
-			#{userId},
-			#{category},
-			#{title},
-			#{content},
-			#{state},
-			SYSDATE,
-			#{updateDt},
-			#{deleteDt},
-			#{startDt},
-			#{endDt},
-			#{atchFileId},
-			'001',
-			#{degree},
-			#{evalState})
+
+		VALUES (
+				   #{ideaCd},
+				   #{year},
+				   #{userId},
+				   #{category},
+				   #{title},
+				   #{content},
+				   '001',
+				   SYSDATE,
+				   #{updateDt},
+				   #{deleteDt},
+				   #{startDt},
+				   #{endDt},
+				   #{atchFileId},
+				   '001',
+				   #{degree},
+				   #{evalState})
 
 	</insert>
 
 	<update id="updateData" parameterType="ideaSingleVO">
-		/*	간단제안 수정	system.menu.ideaSingle.updateData	*/
+		/*	간단 IDEA+ 수정	system.menu.ideaSingle.updateData	*/
 		UPDATE IDEA_INFO A
 		SET
-		    A.UPDATE_DT=SYSDATE,
 			A.CATEGORY=#{category},
 			A.TITLE=#{title},
 			A.CONTENT=#{content},
+			A.UPDATE_DT=SYSDATE
 		WHERE 1=1
-			AND A.IDEA_CD=#{ideaCd},
-		    AND A.YEAR=#{findyear}
+		  AND A.IDEA_CD=#{ideaCd}
+		  AND A.YEAR=#{findYear}
 
 	</update>
 </mapper>
-

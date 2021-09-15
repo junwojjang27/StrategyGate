@@ -39,7 +39,11 @@ public class IdeaSingleVO extends CommonVO {
 	private String degree;
 	private String evalState;
 
+	private String searchKeyword;
+
 	private String findSearch;
+
+	private String colName;
 
 	private String userNm;
 	private String deptNm;
