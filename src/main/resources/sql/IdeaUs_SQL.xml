@@ -11,6 +11,7 @@
 		A.TITLE,
 		A.CONTENT,
 		A.STATE,
+		<!--A.STATE_NM,-->
 		<!--CREATE_DT,-->
 		TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
 		A.UPDATE_DT,
@@ -45,10 +46,15 @@
 		<if test='colName == "userNm"'>
 			AND UPPER(B.USER_NM) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
 		</if>
+		<!--
 		AND UPPER(A.YEAR) LIKE  '%' || TRIM(UPPER(#{findYear})) ||'%'
 		AND UPPER(A.CATEGORY) LIKE  '%' || TRIM(UPPER(#{findCategory})) ||'%'
-
-
+		-->
+		AND A.YEAR = #{findYear}
+		<if test='findCategory != null and findCategory != ""'>
+			AND A.CATEGORY = #{findCategory}
+		</if>
+		ORDER BY	A.CREATE_DT DESC
 	</select>
 
 	<select id="selectDetail" parameterType="ideaUsVO" resultType="ideaUsVO">
@@ -57,6 +63,7 @@
 			A.CATEGORY,
 			A.TITLE,
 			A.CONTENT,
+		    A.STATE,
 			A.ATCH_FILE_ID AS ATCH_FILE_KEY,
 			B.USER_NM,
 			B.DEPT_NM
@@ -81,13 +88,13 @@
 		/*	혁신 IDEA+ 삭제	system.menu.ideaUs.deleteIdeaUs	*/
 		UPDATE IDEA_INFO A
 		SET
-			A.DELETE_DT = SYSDATE
+		A.DELETE_DT = SYSDATE
 		WHERE 1=1
-			AND A.IDEA_CD IN
-				<foreach collection="keys" item="key" open="(" close=")" separator=",">
-					#{key}
-				</foreach>
-			AND A.YEAR=#{findYear}
+		AND A.IDEA_CD IN
+		<foreach collection="keys" item="key" open="(" close=")" separator=",">
+			#{key}
+		</foreach>
+		AND A.YEAR=#{findYear}
 
 	</update>
 
@@ -123,7 +130,7 @@
 				   '001',
 				   SYSDATE,
 				   #{updateDt},
-					CASE WHEN #{useYn} = 'Y' THEN NULL ELSE SYSDATE END,
+				   CASE WHEN #{useYn} = 'Y' THEN NULL ELSE SYSDATE END,
 				   #{startDt},
 				   #{endDt},
 				   #{atchFileId},
@@ -143,8 +150,8 @@
 			A.ATCH_FILE_ID=#{atchFileId},
 			A.DELETE_DT=CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END
 		WHERE 1=1
-			AND A.IDEA_CD=#{ideaCd}
-			AND A.YEAR=#{findYear}
+		  AND A.IDEA_CD=#{ideaCd}
+		  AND A.YEAR=#{findYear}
 
 	</update>
 </mapper>

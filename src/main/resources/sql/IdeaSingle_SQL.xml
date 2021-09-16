@@ -58,7 +58,8 @@
 		SELECT
 			A.CATEGORY,
 			A.TITLE,
-			A.CONTENT
+			A.CONTENT,
+		    A.STATE
 		FROM IDEA_INFO A
 		WHERE 1=1
 		  AND A.IDEA_CD=#{ideaCd}
