@@ -10,7 +10,8 @@
 		CA.CODE_NM AS CATEGORY,
 		A.TITLE,
 		A.CONTENT,
-		A.STATE,
+		<!--A.STATE,-->
+		CB.CODE_NM AS STATE,
 		<!--CREATE_DT,-->
 		TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
 		A.UPDATE_DT,
@@ -32,6 +33,12 @@
 			<property name="pAlias" value="CA"/>
 			<property name="pCompareColumn" value="A.CATEGORY"/>
 		</include>
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'390'"/>
+			<property name="pAlias" value="CB"/>
+			<property name="pCompareColumn" value="A.STATE"/>
+		</include>
 		WHERE A.IDEA_GBN_CD ='001'
 		<if test='findUseYn != null and findUseYn == "Y"'>
 			AND A.DELETE_DT IS NULL
@@ -45,8 +52,10 @@
 		<if test='colName == "userNm"'>
 			AND UPPER(B.USER_NM) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
 		</if>
-		AND UPPER(A.YEAR) LIKE  '%' || TRIM(UPPER(#{findYear})) ||'%'
-		AND UPPER(A.CATEGORY) LIKE  '%' || TRIM(UPPER(#{findCategory})) ||'%'
+		AND A.YEAR = #{findYear}
+		<if test='findCategory != null and findCategory != ""'>
+			AND A.CATEGORY = #{findCategory}
+		</if>
 		ORDER BY	A.CREATE_DT DESC
 
 
@@ -67,12 +76,6 @@
 
 	</select>
 
-	<!--
-	<update id="updateSortOrder" parameterType="ideaSingleVO">
-	    /*	간단 IDEA+ 정렬순서저장	 ideaSingle.updateSortOrder	*/
-		updateSortOrderQuery
-	</update>
-	-->
 
 	<update id="deleteIdeaSingle" parameterType="ideaSingleVO">
 		/*	간단 IDEA+ 삭제	system.menu.ideaSingle.deleteIdeaSingle	*/

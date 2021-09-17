@@ -31,9 +31,8 @@
 			sortname	: "createDt",
 			sortorder	: "asc",
 			multiselect	: true,
-			loadonce	: false,
+			//loadonce	: false,
 			loadComplete : function() {
-
 				var cnt = 0;
 
 				<sec:authorize access="hasRole('01')"> //관리자 권한 체크
@@ -81,6 +80,19 @@
 	function showDetail(ideaCd) {
 		var f = document.form;
 		f.ideaCd.value = ideaCd;
+
+		var num = $("#list").getGridParam("reccount");
+		var rowData;
+		for (var n = 1; n <= num; n++) { //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
+			rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
+			if(rowData.ideaCd == $("#ideaCd").val()) {
+				if (rowData.state != "대기")
+					$(".save").hide();
+				else
+					$(".save").show();
+			}
+		}
+
 		sendAjax({
 			"url" : "${context_path}/system/system/menu/ideaUs/selectDetail.do",
 			"data" : getFormData("form"),
@@ -105,10 +117,6 @@
 
 		var modifyYn = "Y";
 
-		if (dataVO.state != "001")
-			$(".save").hide();
-		else
-			$(".save").show();
 
 
 		//첨부파일 ajax
@@ -138,6 +146,7 @@
 		});
 		//byte check
 		showBytes("content", "contentBytes");
+		setMaxLength("form");
 	}
 	// 등록
 	function addData() {
@@ -179,6 +188,7 @@
 		});
 		//byte
 		showBytes("content", "contentBytes");
+		setMaxLength("form");
 	}
 	// 저장
 	function saveData() {
@@ -200,7 +210,6 @@
 
 
 			if (cnt != 1) {
-				alert("sdf");
 				var num = $("#list").getGridParam("reccount");
 				var rowData;
 				var userId = "${sessionScope.loginVO.userId}"; //로그인 정보를 가져온다.
@@ -243,15 +252,15 @@
 
 		checkState();
 
-
-		if(isUser){
-			$.showMsgBox("유저가다름.",null);
-			return false;
-		}
 		if(isUse){
 			$.showMsgBox("검토가 완료된 제안은 삭제할 수 없습니다.",null); //메세지 수정 必
 			return false;
 		}
+		if(isUser){
+			$.showMsgBox("유저가다름.",null);
+			return false;
+		}
+
 
 		if(deleteDataToForm("list", "ideaCd", "form")) {
 			$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
@@ -274,20 +283,16 @@
 		var userId = "${sessionScope.loginVO.userId}";
 		isUse = false;
 
-		alert(userId);
-
 		$(num).each(function(i,n){ //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
 			rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
 
-			alert(rowData.userId);
-			alert(userId);
 
 			if(rowData.userId != userId){
 				isUser = true;
 				return;
 			}
 
-			if (rowData.state != '001') { // 검토 진행상태를 확인한다. 001:대기 002:승인 003:반려
+			if (rowData.state != '대기') { // 검토 진행상태를 확인한다. 001:대기 002:승인 003:반려
 				//제안이 검토가 완료된 상태인 경우 전역변수에 true를 저장한 후 반복을 종료한다.
 				isUse = true;
 				return;
@@ -382,7 +387,7 @@
 				</tr>
 				<tr>
 					<th scope="row"><label for="title"><spring:message code="word.title"/></label><span class="red">(*)</span></th>
-					<td colspan="3"><form:input path="title" class="t-box01"/></td>
+					<td colspan="3"><form:input path="title" class="t-box01" maxlength="300"/></td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="content"><spring:message code="word.content"/></label><span class="red">(*)</span></th>

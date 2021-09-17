@@ -10,8 +10,8 @@
 		CA.CODE_NM AS CATEGORY,
 		A.TITLE,
 		A.CONTENT,
-		A.STATE,
-		<!--A.STATE_NM,-->
+		<!--A.STATE,-->
+		CB.CODE_NM AS STATE,
 		<!--CREATE_DT,-->
 		TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
 		A.UPDATE_DT,
@@ -32,6 +32,12 @@
 			<property name="pCodeGrpId" value="'385'"/>
 			<property name="pAlias" value="CA"/>
 			<property name="pCompareColumn" value="A.CATEGORY"/>
+		</include>
+		<include refid="common.func.getCodeJoin">
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'390'"/>
+			<property name="pAlias" value="CB"/>
+			<property name="pCompareColumn" value="A.STATE"/>
 		</include>
 		WHERE A.IDEA_GBN_CD ='002'
 		<if test='findUseYn != null and findUseYn == "Y"'>
@@ -76,13 +82,6 @@
 	</select>
 
 
-
-	<!--
-	<update id="updateSortOrder" parameterType="ideaUsVO">
-	    /*	혁신 IDEA+ 정렬순서저장	 ideaUs.updateSortOrder	*/
-		updateSortOrderQuery
-	</update>
-	-->
 
 	<update id="deleteIdeaUs" parameterType="ideaUsVO">
 		/*	혁신 IDEA+ 삭제	system.menu.ideaUs.deleteIdeaUs	*/
