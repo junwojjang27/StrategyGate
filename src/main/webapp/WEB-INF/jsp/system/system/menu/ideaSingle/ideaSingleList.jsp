@@ -7,14 +7,14 @@
 			url			:	"${context_path}/system/system/menu/ideaSingle/ideaSingleList_json.do",
 			postData	:	getFormData("form"),
 			width		:	"${jqgrid_width}",
-			height		:	"(count%10)*30",
+			height		:	"(count%10)*30",	//jqGrid크기를 제안 수에 맞게 변경
 			colModel	:	[
 				{name:"year",	index:"year",	width:30, hidden:true},
 				{name:"ideaCd",	index:"ideaCd",	width:30, hidden:true},
 				{name:"content",		index:"content",	hidden:true},
 				{name:"category",	index:"category",	width:30,	align:"center",	label:"<spring:message code="word.category"/>"},
 				{name:"title",	index:"title",	width:200,	align:"left",	label:"<spring:message code="word.title"/>",
-					formatter:function(cellvalue, options, rowObject) {//(넘어온값, )
+					formatter:function(cellvalue, options, rowObject) {
 						return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd)+ "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
 					},//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
 					unformat:linkUnformatter
@@ -104,11 +104,16 @@
 		showBytes("content", "contentBytes");
 		setMaxLength("form");
 	}
+
+	var first;
 	// 등록
 	function addData() {
+
 		$("#newForm").show();
 		resetForm("form", ["category","title", "content"]);		//form에 있는 값 지우기
 		$("#year").val($("#findYear").val());		//year은 화면 왼쪽 위 년도 로 세팅
+
+		first = true;
 
 		//byte
 		showBytes("content", "contentBytes");
@@ -121,16 +126,20 @@
 			return;
 		}
 
-		isUse = false;
-		var num = $("#list").getGridParam("reccount");
-		var rowData;
-		for (var n = 1; n <= num; n++) {
-			rowData = $("#list").jqGrid("getRowData", n);
-			if(rowData.ideaCd == $("#ideaCd").val()) {
-				if (rowData.state != "대기")		//제안의 상태가 대기가 아닐 경우
-					isUse = true;
+		if (first != true) {
+			isUse = false;
+			var num = $("#list").getGridParam("reccount");
+			var rowData;
+			for (var n = 1; n <= num; n++) {
+				rowData = $("#list").jqGrid("getRowData", n);
+				if(rowData.ideaCd == $("#ideaCd").val()) {
+					if (rowData.state != "대기")		//제안의 상태가 대기가 아닐 경우
+						isUse = true;
+				}
 			}
 		}
+
+		first = false;
 
 		if(isUse){
 			$.showMsgBox("검토가 완료된 제안은 수정할 수 없습니다.",null);
@@ -154,15 +163,24 @@
 	}
 	// 삭제
 	function deleteData() {
-
 		isUse = false;
 
-		checkState();
+		var num = $("#list").jqGrid("getGridParam", "selarrrow");
+		var rowData;
+		isUse = false;
+		$(num).each(function(i,n){
+			rowData = $("#list").jqGrid("getRowData", n);
+			if (rowData.state != '대기') {
+				isUse = true;
+				return;
+			}
+		});
+
 		if(isUse){
-			$.showMsgBox("검토가 완료된 제안은 삭제할 수 없습니다.",null); //메세지 수정 必
+			$.showMsgBox("검토가 완료된 제안은 삭제할 수 없습니다.",null);
 			return false;
 		}
-		if(deleteDataToForm("list", "ideaCd", "form")) {
+		if(deleteDataToForm("list", "ideaCd", "form")) {	//삭제할 데이터를 form에 넣기
 			$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
 		}
 	}
@@ -176,25 +194,11 @@
 	}
 
 	var isUser;
-
-	//진행상태체크
 	var isUse;
-	function checkState() { //현재 진행상태를 확인하는 함수
-		var num = $("#list").jqGrid("getGridParam", "selarrrow");
-		var rowData;
-		isUse = false;
-		$(num).each(function(i,n){ 												//jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
-			rowData = $("#list").jqGrid("getRowData", n); 						//아이디에 해당하는 행의 데이터를 가져온다.
-			if (rowData.state != '대기') { 											// 검토 진행상태를 확인한다. 001:대기 002:승인 003:반려
-				isUse = true;
-				return;
-			}
-		});
-	}
 </script>
 
 <form:form commandName="searchVO" id="form" name="form" method="post">
-	<form:hidden path="ideaCd"/>
+	<form:hidden path="ideaCd"/>		<!--이렇게 3개가 있어야 ideaCd, year, createDt를 사용할 수 있다고 추정... (없을 시 오류)-->
 	<form:hidden path="year"/>
 	<form:hidden path="createDt"/>
 
@@ -213,7 +217,7 @@
 			<li>
 				<label for="findCategory"><spring:message code="word.category"/></label>
 				<form:select path="findCategory" class="select wx100">
-					<option value=""><spring:message code="word.all" /></option>
+					<option value=""><spring:message code="word.all" /></option>	<!--카테고리 라벨에서 전체 를 추가-->
 					<form:options items="${codeUtil:getCodeList('385')}" itemLabel="codeNm" itemValue="codeId"/>
 				</form:select>
 			</li>
@@ -228,7 +232,7 @@
 		</ul>
 		<a href="#" class="btn-sch" onclick="searchList();return false;"><spring:message code="button.search"/></a>
 	</div>
-	<div class="btn-dw"></div>
+	<!--<div class="btn-dw"></div>-->
 	<div class="gridContainer">
 		<table id="list"></table>
 		<div id="pager"></div>
@@ -248,11 +252,11 @@
 	</div>
 
 	<div id="newForm">
-		<div class="ptitle" id="titleIdeaSingleNm"></div>
+		<div class="ptitle" id="titleIdeaSingleNm">간단제안</div>
 		<div class="tbl-type02">
 			<table summary="">
-				<caption></caption>
-				<colgroup>
+				<!--<caption></caption>-->
+				<colgroup> 		<!--열 넓이비율 지정-->
 					<col width="20%"/>
 					<col width="80%"/>
 				</colgroup>
@@ -266,7 +270,7 @@
 				</tr>
 				<tr>
 					<th scope="row"><label for="title"><spring:message code="word.title"/></label><span class="red">(*)</span></th>
-					<td ><form:input path="title" class="t-box01" maxlength="300"/></td>
+					<td ><form:input path="title" class="t-box01" maxlength="300"/></td> <!--최대길이 지정-->
 				</tr>
 				<tr>
 					<th scope="row"><label for="content"><spring:message code="word.content" /></label><span class="red">(*)</span></th>
@@ -279,8 +283,6 @@
 			</table>
 		</div>
 		<div class="tbl-bottom">
-			<div class="tbl-wbtn">
-			</div>
 			<div class="tbl-btn">
 				<a href="#" class="save" onclick="saveData();return false;"><spring:message code="button.save"/></a>
 			</div>

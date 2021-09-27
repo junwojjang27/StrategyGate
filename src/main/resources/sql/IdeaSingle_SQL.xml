@@ -25,36 +25,36 @@
 		FROM IDEA_INFO A
 		LEFT JOIN V_ROLE_USER B
 		ON A.USER_ID = B.USER_ID
-		<include refid="common.func.getCodeJoin">
+		<include refid="common.func.getCodeJoin">	<!--카테고리 코드를 해당하는 문자로 변경-->
 			<property name="pYear" value="#{findYear}"/>
 			<property name="pCodeGrpId" value="'385'"/>
 			<property name="pAlias" value="CA"/>
 			<property name="pCompareColumn" value="A.CATEGORY"/>
 		</include>
-		<include refid="common.func.getCodeJoin">
+		<include refid="common.func.getCodeJoin">	<!--상태 코드를 해당하는 문자로 변경-->
 			<property name="pYear" value="#{findYear}"/>
 			<property name="pCodeGrpId" value="'390'"/>
 			<property name="pAlias" value="CB"/>
 			<property name="pCompareColumn" value="A.STATE"/>
 		</include>
-		WHERE A.IDEA_GBN_CD ='001'
-		<if test='findUseYn != null and findUseYn == "Y"'>
+		WHERE A.IDEA_GBN_CD ='001' <!--간단제안만 조회-->
+		<if test='findUseYn != null and findUseYn == "Y"'> <!--사용 인 경우-->
 			AND A.DELETE_DT IS NULL
 		</if>
-		<if test='findUseYn != null and findUseYn == "N"'>
+		<if test='findUseYn != null and findUseYn == "N"'> <!--미사용 인 경우-->
 			AND A.DELETE_DT IS NOT NULL
 		</if>
-		<if test='colName == "title"'>
+		<if test='colName == "title"'> <!--검색조건이 제목일 떄 title에 searchKeyword가 포함된 경우-->
 			AND UPPER(A.TITLE) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
 		</if>
-		<if test='colName == "userNm"'>
+		<if test='colName == "userNm"'> <!--검색조건이 등록자일 때 userNm에 searchKeyword가 포함된 경우-->
 			AND UPPER(B.USER_NM) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
 		</if>
-		AND A.YEAR = #{findYear}
+		AND A.YEAR = #{findYear}	<!--년도가 같을 때-->
 		<if test='findCategory != null and findCategory != ""'>
 			AND A.CATEGORY = #{findCategory}
 		</if>
-		ORDER BY	A.CREATE_DT DESC
+		ORDER BY	A.CREATE_DT DESC	<!--생성날짜를 기준으로 내림차순 정렬-->
 
 
 

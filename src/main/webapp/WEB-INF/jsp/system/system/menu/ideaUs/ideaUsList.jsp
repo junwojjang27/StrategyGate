@@ -7,14 +7,14 @@
 			url			:	"${context_path}/system/system/menu/ideaUs/ideaUsList_json.do",
 			postData	:	getFormData("form"),
 			width		:	"${jqgrid_width}",
-			height		:	"(count%10)*30",
+			height		:	"(count%10)*30",    //jqGrid크기를 제안 수에 맞게 변경
 			colModel	:	[
 				{name:"ideaCd",		index:"ideaCd",	hidden:true},
 				{name:"year",		index:"year",	hidden:true},
 				{name:"findUseYn",		index:"findUseYn",	hidden:true},
 				{name:"category",	index:"category",	width:30,	align:"center",	label:"<spring:message code="word.category"/>"},
 				{name:"title",	index:"title",	width:200,	align:"left",	label:"<spring:message code="word.title"/>",
-					formatter:function(cellvalue, options, rowObject) {//(넘어온값, )
+					formatter:function(cellvalue, options, rowObject) {
 						return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
 					},//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
 					unformat:linkUnformatter
@@ -31,9 +31,8 @@
 			sortname	: "createDt",
 			sortorder	: "asc",
 			multiselect	: true,
-			//loadonce	: false,
 			loadComplete : function() {
-                var count = $('#list').getGridParam('records');
+                var count = $('#list').getGridParam('records'); //jqGrid크기 조절하기 위함. (서버에서 받은 실제 레코드 수)
 
 				var cnt = 0;
 
@@ -41,7 +40,7 @@
 				cnt = 1;
 				</sec:authorize>
 
-				if(cnt != 1){
+				if(cnt != 1){ //관리자 아닐 경우 체크박스 자기꺼만 보이게
 					var loginUserId = "${sessionScope.loginVO.userId}"; //로그인 정보를 가져온다.
 					hideGridCheckbox("list", "userId", loginUserId, false);
 				}
@@ -49,26 +48,17 @@
 
 
 		});
-		/***** 사용여부 미사용시 삭제 버튼 숨김 *****/
-		<c:choose>
-		<c:when test="${searchVO.findUseYn == 'N'}">
-		$(".delete").hide();
-		</c:when>
-		<c:otherwise>
-		$(".delete").show();
-		</c:otherwise>
-		</c:choose>
-		$("#findUseYn").on("change", function() {
+		$("#findUseYn").on("change", function() {//사용여부에 따라 삭제 버튼 보임여부
 			if($(this).val() == "N"){
 				$(".delete").hide();
 			}else{
 				$(".delete").show();
 			}
 		});
-		/***** 사용여부 미사용시 삭제 버튼 숨김 end *****/
+
 		$("#newForm").hide();
 
-		$("#searchKeyword").keyup(function(e) {
+		$("#searchKeyword").keyup(function(e) { //enter눌렀을 때 searchList()로 이동
 			if(e.keyCode == 13) searchList();
 		});
 
@@ -84,14 +74,14 @@
 		f.ideaCd.value = ideaCd;
 
 		var cnt = 0;
-		<sec:authorize access="hasRole('01')">
+		<sec:authorize access="hasRole('01')">	//관리자 여부
 			cnt = 1;
 		</sec:authorize>
-		if (cnt != 1) {
+		if (cnt != 1) {		//관리자 아닐 경우
 			var userId = "${sessionScope.loginVO.userId}";
-			var num = $("#list").getGridParam("reccount");
+			var num = $("#list").getGridParam("reccount");		//현재 화면에 표시되고있는 레코드 숫자
 			var rowData;
-			for (var n = 1; n <= num; n++) { //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
+			for (var n = 1; n <= num; n++) { 	//1 ~ (화면에 표시되고있는 레코드 숫자) 까지 반복하여 ideaCd를 비교해서 해당 제안을 찾음.
 				rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
 				if(rowData.ideaCd == $("#ideaCd").val()) {
 					if (rowData.userId == userId)
@@ -113,19 +103,16 @@
 	function setDetail(data) {
 		$("#newForm").show();
 		var dataVO = data.dataVO;
-		voToForm(dataVO, "form", ["year","category","title", "userNm", "deptNm"]);
+		voToForm(dataVO, "form", ["year","category","title", "userNm", "deptNm"]);	//VO의 값을 form에 세팅
 		$("#userNm").text(dataVO.userNm);
 		$("#deptNm").text(dataVO.deptNm);
 		$("#useYn").val($("#findUseYn").val());
 		$("#title").val(dataVO.title);
 		$("#content").val(dataVO.content);
 
-		$("#title").focus();
-
+		$("#content").focus();
 
 		var modifyYn = "Y";
-
-
 
 		//첨부파일 ajax
 		$.ajax({
@@ -164,9 +151,7 @@
 		$("#title").focus();
 		var userNm = "${sessionScope.loginVO.userNm}";
 		var deptNm = "${sessionScope.loginVO.deptNm}";
-		$("#userNm").empty();
 		$("#userNm").text(userNm);
-		$("#deptNm").empty();
 		$("#deptNm").text(deptNm);
 		var modifyYn = "Y";
 		//첨부파일 ajax
@@ -201,7 +186,7 @@
 	// 저장
 	function saveData() {
 		var f = document.form;
-		if(!validateIdeaUsVO(f)) {
+		if(!validateIdeaUsVO(f)) {  //유효성
 			return;
 		}
 
@@ -231,7 +216,7 @@
 	}
 	//저장 callback
 	function checkResult(data) {
-		$(window).scrollTop(0);
+		$(window).scrollTop(0);	//윈도우 스크롤 맨 위로 이동시키기
 		$.showMsgBox(data.msg);
 		if(data.result == AJAX_SUCCESS) {
 			searchList();
@@ -241,7 +226,16 @@
 	function deleteData() {
 		isUse = false;
 
-		checkState();
+		var num = $("#list").jqGrid("getGridParam", "selarrrow");
+		var rowData;
+		isUse = false;
+		$(num).each(function(i,n){
+			rowData = $("#list").jqGrid("getRowData", n);
+			if (rowData.state != '대기') {
+				isUse = true;
+				return;
+			}
+		});
 
 		if(isUse){
 			$.showMsgBox("검토가 완료된 제안은 삭제할 수 없습니다.",null); //메세지 수정 必
@@ -261,30 +255,14 @@
 			"doneCallbackFunc" : "checkResult"
 		});
 	}
-	//진행상태체크
+
 	var isUse;
 	var isUser;
-	function checkState() { //현재 진행상태를 확인하는 함수
-		var num = $("#list").jqGrid("getGridParam", "selarrrow");
-		var rowData;
-		var userId = "${sessionScope.loginVO.userId}";
-		isUse = false;
 
-		$(num).each(function(i,n){ //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
-			rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
-
-			if (rowData.state != '대기') { // 검토 진행상태를 확인한다. 001:대기 002:승인 003:반려
-				//제안이 검토가 완료된 상태인 경우 전역변수에 true를 저장한 후 반복을 종료한다.
-				isUse = true;
-				return;
-			}
-
-		});
-	}
 </script>
 
 <form:form commandName="searchVO" id="form" name="form" method="post">
-	<form:hidden path="ideaCd"/>
+	<form:hidden path="ideaCd"/>	<!--이렇게 3개가 있어야 ideaCd, year, createDt를 사용할 수 있다고 추정... (없을 시 오류)-->
 	<form:hidden path="year"/>
 	<form:hidden path="createDt"/>
 
@@ -318,7 +296,7 @@
 		</ul>
 		<a href="#" class="btn-sch" onclick="searchList();return false;"><spring:message code="button.search"/></a>
 	</div>
-	<div class="btn-dw"></div>
+	<!--<div class="btn-dw"></div>-->
 	<div class="gridContainer">
 		<table id="list"></table>
 		<div id="pager"></div>
@@ -338,10 +316,10 @@
 	</div>
 
 	<div id="newForm">
-		<div class="ptitle" id="titleIdeaUsNm"></div>
+		<div class="ptitle" id="titleIdeaUsNm">혁신제안</div>
 		<div class="tbl-type02">
 			<table summary="">
-				<caption></caption>
+				<!--<caption></caption>-->
 				<colgroup>
 					<col width="15%"/>
 					<col width="35%"/>
@@ -390,8 +368,6 @@
 			</table>
 		</div>
 		<div class="tbl-bottom">
-			<div class="tbl-wbtn">
-			</div>
 			<div class="tbl-btn">
 				<a href="#" class="save" onclick="saveData();return false;"><spring:message code="button.save"/></a>
 			</div>

@@ -14,6 +14,7 @@ public class IdeaUsVO extends CommonVO {
 	private String userId;
 	private String category;
 	private String findCategory;
+
 	private String title;
 	private String content;
 	private String state;
