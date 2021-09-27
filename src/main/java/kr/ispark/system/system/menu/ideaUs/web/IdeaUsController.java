@@ -192,7 +192,6 @@ public class IdeaUsController extends BaseController {
 
 	@RequestMapping("/system/system/menu/ideaUs/ideaUsDetail.do")
 	public String getAtchFileForm(@ModelAttribute("searchVO") IdeaUsVO ideaUsVO,  Model model) {
-
 		//model.addAttribute("searchVO",IdeaUsVO);
 		return "/system/system/menu/ideaUs/ideaUsAtchFileForm";
 	}

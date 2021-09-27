@@ -10,9 +10,7 @@
 		CA.CODE_NM AS CATEGORY,
 		A.TITLE,
 		A.CONTENT,
-		<!--A.STATE,-->
 		CB.CODE_NM AS STATE,
-		<!--CREATE_DT,-->
 		TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
 		A.UPDATE_DT,
 		A.DELETE_DT,
@@ -110,22 +108,22 @@
 			EVAL_STATE)
 
 		VALUES (
-				   #{ideaCd},
-				   #{year},
-				   #{userId},
-				   #{category},
-				   #{title},
-				   #{content},
-				   '001',
-				   SYSDATE,
-				   #{updateDt},
-				   #{deleteDt},
-				   #{startDt},
-				   #{endDt},
-				   #{atchFileId},
-				   '001',
-				   #{degree},
-				   #{evalState})
+		   #{ideaCd},
+		   #{year},
+		   #{userId},
+		   #{category},
+		   #{title},
+		   #{content},
+		   #{state},
+		   SYSDATE,
+		   #{updateDt},
+		   #{deleteDt},
+		   #{startDt},
+		   #{endDt},
+		   #{atchFileId},
+		   #{ideaGbnCd},
+		   #{degree},
+		   #{evalState})
 
 	</insert>
 

@@ -88,24 +88,13 @@ public class IdeaUsServiceImpl extends EgovAbstractServiceImpl {
 			fileMngService.insertFileInfs(fileList1);
 		}
 		dataVO.setAtchFileId(fileUtil.getAtchFileId(fileList1));
-		dataVO.setIdeaCd(idgenService.selectNextSeq("IDEA_INFO", 0));
+		dataVO.setIdeaCd(idgenService.selectNextSeq("IDEA_INFO", "S", 6, "0"));
+
+		dataVO.setState("001");
+		dataVO.setIdeaGbnCd("002");
 
 		return ideaUsDAO.insertData(dataVO);
 	}
-	/*
-	public int saveData(IdeaUsVO dataVO) throws Exception {
-		//id setting
-		UserVO uvo = SessionUtil.getUserVO();
-		dataVO.setUserId(uvo!=null?uvo.getUserId():null);
-		String key = "";
-		if(CommonUtil.isEmpty(dataVO.getIdeaCd())) {
-			key = idgenService.selectNextSeqByYear("IDEA_INFO", dataVO.getYear(), "S", 6, "0");
-			dataVO.setIdeaCd(key);
-			return ideaUsDAO.insertData(dataVO);
-		} else {
-			return ideaUsDAO.updateData(dataVO);
-		}
-	}*/
 
 	/**
 	 * 혁신제안 수정

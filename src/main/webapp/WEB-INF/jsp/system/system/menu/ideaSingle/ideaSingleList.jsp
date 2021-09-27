@@ -7,7 +7,7 @@
 			url			:	"${context_path}/system/system/menu/ideaSingle/ideaSingleList_json.do",
 			postData	:	getFormData("form"),
 			width		:	"${jqgrid_width}",
-			height		:	"300",
+			height		:	"(count%10)*30",
 			colModel	:	[
 				{name:"year",	index:"year",	width:30, hidden:true},
 				{name:"ideaCd",	index:"ideaCd",	width:30, hidden:true},
@@ -30,40 +30,31 @@
 			sortname	: "createDt",
 			sortorder	: "asc",
 			multiselect	: true,
-			//loadonce	: false,
 			loadComplete : function() {
-				var cnt = 0;
+				var count = $('#list').getGridParam('records'); //jqGrid크기 조절하기 위함. (서버에서 받은 실제 레코드 수)
 
-				<sec:authorize access="hasRole('01')"> //관리자 권한 체크
+				var cnt = 0;
+				<sec:authorize access="hasRole('01')"> //관리자 여부
 				cnt = 1;
 				</sec:authorize>
-
-				if(cnt != 1){
-					var loginUserId = "${sessionScope.loginVO.userId}"; //로그인 정보를 가져온다.
+				if(cnt != 1){	//관리자 아닐 경우 체크박스 자기꺼만 보이게
+					var loginUserId = "${sessionScope.loginVO.userId}";
 					hideGridCheckbox("list", "userId", loginUserId, false);
 				}
 			}
 		});
-		/***** 사용여부 미사용시 삭제 버튼 숨김 *****/
-		<c:choose>
-		<c:when test="${searchVO.findUseYn == 'N'}">
-		$(".delete").hide();
-		</c:when>
-		<c:otherwise>
-		$(".delete").show();
-		</c:otherwise>
-		</c:choose>
-		$("#findUseYn").on("change", function() {
+
+		$("#findUseYn").on("change", function() {	//사용여부에 따라 삭제 버튼 보임여부
 			if($(this).val() == "N"){
 				$(".delete").hide();
 			}else{
 				$(".delete").show();
 			}
 		});
-		/***** 사용여부 미사용시 삭제 버튼 숨김 end *****/
+
 		$("#newForm").hide();
 
-		$("#searchKeyword").keyup(function(e) {
+		$("#searchKeyword").keyup(function(e) {		//enter눌렀을 때 searchList()로 이동
 			if(e.keyCode == 13) searchList();
 		});
 	});
@@ -73,23 +64,30 @@
 		reloadGrid("list", "form");
 	}
 	// 상세 조회
-	function showDetail(ideaCd, year) {
+	function showDetail(ideaCd) {
 		var f = document.form;
 		f.ideaCd.value = ideaCd;
-		//f.year.value = year;
 
-		var num = $("#list").getGridParam("reccount");
-		var rowData;
-		for (var n = 1; n <= num; n++) { //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
-			rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
-			if(rowData.ideaCd == $("#ideaCd").val()) {
-				if (rowData.state != "대기")
-					$(".save").hide();
-				else
-					$(".save").show();
+		var cnt = 0;
+
+		<sec:authorize access="hasRole('01')">	//관리자 여부
+		cnt = 1;
+		</sec:authorize>
+
+		if (cnt != 1) {		//관리자 아닐 경우
+			var userId = "${sessionScope.loginVO.userId}";
+			var num = $("#list").getGridParam("reccount");		//현재 화면에 표시되고있는 레코드 숫자
+			var rowData;
+			for (var n = 1; n <= num; n++) {	//1 ~ (화면에 표시되고있는 레코드 숫자) 까지 반복하여 ideaCd를 비교해서 해당 제안을 찾음.
+				rowData = $("#list").jqGrid("getRowData", n);
+				if(rowData.ideaCd == $("#ideaCd").val()) {
+					if (rowData.userId == userId)
+						$(".save").show();
+					else
+						$(".save").hide();
+				}
 			}
 		}
-
 		sendAjax({
 			"url" : "${context_path}/system/system/menu/ideaSingle/selectDetail.do",
 			"data" : getFormData("form"),
@@ -100,19 +98,17 @@
 	function setDetail(data) {
 		$("#newForm").show();
 		var dataVO = data.dataVO;
-
-		voToForm(dataVO, "form", ["title","year","category"]);
+		voToForm(dataVO, "form", ["title","year","category"]);	//VO의 값을 form에 세팅
 		$("#content").val(dataVO.content);
-		$("#content").focus();//byte check
+		$("#content").focus();
 		showBytes("content", "contentBytes");
 		setMaxLength("form");
 	}
 	// 등록
 	function addData() {
 		$("#newForm").show();
-		resetForm("form", ["category","title","userNm","DeptNm","createDt","content"]);
-		$("#year").val($("#findYear").val());
-		$("#title").focus();
+		resetForm("form", ["category","title", "content"]);		//form에 있는 값 지우기
+		$("#year").val($("#findYear").val());		//year은 화면 왼쪽 위 년도 로 세팅
 
 		//byte
 		showBytes("content", "contentBytes");
@@ -121,52 +117,36 @@
 	// 저장
 	function saveData() {
 		var f = document.form;
-		if(!validateIdeaSingleVO(f)) {
+		if(!validateIdeaSingleVO(f)) {	//유효성 체크
 			return;
 		}
-		var cnt = 0;
 
-		isUser = false;
-
-		if($("#ideaCd").val() != "") {
-			cnt = 0;
-
-			<sec:authorize access="hasRole('01')"> //관리자 권한 체크
-			cnt = 1;
-			</sec:authorize>
-
-
-			if (cnt != 1) {
-				var num = $("#list").getGridParam("reccount");
-				var rowData;
-				var userId = "${sessionScope.loginVO.userId}"; //로그인 정보를 가져온다.
-				for (var n = 1; n <= num; n++) { //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
-					rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
-					if(rowData.ideaCd == $("#ideaCd").val()) {
-						if (rowData.userId != userId) {
-							isUser = true;
-						}
-					}
-				}
+		isUse = false;
+		var num = $("#list").getGridParam("reccount");
+		var rowData;
+		for (var n = 1; n <= num; n++) {
+			rowData = $("#list").jqGrid("getRowData", n);
+			if(rowData.ideaCd == $("#ideaCd").val()) {
+				if (rowData.state != "대기")		//제안의 상태가 대기가 아닐 경우
+					isUse = true;
 			}
 		}
 
-		if(isUser){
-			$.showMsgBox("유저가다름.",null);
+		if(isUse){
+			$.showMsgBox("검토가 완료된 제안은 수정할 수 없습니다.",null);
 			return false;
 		}
 
 		sendAjax({
 			"url" : "${context_path}/system/system/menu/ideaSingle/saveIdeaSingle.do",
 			"data" : getFormData("form"),
-			//"doneCallbackFunc" : "searchList"
 			"doneCallbackFunc" : "checkResult",
 			"failCallbackFunc" : "checkResult"
 		});
 	}
 	//저장 callback
 	function checkResult(data) {
-		$(window).scrollTop(0);
+		$(window).scrollTop(0);	//윈도우 스크롤 맨 위로 이동시키기
 		$.showMsgBox(data.msg);
 		if(data.result == AJAX_SUCCESS) {
 			searchList();
@@ -176,19 +156,12 @@
 	function deleteData() {
 
 		isUse = false;
-		isUser = false;
 
 		checkState();
-
 		if(isUse){
 			$.showMsgBox("검토가 완료된 제안은 삭제할 수 없습니다.",null); //메세지 수정 必
 			return false;
 		}
-		if(isUser){
-			$.showMsgBox("유저가다름.",null);
-			return false;
-		}
-
 		if(deleteDataToForm("list", "ideaCd", "form")) {
 			$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
 		}
@@ -202,26 +175,17 @@
 		});
 	}
 
+	var isUser;
+
 	//진행상태체크
 	var isUse;
-	var isUser;
 	function checkState() { //현재 진행상태를 확인하는 함수
 		var num = $("#list").jqGrid("getGridParam", "selarrrow");
 		var rowData;
-		var userId = "${sessionScope.loginVO.userId}";
 		isUse = false;
-
-
-		$(num).each(function(i,n){ //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
-			rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
-
-			if(rowData.userId != userId){
-				isUser = true;
-				return;
-			}
-
-			if (rowData.state != '대기') { // 검토 진행상태를 확인한다. 001:대기 002:승인 003:반려
-				//제안이 검토가 완료된 상태인 경우 전역변수에 true를 저장한 후 반복을 종료한다.
+		$(num).each(function(i,n){ 												//jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
+			rowData = $("#list").jqGrid("getRowData", n); 						//아이디에 해당하는 행의 데이터를 가져온다.
+			if (rowData.state != '대기') { 											// 검토 진행상태를 확인한다. 001:대기 002:승인 003:반려
 				isUse = true;
 				return;
 			}
@@ -277,8 +241,9 @@
 	</div>
 	<div class="page-noti">
 		<ul>
-			<li></li>
-			<li></li>
+			<li>간단 아이디어를 제안하는 페이지 입니다.</li>
+			<li>직원복지, 환경미화 등 간단한 아이디어만 제안해주세요.</li>
+			<li>제안 검토가 완료 된 제안은 수정할 수 없습니다.</li>
 		</ul>
 	</div>
 

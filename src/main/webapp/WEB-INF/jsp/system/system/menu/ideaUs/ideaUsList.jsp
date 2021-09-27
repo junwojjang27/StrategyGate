@@ -7,7 +7,7 @@
 			url			:	"${context_path}/system/system/menu/ideaUs/ideaUsList_json.do",
 			postData	:	getFormData("form"),
 			width		:	"${jqgrid_width}",
-			height		:	"300",
+			height		:	"(count%10)*30",
 			colModel	:	[
 				{name:"ideaCd",		index:"ideaCd",	hidden:true},
 				{name:"year",		index:"year",	hidden:true},
@@ -33,6 +33,8 @@
 			multiselect	: true,
 			//loadonce	: false,
 			loadComplete : function() {
+                var count = $('#list').getGridParam('records');
+
 				var cnt = 0;
 
 				<sec:authorize access="hasRole('01')"> //관리자 권한 체크
@@ -81,15 +83,22 @@
 		var f = document.form;
 		f.ideaCd.value = ideaCd;
 
-		var num = $("#list").getGridParam("reccount");
-		var rowData;
-		for (var n = 1; n <= num; n++) { //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
-			rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
-			if(rowData.ideaCd == $("#ideaCd").val()) {
-				if (rowData.state != "대기")
-					$(".save").hide();
-				else
-					$(".save").show();
+		var cnt = 0;
+		<sec:authorize access="hasRole('01')">
+			cnt = 1;
+		</sec:authorize>
+		if (cnt != 1) {
+			var userId = "${sessionScope.loginVO.userId}";
+			var num = $("#list").getGridParam("reccount");
+			var rowData;
+			for (var n = 1; n <= num; n++) { //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
+				rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
+				if(rowData.ideaCd == $("#ideaCd").val()) {
+					if (rowData.userId == userId)
+						$(".save").show();
+					else
+						$(".save").hide();
+				}
 			}
 		}
 
@@ -104,14 +113,13 @@
 	function setDetail(data) {
 		$("#newForm").show();
 		var dataVO = data.dataVO;
-		voToForm(dataVO, "form", ["year","category","title"]);
+		voToForm(dataVO, "form", ["year","category","title", "userNm", "deptNm"]);
+		$("#userNm").text(dataVO.userNm);
+		$("#deptNm").text(dataVO.deptNm);
+		$("#useYn").val($("#findUseYn").val());
 		$("#title").val(dataVO.title);
 		$("#content").val(dataVO.content);
-		$("#useYn").val($("#findUseYn").val());
-		$("#userNm").empty();
-		$("#userNm").text(dataVO.userNm);
-		$("#deptNm").empty();
-		$("#deptNm").text(dataVO.deptNm);
+
 		$("#title").focus();
 
 
@@ -197,35 +205,19 @@
 			return;
 		}
 
-		var cnt = 0;
-
-		isUser = false;
-
-		if($("#ideaCd").val() != "") {
-			cnt = 0;
-
-			<sec:authorize access="hasRole('01')"> //관리자 권한 체크
-				cnt = 1;
-			</sec:authorize>
-
-
-			if (cnt != 1) {
-				var num = $("#list").getGridParam("reccount");
-				var rowData;
-				var userId = "${sessionScope.loginVO.userId}"; //로그인 정보를 가져온다.
-				for (var n = 1; n <= num; n++) { //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
-					rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
-					if(rowData.ideaCd == $("#ideaCd").val()) {
-						if (rowData.userId != userId) {
-							isUser = true;
-						}
-					}
-				}
+		isUse = false;
+		var num = $("#list").getGridParam("reccount");
+		var rowData;
+		for (var n = 1; n <= num; n++) {
+			rowData = $("#list").jqGrid("getRowData", n);
+			if(rowData.ideaCd == $("#ideaCd").val()) {
+				if (rowData.state != "대기")
+					isUse = true;
 			}
 		}
 
-		if(isUser){
-			$.showMsgBox("유저가다름.",null);
+		if(isUse){
+			$.showMsgBox("검토가 완료된 제안은 수정할 수 없습니다.",null);
 			return false;
 		}
 
@@ -248,16 +240,11 @@
 	// 삭제
 	function deleteData() {
 		isUse = false;
-		isUser = false;
 
 		checkState();
 
 		if(isUse){
 			$.showMsgBox("검토가 완료된 제안은 삭제할 수 없습니다.",null); //메세지 수정 必
-			return false;
-		}
-		if(isUser){
-			$.showMsgBox("유저가다름.",null);
 			return false;
 		}
 
@@ -285,12 +272,6 @@
 
 		$(num).each(function(i,n){ //jqgrid의 아이디를 1부터 화면에 표시된 개수까지 비교한다.
 			rowData = $("#list").jqGrid("getRowData", n); //아이디에 해당하는 행의 데이터를 가져온다.
-
-
-			if(rowData.userId != userId){
-				isUser = true;
-				return;
-			}
 
 			if (rowData.state != '대기') { // 검토 진행상태를 확인한다. 001:대기 002:승인 003:반려
 				//제안이 검토가 완료된 상태인 경우 전역변수에 true를 저장한 후 반복을 종료한다.
@@ -350,8 +331,9 @@
 	</div>
 	<div class="page-noti">
 		<ul>
-			<li></li>
-			<li></li>
+			<li>개인,부서별,동아리별 프로젝트 단위의 아이디어를 제안하는 페이지 입니다.</li>
+			<li>공모전에 참가하실 팀은 게시판에서 관련 폼을 다운받아 제출하시기 바랍니다.</li>
+            <li>개인으로 제안하실 분은 카테고리를 개인으로 설정하여 제출하시기 바랍니다.</li>
 		</ul>
 	</div>
 

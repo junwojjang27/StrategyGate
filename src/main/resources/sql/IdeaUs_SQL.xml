@@ -52,10 +52,6 @@
 		<if test='colName == "userNm"'>
 			AND UPPER(B.USER_NM) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
 		</if>
-		<!--
-		AND UPPER(A.YEAR) LIKE  '%' || TRIM(UPPER(#{findYear})) ||'%'
-		AND UPPER(A.CATEGORY) LIKE  '%' || TRIM(UPPER(#{findCategory})) ||'%'
-		-->
 		AND A.YEAR = #{findYear}
 		<if test='findCategory != null and findCategory != ""'>
 			AND A.CATEGORY = #{findCategory}
@@ -126,14 +122,14 @@
 				   #{title},
 
 				   #{content},
-				   '001',
+				   #{state},
 				   SYSDATE,
 				   #{updateDt},
 				   CASE WHEN #{useYn} = 'Y' THEN NULL ELSE SYSDATE END,
 				   #{startDt},
 				   #{endDt},
 				   #{atchFileId},
-				   '002',
+				   #{ideaGbnCd},
 				   #{degree},
 				   #{evalState})
 	</insert>

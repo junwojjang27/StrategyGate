@@ -7,7 +7,6 @@
 	<formset>
 		<form name="ideaSingleVO">
 			<field property="category" depends="maxByteLength">
-				<!--<arg0 key="카테고리" resource="true"/>-->
 				<arg0 key="word.category"/>
 				<arg1 key="20" resource="false"/>
 				<var>
@@ -16,7 +15,6 @@
 				</var>
 			</field>
 			<field property="title" depends="required, maxByteLength">
-				<!--<arg0 key="제목" resource="true"/>-->
 				<arg0 key="word.title"/>
 				<arg1 key="300" resource="false"/>
 				<var>
@@ -25,7 +23,6 @@
 				</var>
 			</field>
 			<field property="content" depends="required, maxByteLength">
-				<!--<arg0 key="내용" resource="true"/>-->
 				<arg0 key="word.content"/>
 				<arg1 key="4000" resource="false"/>
 				<var>
@@ -33,8 +30,6 @@
 					<var-value>4000</var-value>
 				</var>
 			</field>
-
-
 		</form>
 	</formset>
 </form-validation>

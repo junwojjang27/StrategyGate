@@ -16,7 +16,6 @@
             <c:param name="param_atchFileId" value="${searchVO.atchFileId}"/>
             </c:import>
             </c:when>
-            <c:otherwise></c:otherwise>
             </c:choose>
         });
     </script>
