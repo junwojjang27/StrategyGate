@@ -68,9 +68,8 @@ public class IdeaSingleController extends BaseController {
 	 */
 	@RequestMapping("/system/system/menu/ideaSingle/saveSortOrder.do")
 	public ModelAndView saveSortOrder(@ModelAttribute("dataVO") IdeaSingleVO dataVO, Model model, BindingResult bindingResult) throws Exception {
-		// list 유효성 체크
-		validateList(dataVO.getGridDataList(), bindingResult);
-		if(bindingResult.hasErrors()) {
+		validateList(dataVO.getGridDataList(), bindingResult); // list 유효성 체크
+		if(bindingResult.hasErrors()) {	//바인딩 결과가 에러일 경우
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
 
@@ -88,7 +87,7 @@ public class IdeaSingleController extends BaseController {
 	public ModelAndView deleteIdeaSingle(@ModelAttribute("dataVO") IdeaSingleVO dataVO, Model model) throws Exception {
 		//return makeJsonDataByResultCnt(ideaSingleService.deleteIdeaSingle(dataVO));
 		int resultCnt = ideaSingleService.deleteIdeaSingle(dataVO);
-		if(resultCnt == 0) {
+		if(resultCnt == 0) {	//쿼리문이 정상적으로 실행된 횟수가 0일때 (오류)
 			return makeFailJsonData();
 		}
 		return makeSuccessJsonData();

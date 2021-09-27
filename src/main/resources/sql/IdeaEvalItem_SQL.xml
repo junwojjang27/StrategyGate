@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.menu.ideaEvalItem">
+	<select id="selectList" parameterType="ideaEvalItemVO" resultType="ideaEvalItemVO">
+		/*	평가항목관리 조회	system.menu.ideaEvalItem.selectList */
+		SELECT
+			EVAL_ITEM_CD,
+			YEAR,
+			EVAL_DEGREE_ID,
+			EVAL_ITEM_TITLE,
+			PARTICAL_TYPE_ID,
+			WEIGHT_ID,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			EVAL_ITEM_CONTENT
+		FROM IDEA_EVAL_ITEM
+		WHERE 1=1
+
+	</select>
+	
+	<select id="selectDetail" parameterType="ideaEvalItemVO" resultType="ideaEvalItemVO">
+		/*	평가항목관리 상세 조회	 	system.menu.ideaEvalItem.selectDetail	*/
+		SELECT
+			EVAL_ITEM_CD,
+			YEAR,
+			EVAL_DEGREE_ID,
+			EVAL_ITEM_TITLE,
+			PARTICAL_TYPE_ID,
+			WEIGHT_ID,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			EVAL_ITEM_CONTENT
+		FROM IDEA_EVAL_ITEM
+		WHERE 1=1
+			AND EVAL_ITEM_CD=#{evalItemCd}
+			AND YEAR=#{year}
+			AND EVAL_DEGREE_ID=#{evalDegreeId}
+
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="ideaEvalItemVO">
+	    /*	평가항목관리 정렬순서저장	 ideaEvalItem.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteIdeaEvalItem" parameterType="ideaEvalItemVO">
+		/*	평가항목관리 삭제	system.menu.ideaEvalItem.deleteIdeaEvalItem	*/
+		UPDATE IDEA_EVAL_ITEM
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND EVAL_ITEM_CD=#{evalItemCd}
+			AND YEAR=#{year}
+			AND EVAL_DEGREE_ID=#{evalDegreeId}
+
+	</update>
+
+	<insert id="insertData" parameterType="ideaEvalItemVO">
+		/*	평가항목관리 저장	system.menu.ideaEvalItem.insertData	*/
+		INSERT INTO IDEA_EVAL_ITEM(
+			EVAL_ITEM_CD,
+			YEAR,
+			EVAL_DEGREE_ID,
+			EVAL_ITEM_TITLE,
+			PARTICAL_TYPE_ID,
+			WEIGHT_ID,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			EVAL_ITEM_CONTENT)
+		
+VALUES (
+			#{evalItemCd},
+			#{year},
+			#{evalDegreeId},
+			#{evalItemTitle},
+			#{particalTypeId},
+			#{weightId},
+			#{createDt},
+			#{updateDt},
+			#{deleteDt},
+			#{evalItemContent})
+
+	</insert>
+
+	<update id="updateData" parameterType="ideaEvalItemVO">
+		/*	평가항목관리 수정	system.menu.ideaEvalItem.updateData	*/
+		UPDATE IDEA_EVAL_ITEM
+		SET
+			EVAL_ITEM_TITLE=#{evalItemTitle},
+			PARTICAL_TYPE_ID=#{particalTypeId},
+			WEIGHT_ID=#{weightId},
+			CREATE_DT=#{createDt},
+			UPDATE_DT=#{updateDt},
+			DELETE_DT=#{deleteDt},
+			EVAL_ITEM_CONTENT=#{evalItemContent}
+		WHERE 1=1
+			AND EVAL_ITEM_CD=#{evalItemCd}
+			AND YEAR=#{year}
+			AND EVAL_DEGREE_ID=#{evalDegreeId}
+
+	</update>
+</mapper>
+
