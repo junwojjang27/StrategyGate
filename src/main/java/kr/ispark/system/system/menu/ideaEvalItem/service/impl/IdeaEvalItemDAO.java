@@ -39,7 +39,7 @@ public class IdeaEvalItemDAO extends EgovComAbstractDAO {
 	public IdeaEvalItemVO selectDetail(IdeaEvalItemVO searchVO) throws Exception {
 		return (IdeaEvalItemVO)selectOne("system.menu.ideaEvalItem.selectDetail", searchVO);
 	}
-	
+
 	/**
 	 * 평가항목관리 정렬순서저장
 	 * @param	IdeaEvalItemVO searchVO
@@ -49,6 +49,8 @@ public class IdeaEvalItemDAO extends EgovComAbstractDAO {
 	public int updateSortOrder(IdeaEvalItemVO searchVO) throws Exception {
 		return update("system.menu.ideaEvalItem.updateSortOrder", searchVO);
 	}
+
+
 
 	/**
 	 * 평가항목관리 삭제
@@ -67,7 +69,7 @@ public class IdeaEvalItemDAO extends EgovComAbstractDAO {
 	 * @throws	Exception
 	 */
 	public int insertData(IdeaEvalItemVO searchVO) throws Exception {
-		return insert("system.menu.ideaEvalItem.insertData", searchVO);
+		return update("system.menu.ideaEvalItem.insertData", searchVO);
 	}
 
 	/**

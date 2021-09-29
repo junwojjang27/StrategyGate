@@ -4,18 +4,36 @@
 	<select id="selectList" parameterType="ideaEvalItemVO" resultType="ideaEvalItemVO">
 		/*	평가항목관리 조회	system.menu.ideaEvalItem.selectList */
 		SELECT
-			EVAL_ITEM_CD,
-			YEAR,
-			EVAL_DEGREE_ID,
-			EVAL_ITEM_TITLE,
-			PARTICAL_TYPE_ID,
-			WEIGHT_ID,
-			CREATE_DT,
-			UPDATE_DT,
-			DELETE_DT,
-			EVAL_ITEM_CONTENT
-		FROM IDEA_EVAL_ITEM
-		WHERE 1=1
+			A.EVAL_ITEM_CD,
+			A.YEAR,
+			A.EVAL_DEGREE_ID,
+			A.EVAL_ITEM_TITLE,
+			A.PARTICAL_TYPE_ID,
+			A.WEIGHT_ID,
+			TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
+			A.UPDATE_DT,
+			A.DELETE_DT,
+			A.EVAL_ITEM_CONTENT
+		FROM IDEA_EVAL_ITEM A
+		WHERE A.YEAR = #{findYear}
+		<if test='findUseYn == null or findUseYn == "Y"'>
+			AND A.DELETE_DT IS NULL
+		</if>
+		<if test='findUseYn != null and findUseYn == "N"'>
+			AND A.DELETE_DT IS NOT NULL
+		</if>
+		<if test='findEvalDegreeId != null and findEvalDegreeId == "001"'>
+			AND A.EVAL_DEGREE_ID = '001'
+		</if>
+		<if test='findEvalDegreeId != null and findEvalDegreeId == "002"'>
+			AND A.EVAL_DEGREE_ID = '002'
+		</if>
+		<if test='findEvalDegreeId != null and findEvalDegreeId == "003"'>
+			AND A.EVAL_DEGREE_ID = '003'
+		</if>
+
+
+		ORDER BY	A.CREATE_DT DESC	<!--생성날짜를 기준으로 내림차순 정렬-->
 
 	</select>
 	
@@ -40,22 +58,26 @@
 
 	</select>	
 	
-	<!-- 
+
 	<update id="updateSortOrder" parameterType="ideaEvalItemVO">
 	    /*	평가항목관리 정렬순서저장	 ideaEvalItem.updateSortOrder	*/
-		updateSortOrderQuery
+		UPDATE	IDEA_EVAL_ITEM
+		SET	SORT_ORDER = #{sortOrder}
+		WHERE	YEAR = #{year}
+		  AND	EVAL_ITEM_CD = #{evalItemCd}
 	</update>
-	-->
+
 	
 	<update id="deleteIdeaEvalItem" parameterType="ideaEvalItemVO">
 		/*	평가항목관리 삭제	system.menu.ideaEvalItem.deleteIdeaEvalItem	*/
-		UPDATE IDEA_EVAL_ITEM
+		UPDATE IDEA_EVAL_ITEM A
 		SET
-			DELETE_DT = SYSDATE
-		WHERE 1=1
-			AND EVAL_ITEM_CD=#{evalItemCd}
-			AND YEAR=#{year}
-			AND EVAL_DEGREE_ID=#{evalDegreeId}
+			A.DELETE_DT = SYSDATE
+		WHERE A.YEAR = #{findYear}
+			AND A.EVAL_ITEM_CD IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
 
 	</update>
 
@@ -80,7 +102,7 @@ VALUES (
 			#{evalItemTitle},
 			#{particalTypeId},
 			#{weightId},
-			#{createDt},
+			SYSDATE,
 			#{updateDt},
 			#{deleteDt},
 			#{evalItemContent})

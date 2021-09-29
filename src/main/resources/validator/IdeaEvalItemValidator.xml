@@ -6,23 +6,7 @@
 <form-validation>
 	<formset>
 		<form name="ideaEvalItemVO">
-			<field property="evalItemCd" depends="maxlength">
-				<arg0 key="항목코드" resource="true"/>
-				<arg1 key="7" resource="false"/>
-				<var>
-					<var-name>maxlength</var-name>
-					<var-value>7</var-value>
-				</var>
-			</field>
-			<field property="evalDegreeId" depends="maxlength">
-				<arg0 key="평가차수(1,2,3)" resource="true"/>
-				<arg1 key="20" resource="false"/>
-				<var>
-					<var-name>maxlength</var-name>
-					<var-value>20</var-value>
-				</var>
-			</field>
-			<field property="evalItemTitle" depends="maxlength">
+			<field property="evalItemTitle" depends="required, maxlength">
 				<arg0 key="항목이름" resource="true"/>
 				<arg1 key="20" resource="false"/>
 				<var>
@@ -30,15 +14,15 @@
 					<var-value>20</var-value>
 				</var>
 			</field>
-			<field property="particalTypeId" depends="maxlength">
-				<arg0 key="직원구분(전직원/직원)" resource="true"/>
-				<arg1 key="20" resource="false"/>
+			<field property="evalItemContent" depends="required, maxlength">
+				<arg0 key="항목 내용" resource="true"/>
+				<arg1 key="100" resource="false"/>
 				<var>
 					<var-name>maxlength</var-name>
-					<var-value>20</var-value>
+					<var-value>100</var-value>
 				</var>
 			</field>
-			<field property="weightId" depends="maxlength">
+			<field property="weightId" depends="required, maxlength">
 				<arg0 key="가중치" resource="true"/>
 				<arg1 key="22" resource="false"/>
 				<var>
@@ -46,36 +30,12 @@
 					<var-value>22</var-value>
 				</var>
 			</field>
-			<field property="createDt" depends="maxlength">
-				<arg0 key="생성일자" resource="true"/>
-				<arg1 key="7" resource="false"/>
+			<field property="particalTypeId" depends="required">
+				<arg0 key="평가자구분" resource="true"/>
+				<arg1 key="20" resource="false"/>
 				<var>
 					<var-name>maxlength</var-name>
-					<var-value>7</var-value>
-				</var>
-			</field>
-			<field property="updateDt" depends="maxlength">
-				<arg0 key="수정일자" resource="true"/>
-				<arg1 key="7" resource="false"/>
-				<var>
-					<var-name>maxlength</var-name>
-					<var-value>7</var-value>
-				</var>
-			</field>
-			<field property="deleteDt" depends="maxlength">
-				<arg0 key="삭제일자" resource="true"/>
-				<arg1 key="7" resource="false"/>
-				<var>
-					<var-name>maxlength</var-name>
-					<var-value>7</var-value>
-				</var>
-			</field>
-			<field property="evalItemContent" depends="maxlength">
-				<arg0 key="항목 내용" resource="true"/>
-				<arg1 key="100" resource="false"/>
-				<var>
-					<var-name>maxlength</var-name>
-					<var-value>100</var-value>
+					<var-value>20</var-value>
 				</var>
 			</field>
 

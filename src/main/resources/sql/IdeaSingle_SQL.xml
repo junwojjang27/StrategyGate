@@ -68,7 +68,7 @@
 			A.CONTENT,
 		    A.STATE
 		FROM IDEA_INFO A
-		WHERE 1=1
+		WHERE 1=1 <!--뭔지 찾아보기. 첫번쨰 and조건부터 조건절(if)을 타야할때-->
 		  AND A.IDEA_CD=#{ideaCd}
 		  AND A.YEAR=#{findYear}
 

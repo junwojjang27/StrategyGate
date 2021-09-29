@@ -50,6 +50,6 @@ public class IdeaSingleVO extends CommonVO {
 
 	private String categoryNm;
 	
-	private List<IdeaSingleVO> gridDataList;
+	private List<IdeaSingleVO> gridDataList;	//위는 하나하나씩 사용(ex 수정), 이건 통채로 한번에 사용(ex 삭제)
 }
 

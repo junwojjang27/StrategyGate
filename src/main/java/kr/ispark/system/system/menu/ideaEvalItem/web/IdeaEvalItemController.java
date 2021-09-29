@@ -54,46 +54,6 @@ public class IdeaEvalItemController extends BaseController {
 		List<IdeaEvalItemVO> dataList = ideaEvalItemService.selectList(searchVO);
 		return makeGridJsonData(dataList, dataList.size(), searchVO);
 	}
-	
-	//excelDownload
-	/**
-	 * 엑셀양식다운로드
-	 * @param	IdeaEvalItemVO searchVO
-	 * @param	Model model
-	 * @return	ModelAndView
-	 * @throws	Exception
-	 */
-	@RequestMapping("/system/system/menu/ideaEvalItem/excelDownload.do")
-	public String excelDownload(@ModelAttribute("searchVO") IdeaEvalItemVO searchVO, Model model) throws Exception {
-		
-		/*
-		 * 현재페이지 화면에 맞게 반드시 수정할 것.
-		 */
-		
-		List<IdeaEvalItemVO> dataList = ideaEvalItemService.selectList(searchVO);
-		
-		// 타이틀
-		model.addAttribute("title", egovMessageSource.getMessage("word.ideaEvalItemManage"));
-		
-		// 검색조건
-		model.addAttribute("year", egovMessageSource.getMessage("word.year"));
-		model.addAttribute("findYear", searchVO.getFindYear());
-		
-		// header
-		model.addAttribute("ideaEvalItemNm", egovMessageSource.getMessage("word.ideaEvalItemNm"));	// 평가항목관리
-		model.addAttribute("sortOrder", egovMessageSource.getMessage("word.sortOrder"));			// 정렬순서
-		
-		// 조직 데이터
-		model.addAttribute("dataList", dataList);
-		
-		// 시트명
-		model.addAttribute("sheetName", egovMessageSource.getMessage("word.ideaEvalItemNm"));
-		
-		model.addAttribute("destJxlsFileName", egovMessageSource.getMessage("word.ideaEvalItemNm") + "_" + EgovStringUtil.getTimeStamp()+".xlsx");
-		model.addAttribute("templateJxlsFileName", "ideaEvalItemList.xlsx");
-
-		return "excelDownloadView";
-	}
 
 	/**
 	 * 평가항목관리 조회
@@ -105,7 +65,7 @@ public class IdeaEvalItemController extends BaseController {
 	public ModelAndView selectDetail(@ModelAttribute("searchVO") IdeaEvalItemVO searchVO) throws Exception {
 		return makeJsonData(ideaEvalItemService.selectDetail(searchVO));
 	}
-	
+
 	/**
 	 * 평가항목관리 정렬순서저장
 	 * @param	IdeaEvalItemVO dataVO
@@ -121,10 +81,10 @@ public class IdeaEvalItemController extends BaseController {
 		if(bindingResult.hasErrors()) {
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
-		
+
 		return makeJsonDataByResultCnt(ideaEvalItemService.updateSortOrder(dataVO));
 	}
-	
+
 	/**
 	 * 평가항목관리 삭제
 	 * @param	IdeaEvalItemVO dataVO
@@ -134,7 +94,11 @@ public class IdeaEvalItemController extends BaseController {
 	 */
 	@RequestMapping("/system/system/menu/ideaEvalItem/deleteIdeaEvalItem.do")
 	public ModelAndView deleteIdeaEvalItem(@ModelAttribute("dataVO") IdeaEvalItemVO dataVO, Model model) throws Exception {
-		return makeJsonDataByResultCnt(ideaEvalItemService.deleteIdeaEvalItem(dataVO));
+		int resultCnt = ideaEvalItemService.deleteIdeaEvalItem(dataVO);
+		if(resultCnt == 0) {
+			return makeFailJsonData();
+		}
+		return makeSuccessJsonData();
 	}
 	
 	/**
@@ -147,12 +111,17 @@ public class IdeaEvalItemController extends BaseController {
 	 */
 	@RequestMapping("/system/system/menu/ideaEvalItem/saveIdeaEvalItem.do")
 	public ModelAndView saveIdeaEvalItem(@ModelAttribute("dataVO") IdeaEvalItemVO dataVO, Model model, BindingResult bindingResult) throws Exception {
-		beanValidator.validate(dataVO, bindingResult);
+
+		validateList(dataVO.getGridDataList(), bindingResult);
 		if(bindingResult.hasErrors()){
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
 
-		return makeJsonDataByResultCnt(ideaEvalItemService.saveData(dataVO));
+		int resultCnt = ideaEvalItemService.saveData(dataVO);
+		if(resultCnt == 0) {
+			return makeFailJsonData();
+		}
+		return makeSuccessJsonData();
 	}
 }
 

@@ -30,6 +30,8 @@ public class IdeaEvalItemVO extends CommonVO {
 	private String deleteDt;
 	private String evalItemContent;
 
+	private String findEvalDegreeId;
+
 	
 	private List<IdeaEvalItemVO> gridDataList;
 }

@@ -14,6 +14,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import kr.ispark.bsc.base.strategy.perspective.service.PerspectiveVO;
 import org.springframework.stereotype.Service;
 
 import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
@@ -39,17 +40,7 @@ public class IdeaEvalItemServiceImpl extends EgovAbstractServiceImpl {
 	public List<IdeaEvalItemVO> selectList(IdeaEvalItemVO searchVO) throws Exception {
 		return ideaEvalItemDAO.selectList(searchVO);
 	}
-	
-	/**
-	 * 평가항목관리 상세 조회
-	 * @param	IdeaEvalItemVO searchVO
-	 * @return	IdeaEvalItemVO
-	 * @throws	Exception
-	 */
-	public IdeaEvalItemVO selectDetail(IdeaEvalItemVO searchVO) throws Exception {
-		return ideaEvalItemDAO.selectDetail(searchVO);
-	}
-	
+
 	/**
 	 * 평가항목관리 정렬순서저장
 	 * @param	IdeaEvalItemVO searchVO
@@ -62,6 +53,16 @@ public class IdeaEvalItemServiceImpl extends EgovAbstractServiceImpl {
 			resultCnt += ideaEvalItemDAO.updateSortOrder(paramVO);
 		}
 		return resultCnt;
+	}
+	
+	/**
+	 * 평가항목관리 상세 조회
+	 * @param	IdeaEvalItemVO searchVO
+	 * @return	IdeaEvalItemVO
+	 * @throws	Exception
+	 */
+	public IdeaEvalItemVO selectDetail(IdeaEvalItemVO searchVO) throws Exception {
+		return ideaEvalItemDAO.selectDetail(searchVO);
 	}
 
 	/**
@@ -81,14 +82,26 @@ public class IdeaEvalItemServiceImpl extends EgovAbstractServiceImpl {
 	 * @throws	Exception
 	 */
 	public int saveData(IdeaEvalItemVO dataVO) throws Exception {
+		List<IdeaEvalItemVO> gridDataList = dataVO.getGridDataList();
+		int resultCnt = 0;
 		String key = "";
-		if(CommonUtil.isEmpty(dataVO.getEvalDegreeId())) {
-			key = idgenService.selectNextSeqByYear("originalTableName", dataVO.getYear(), "S", 6, "0");
-			dataVO.setEvalDegreeId(key);
-			return ideaEvalItemDAO.insertData(dataVO);
-		} else {
-			return ideaEvalItemDAO.updateData(dataVO);
+
+		if(gridDataList != null && 0 < gridDataList.size()){
+			for(IdeaEvalItemVO vo: gridDataList ){
+
+				if(CommonUtil.isEmpty(vo.getEvalItemCd())) {
+					key = idgenService.selectNextSeqByYear("IDEA_EVAL_ITEM", vo.getYear(), "P", 6, "0");
+					vo.setEvalItemCd(key);
+
+					resultCnt +=  ideaEvalItemDAO.insertData(vo);
+				} else {
+					resultCnt += ideaEvalItemDAO.updateData(vo);
+				}
+
+			}
 		}
+
+		return resultCnt;
 	}
 }
 

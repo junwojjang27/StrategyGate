@@ -53,7 +53,7 @@ public class IdeaSingleController extends BaseController {
 	 * @return	ModelAndView
 	 * @throws	Exception
 	 */
-	@RequestMapping("/system/system/menu/ideaSingle/selectDetail.do")
+	@RequestMapping("/system/system/menu/ideaSingle/selectDetail.do")	//return 값이 json이런거면 @ModelAttribute()이거 필요없음
 	public ModelAndView selectDetail(@ModelAttribute("searchVO") IdeaSingleVO searchVO) throws Exception {
 		return makeJsonData(ideaSingleService.selectDetail(searchVO));
 	}

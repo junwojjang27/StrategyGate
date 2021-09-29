@@ -5,7 +5,7 @@
 	$(function(){
 		$("#list").jqGrid({
 			url			:	"${context_path}/system/system/menu/ideaSingle/ideaSingleList_json.do",
-			postData	:	getFormData("form"),
+			postData	:	getFormData("form"),	//검색조건의 모든 요소가 검색이 된 후.(검색조건을 먼저 읽은 후에 검색)
 			width		:	"${jqgrid_width}",
 			height		:	"(count%10)*30",	//jqGrid크기를 제안 수에 맞게 변경
 			colModel	:	[
@@ -16,8 +16,9 @@
 				{name:"title",	index:"title",	width:200,	align:"left",	label:"<spring:message code="word.title"/>",
 					formatter:function(cellvalue, options, rowObject) {
 						return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd)+ "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
+						//escapeHTML뜻 : DB에 이거 없이 넣으면 digit가 나옴?....
 					},//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
-					unformat:linkUnformatter
+					unformat:linkUnformatter	//포메터로 포맷된 데이터가 저장이 될 떄 언포맷 된 상태에서 나가야 한다.. (순수 데이터만 데이터에 날라가기(포매터에서 가공된 데이터를 다시 본래의 데이터로 저장))
 				},
 				{name:"userId",		index:"userId",	hidden:true},
 				{name:"userNm",	index:"userNm",	width:30,	align:"center",	label:"<spring:message code="word.insertUser"/>"},
@@ -198,7 +199,7 @@
 </script>
 
 <form:form commandName="searchVO" id="form" name="form" method="post">
-	<form:hidden path="ideaCd"/>		<!--이렇게 3개가 있어야 ideaCd, year, createDt를 사용할 수 있다고 추정... (없을 시 오류)-->
+	<form:hidden path="ideaCd"/>		<!--게시물이 바뀌었을 때(하나 작업하고 다른 제안 다시 클릭 한 겨우)-->
 	<form:hidden path="year"/>
 	<form:hidden path="createDt"/>
 
