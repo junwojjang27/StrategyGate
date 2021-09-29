@@ -233,7 +233,7 @@
 		</ul>
 		<a href="#" class="btn-sch" onclick="searchList();return false;"><spring:message code="button.search"/></a>
 	</div>
-	<!--<div class="btn-dw"></div>-->
+	<div class="btn-dw"></div>
 	<div class="gridContainer">
 		<table id="list"></table>
 		<div id="pager"></div>

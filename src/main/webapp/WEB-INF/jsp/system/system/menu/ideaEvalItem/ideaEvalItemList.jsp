@@ -24,7 +24,7 @@ $(function(){
 		url			:	"${context_path}/system/system/menu/ideaEvalItem/ideaEvalItemList_json.do",
 		postData	:	getFormData("form"),
 		width		:	"${jqgrid_width}",
-		height		:	"400",
+		height		:	"300",
 		colModel	:	[
 						{name:"evalItemCd",	index:"evalItemCd",	width:100,	align:"center",	label:"항목코드", hidden:true},
 						{name:"year",	index:"year",	width:100,	align:"center",	label:"기준년도", hidden:true},
@@ -35,7 +35,7 @@ $(function(){
 							editable:true, edittype:"text", editrules:{required:true, custom:true, custom_func:jqGridChkBytes},	editoptions:{maxlength:100}
 						},
 						{name:"evalDegreeId",	index:"evalDegreeId",	width:20,	align:"center",	label:"평가차수",
-							editable:true, edittype:"select", formatter:'select', editrules:{required:true}, editoptions:{value:getEvalDegreeIdSelect()}
+							editable:false, edittype:"select", formatter:'select', editrules:{required:true}, editoptions:{value:getEvalDegreeIdSelect()}
 						},
 						{name:"weightId",	index:"weightId",	width:20,	align:"center",	label:"가중치",
 							editable:true, edittype:"text", editrules:{required:true, custom:true, custom_func:validNum},	editoptions:{maxlength:22}
@@ -43,11 +43,12 @@ $(function(){
 						{name:"particalTypeId",	index:"particalTypeId",	width:20,	align:"center",	label:"평가자구분",
 							editable:true, edittype:"select", formatter:'select', editrules:{required:true}, editoptions:{value:getParticalTypeSelect()}
 						},
-						{name:"createDt",	index:"createDt",	width:30,	align:"center",	label:"등록날짜"},
+						{name:"createDt",	index:"createDt",	width:20,	align:"center",	label:"등록날짜"},
 						{name:"updateDt",	index:"updateDt",	width:100,	align:"center",	label:"수정일자", hidden:true},
 						{name:"deleteDt",	index:"deleteDt",	width:100,	align:"center",	label:"삭제일자", hidden:true}
 
 						],
+		pager		: "pager",
 		rowNum		: ${jqgrid_rownum_max},
 		multiselect	: true,
 		cellEdit	: true,
@@ -87,14 +88,11 @@ $(function(){
 
 //숫자만 입력가능
 function validNum(val, nm, valref){
-
 	if($.isNumeric(val)){
 		return [true, ""];
 	}else{
-
 		return [false, "숫자만 입력 가능 합니다."];
 	}
-
 }
 
 //평가단 선택 여부
@@ -102,10 +100,10 @@ function getParticalTypeSelect(){
 
 	var selectStr="";
 	<c:forEach var="particalTypeIdList" items="${codeUtil:getCodeList('386')}" varStatus="status">
-	selectStr += "<c:out value="${particalTypeIdList.codeId}"/>"+":"+"<c:out value="${particalTypeIdList.codeNm}"/>";
-	<c:if test="${not status.last}">
-	selectStr += ";";
-	</c:if>
+		selectStr += "<c:out value="${particalTypeIdList.codeId}"/>"+":"+"<c:out value="${particalTypeIdList.codeNm}"/>";
+		<c:if test="${not status.last}">
+			selectStr += ";";
+		</c:if>
 	</c:forEach>
 
 	return selectStr;
@@ -116,9 +114,9 @@ function getEvalDegreeIdSelect(){
 
 	var selectStr="";
 	<c:forEach var="evalDegreeIdList" items="${codeUtil:getCodeList('387')}" varStatus="status">
-	selectStr += "<c:out value="${evalDegreeIdList.codeId}"/>"+":"+"<c:out value="${evalDegreeIdList.codeNm}"/>";
+		selectStr += "<c:out value="${evalDegreeIdList.codeId}"/>"+":"+"<c:out value="${evalDegreeIdList.codeNm}"/>";
 	<c:if test="${not status.last}">
-	selectStr += ";";
+		selectStr += ";";
 	</c:if>
 	</c:forEach>
 
@@ -137,8 +135,7 @@ function addRow(){
 	}
 	*/
 
-	var rowData = {year:$("#findYear").val(),
-		useYn:'Y'}
+	var rowData = {year:$("#findYear").val(), evalDegreeId:$("#findEvalDegreeId").val(), useYn:'Y', particalTypeId:'002'};
 
 	$("#list").jqGrid("addRowData", rowId+1, rowData,'last');
 	$('#list tr:last').focus();
@@ -205,46 +202,25 @@ function addData() {
 */
 // 저장
 function saveData() {
-	/*var f = document.form;
-	if(!validatePerspectiveVO(f)) {
-		return;
-	}*/
 	if(!gridToFormChanged("list", "form", true)) return false;
 
 	var zero = "0";
-	var sum1 = parseInt(zero);
-    var sum2 = parseInt(zero);
-    var sum3 = parseInt(zero);
-    var check = true;
-    var temp1, temp2, temp3;
+    var sum = parseInt(zero);
+    var temp;
 
 
 	var num = $("#list").getGridParam("reccount");		//현재 화면에 표시되고있는 레코드 숫자
 	var rowData;
 	for (var n = 1; n <= num; n++) {	//1 ~ (화면에 표시되고있는 레코드 숫자) 까지 반복하여 ideaCd를 비교해서 해당 제안을 찾음.
 		rowData = $("#list").jqGrid("getRowData", n);
-		if(rowData.evalDegreeId == "001") {
-            temp1 = rowData.weightId;
-            sum1 = sum1 + parseInt(temp1);
-        }
-		else if (rowData.evalDegreeId == "002") {
-            temp2 = rowData.weightId;
-            sum2 = sum2 + parseInt(temp2);
-        }
-		else if (rowData.evalDegreeId == "003"){
-            temp3 = rowData.weightId;
-            sum3 = sum3 + parseInt(temp3);
-        }
+		temp = rowData.weightId;
+		sum = sum + parseInt(temp);
 	}
 
-	if (sum1 != 100 || sum2 != 100 || sum3 != 100) {
-		$.showMsgBox("차수별 가중치 총합이 100이 아닙니다.\n\n1차 평가 : " + sum1 + "\n2차 평가 : " + sum2 + "\n최종평가 : " + sum3, null);
-		check = false;
+	if (sum != 100) {
+		$.showMsgBox("가중치 총합이 100이 아닙니다.\n\n현재 가중치 : " + sum, null);
+		return false;
 	}
-
-    if (!check) {
-        return false;
-    }
 
 	sendAjax({
 		"url" : "${context_path}/system/system/menu/ideaEvalItem/saveIdeaEvalItem.do",
@@ -269,7 +245,6 @@ function deleteData() {
     for ( var n = 0; n < test.length; n++ ) {
         rowData = $("#list").jqGrid("getRowData", test[n]);
         if(rowData.weightId != 0) {
-            alert(test[n]);
             $.showMsgBox("가중치가 0인 제안만 삭제할 수 있습니다.",null);
             return false;
         }
@@ -303,10 +278,10 @@ function doDeleteData() {
  	<%--<form:hidden path="evalItemCd"/>
 	<form:hidden path="year"/>
 	<form:hidden path="evalDegreeId"/>
-	<form:hidden path="createDt"/>--%>
+	<form:hidden path="createDt"/>
 	<sec:authorize access="hasRole('01')">
 		<input type="hidden" id="tableId" name="tableId" value="IDEA_EVAL_ITEM"/>
-	</sec:authorize>
+	</sec:authorize>--%>
 
 	<div class="sch-bx">
 		<ul>
@@ -329,6 +304,7 @@ function doDeleteData() {
 		</ul>
 		<a href="#" class="btn-sch" onclick="searchList();return false;"><spring:message code="button.search"/></a>
 	</div>
+	<div class="btn-dw"></div>
 	<div class="gridContainer">
 		<table id="list"></table>
 		<div id="pager"></div>
