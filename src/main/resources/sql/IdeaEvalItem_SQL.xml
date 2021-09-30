@@ -72,7 +72,7 @@
 		/*	평가항목관리 삭제	system.menu.ideaEvalItem.deleteIdeaEvalItem	*/
 		UPDATE IDEA_EVAL_ITEM A
 		SET
-			A.DELETE_DT = SYSDATE
+			A.DELETE_DT = CASE WHEN #{findUseYn} = 'N' THEN NULL ELSE SYSDATE END
 		WHERE A.YEAR = #{findYear}
 			AND A.EVAL_ITEM_CD IN
 			<foreach collection="keys" item="key" open="(" close=")" separator=",">
@@ -116,15 +116,13 @@ VALUES (
 			EVAL_ITEM_TITLE=#{evalItemTitle},
 			PARTICAL_TYPE_ID=#{particalTypeId},
 			WEIGHT_ID=#{weightId},
-			CREATE_DT=#{createDt},
-			UPDATE_DT=#{updateDt},
+			UPDATE_DT=SYSDATE,
 			DELETE_DT=#{deleteDt},
 			EVAL_ITEM_CONTENT=#{evalItemContent}
 		WHERE 1=1
 			AND EVAL_ITEM_CD=#{evalItemCd}
 			AND YEAR=#{year}
 			AND EVAL_DEGREE_ID=#{evalDegreeId}
-
 	</update>
 </mapper>
 

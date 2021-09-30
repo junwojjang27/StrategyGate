@@ -24,7 +24,7 @@ $(function(){
 		url			:	"${context_path}/system/system/menu/ideaEvalItem/ideaEvalItemList_json.do",
 		postData	:	getFormData("form"),
 		width		:	"${jqgrid_width}",
-		height		:	"300",
+		height		:	"${jqgrid_height}",
 		colModel	:	[
 						{name:"evalItemCd",	index:"evalItemCd",	width:100,	align:"center",	label:"항목코드", hidden:true},
 						{name:"year",	index:"year",	width:100,	align:"center",	label:"기준년도", hidden:true},
@@ -38,7 +38,7 @@ $(function(){
 							editable:false, edittype:"select", formatter:'select', editrules:{required:true}, editoptions:{value:getEvalDegreeIdSelect()}
 						},
 						{name:"weightId",	index:"weightId",	width:20,	align:"center",	label:"가중치",
-							editable:true, edittype:"text", editrules:{required:true, custom:true, custom_func:validNum},	editoptions:{maxlength:22}
+							editable:true, edittype:"text", editrules:{required:true, custom:true, custom_func:validNum},	editoptions:{maxlength:3}
 						},
 						{name:"particalTypeId",	index:"particalTypeId",	width:20,	align:"center",	label:"평가자구분",
 							editable:true, edittype:"select", formatter:'select', editrules:{required:true}, editoptions:{value:getParticalTypeSelect()}
@@ -48,7 +48,6 @@ $(function(){
 						{name:"deleteDt",	index:"deleteDt",	width:100,	align:"center",	label:"삭제일자", hidden:true}
 
 						],
-		pager		: "pager",
 		rowNum		: ${jqgrid_rownum_max},
 		multiselect	: true,
 		cellEdit	: true,
@@ -56,34 +55,22 @@ $(function(){
 		sortname	: "createDt",
 		sortorder	: "asc",
 		loadComplete : function() {
+			$("#hiddenUseYn").val($("#findUseYn").val());
+			if ( $("#hiddenUseYn").val() == "N") {
+				$(".delete").hide();
+				$(".new").hide();
+				$(".save").hide();
+				$(".edit").show();
+			}
+			else {
+				$(".delete").show();
+				$(".new").show();
+				$(".save").show();
+				$(".edit").hide();
+			}
 		}
 	});
 
-	/***** 사용여부 미사용시 삭제 버튼 숨김 *****/
-	<c:choose>
-	<c:when test="${searchVO.findUseYn == 'N'}">
-	$(".delete").hide();
-	$(".new").hide();
-	$(".save").hide();
-	</c:when>
-	<c:otherwise>
-	$(".delete").show();
-	$(".new").show();
-	$(".save").show();
-	</c:otherwise>
-	</c:choose>
-	$("#findUseYn").on("change", function() {
-		if($(this).val() == "N"){
-			$(".delete").hide();
-			$(".new").hide();
-			$(".save").hide();
-		}else{
-			$(".delete").show();
-			$(".new").show();
-			$(".save").show();
-		}
-	});
-	/***** 사용여부 미사용시 삭제 버튼 숨김 end *****/
 });
 
 //숫자만 입력가능
@@ -91,7 +78,7 @@ function validNum(val, nm, valref){
 	if($.isNumeric(val)){
 		return [true, ""];
 	}else{
-		return [false, "숫자만 입력 가능 합니다."];
+		return [false, ": 숫자만 입력 가능 합니다."];
 	}
 }
 
@@ -150,6 +137,20 @@ function addRow(){
 function searchList() {
 	$("#newForm").hide();
  	reloadGrid("list", "form");
+
+ 	if ( $("#hiddenUseYn").val() == "Y") {
+		$(".delete").hide();
+		$(".new").hide();
+		$(".save").hide();
+		$(".edit").show();
+	}
+ 	else {
+		$(".delete").show();
+		$(".new").show();
+		$(".save").show();
+		$(".edit").hide();
+	}
+
 }
 
 // 상세 조회
@@ -222,11 +223,16 @@ function saveData() {
 		return false;
 	}
 
-	sendAjax({
-		"url" : "${context_path}/system/system/menu/ideaEvalItem/saveIdeaEvalItem.do",
-		"data" : getFormData("form"),
-		"doneCallbackFunc" : "checkResult"
-	});
+    $.showConfirmBox("<spring:message code="common.save.msg"/>", "doSaveData");
+
+}
+
+function doSaveData() {
+    sendAjax({
+        "url" : "${context_path}/system/system/menu/ideaEvalItem/saveIdeaEvalItem.do",
+        "data" : getFormData("form"),
+        "doneCallbackFunc" : "checkResult"
+    });
 }
 
 function checkResult(data) {
@@ -242,17 +248,27 @@ function deleteData() {
 
     var test = $("#list").getGridParam('selarrrow');
 
-    for ( var n = 0; n < test.length; n++ ) {
-        rowData = $("#list").jqGrid("getRowData", test[n]);
-        if(rowData.weightId != 0) {
-            $.showMsgBox("가중치가 0인 제안만 삭제할 수 있습니다.",null);
-            return false;
-        }
-    }
 
-	if(deleteDataToForm("list", "evalItemCd", "form")) {
-		$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
+	if ( $("#findUseYn").val() == 'Y') {
+		for ( var n = 0; n < test.length; n++ ) {
+			rowData = $("#list").jqGrid("getRowData", test[n]);
+			if(rowData.weightId != 0) {
+				$.showMsgBox("가중치가 0인 제안만 삭제할 수 있습니다.",null);
+				return false;
+			}
+		}
+
+		if(deleteDataToForm("list", "evalItemCd", "form")) {
+			$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
+		}
 	}
+	else {
+		if(deleteDataToForm("list", "evalItemCd", "form")) {
+			$.showConfirmBox("복원하시겠습니까?", "doDeleteData");
+		}
+	}
+
+
 
 
 }
@@ -272,6 +288,7 @@ function doDeleteData() {
 		"doneCallbackFunc" : "checkResult"
 	});
 }
+
 </script>
 
 <form:form commandName="searchVO" id="form" name="form" method="post">
@@ -282,6 +299,7 @@ function doDeleteData() {
 	<sec:authorize access="hasRole('01')">
 		<input type="hidden" id="tableId" name="tableId" value="IDEA_EVAL_ITEM"/>
 	</sec:authorize>--%>
+	<input type="hidden" id="hiddenUseYn"/><%-- 미사용시 체크에 사용 --%>
 
 	<div class="sch-bx">
 		<ul>
@@ -309,11 +327,12 @@ function doDeleteData() {
 		<table id="list"></table>
 		<div id="pager"></div>
 	</div>
-	<div class="tbl-bottom tbl-bottom2">
+	<div class="tbl-bottom">
 		<div class="tbl-btn">
 			<a href="#" class="new" onclick="addRow();return false;"><spring:message code="button.add"/></a>
 			<a href="#" class="save" onclick="saveData();return false;"><spring:message code="button.save"/></a>
 			<a href="#" class="delete" onclick="deleteData();return false;"><spring:message code="button.delete"/></a>
+			<a href="#" class="edit" onclick="deleteData();return false;">복원</a>
 		</div>
 	</div>
 	<div class="page-noti">

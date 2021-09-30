@@ -112,11 +112,11 @@ public class IdeaEvalItemController extends BaseController {
 	@RequestMapping("/system/system/menu/ideaEvalItem/saveIdeaEvalItem.do")
 	public ModelAndView saveIdeaEvalItem(@ModelAttribute("dataVO") IdeaEvalItemVO dataVO, Model model, BindingResult bindingResult) throws Exception {
 
+
 		validateList(dataVO.getGridDataList(), bindingResult);
 		if(bindingResult.hasErrors()){
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
-
 		int resultCnt = ideaEvalItemService.saveData(dataVO);
 		if(resultCnt == 0) {
 			return makeFailJsonData();

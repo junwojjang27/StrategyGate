@@ -145,6 +145,5 @@
 		WHERE 1=1
 		  AND A.IDEA_CD=#{ideaCd}
 		  AND A.YEAR=#{findYear}
-
 	</update>
 </mapper>

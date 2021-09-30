@@ -75,6 +75,8 @@
 		cnt = 1;
 		</sec:authorize>
 
+		ischange = true;
+
 		if (cnt != 1) {		//관리자 아닐 경우
 			var userId = "${sessionScope.loginVO.userId}";
 			var num = $("#list").getGridParam("reccount");		//현재 화면에 표시되고있는 레코드 숫자
@@ -82,10 +84,29 @@
 			for (var n = 1; n <= num; n++) {	//1 ~ (화면에 표시되고있는 레코드 숫자) 까지 반복하여 ideaCd를 비교해서 해당 제안을 찾음.
 				rowData = $("#list").jqGrid("getRowData", n);
 				if(rowData.ideaCd == $("#ideaCd").val()) {
-					if (rowData.userId == userId)
+					if (rowData.userId == userId && rowData.state == '대기') {
 						$(".save").show();
-					else
+					}
+					else {
 						$(".save").hide();
+						ischange = false;
+					}
+				}
+			}
+		}
+		else {
+			var num = $("#list").getGridParam("reccount");		//현재 화면에 표시되고있는 레코드 숫자
+			var rowData;
+			for (var n = 1; n <= num; n++) {	//1 ~ (화면에 표시되고있는 레코드 숫자) 까지 반복하여 ideaCd를 비교해서 해당 제안을 찾음.
+				rowData = $("#list").jqGrid("getRowData", n);
+				if(rowData.ideaCd == $("#ideaCd").val()) {
+					if (rowData.state == '대기') {
+						$(".save").show();
+					}
+					else {
+						$(".save").hide();
+						ischange = false;
+					}
 				}
 			}
 		}
@@ -99,22 +120,43 @@
 	function setDetail(data) {
 		$("#newForm").show();
 		var dataVO = data.dataVO;
-		voToForm(dataVO, "form", ["title","year","category"]);	//VO의 값을 form에 세팅
-		$("#content").val(dataVO.content);
-		$("#content").focus();
+		voToForm(dataVO, "form", ["title","year","category", "content"]);	//VO의 값을 form에 세팅
+		// $("#content").val(dataVO.content);
+		// $("#content").focus();
+
+		if(!ischange) {
+			document.getElementById('category').disabled = true;
+			document.getElementById('title1').readOnly = true;
+			document.getElementById('content').readOnly = true;
+		}
+		else {
+			document.getElementById('category').disabled = false;
+			document.getElementById('title1').readOnly = false;
+			document.getElementById('content').readOnly = false;
+		}
+
+
+
 		showBytes("content", "contentBytes");
 		setMaxLength("form");
 	}
 
+	var isChange;
 	var first;
 	// 등록
 	function addData() {
 
+		document.getElementById('category').disabled = false;
+		document.getElementById('title1').readOnly = false;
+		document.getElementById('content').readOnly = false;
+
 		$("#newForm").show();
-		resetForm("form", ["category","title", "content"]);		//form에 있는 값 지우기
+		resetForm("form", ["category","title", "content", "ideaCd"]);		//form에 있는 값 지우기
 		$("#year").val($("#findYear").val());		//year은 화면 왼쪽 위 년도 로 세팅
 
 		first = true;
+
+		$(".save").show();
 
 		//byte
 		showBytes("content", "contentBytes");
@@ -271,7 +313,7 @@
 				</tr>
 				<tr>
 					<th scope="row"><label for="title"><spring:message code="word.title"/></label><span class="red">(*)</span></th>
-					<td ><form:input path="title" class="t-box01" maxlength="300"/></td> <!--최대길이 지정-->
+					<td ><form:input path="title" class="t-box01" maxlength="300" id="title1"/></td> <!--최대길이 지정-->
 				</tr>
 				<tr>
 					<th scope="row"><label for="content"><spring:message code="word.content" /></label><span class="red">(*)</span></th>

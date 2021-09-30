@@ -236,7 +236,7 @@ function addData() {
 
 // 저장
 function saveData() {
-	if($("#hiddenUseYn").val()=="N" && $("#itemPoolId").val() == "") {
+	$("#hiddenUseYn").val($("#findUseYn").val());
 		$.showMsgBox("<spring:message code="errors.noUseNoSave"/>");
 		return false;
 	}
