@@ -60,14 +60,26 @@ $(function(){
 				$(".delete").hide();
 				$(".new").hide();
 				$(".save").hide();
-				$(".edit").show();
+				$(".tbl-btn").find("a#deleteData").removeClass("disabled").css("cursor","pointer");
+				$(".tbl-btn").find("a#deleteData").addClass("edit");
 			}
 			else {
 				$(".delete").show();
 				$(".new").show();
 				$(".save").show();
-				$(".edit").hide();
+				$(".tbl-btn").find("a#deleteData").addClass("disabled").css("cursor","default");
+				$(".tbl-btn").find("a#deleteData").removeClass("edit");
+
 			}
+		}
+	});
+
+	$(".tbl-btn").find("a#deleteData").bind('click', function(event){
+		if($("#findUseYn").val() == "N") {
+			eval($(this).attr("id")+"()");
+		}else{
+			event.preventDefault();
+			return false;
 		}
 	});
 
@@ -123,7 +135,6 @@ function addRow(){
 	*/
 
 	var rowData = {year:$("#findYear").val(), evalDegreeId:$("#findEvalDegreeId").val(), useYn:'Y', particalTypeId:'002'};
-
 	$("#list").jqGrid("addRowData", rowId+1, rowData,'last');
 	$('#list tr:last').focus();
 
@@ -142,13 +153,13 @@ function searchList() {
 		$(".delete").hide();
 		$(".new").hide();
 		$(".save").hide();
-		$(".edit").show();
+		//$(".edit").show();
 	}
  	else {
 		$(".delete").show();
 		$(".new").show();
 		$(".save").show();
-		$(".edit").hide();
+		//$(".edit").hide();
 	}
 
 }
@@ -332,7 +343,7 @@ function doDeleteData() {
 			<a href="#" class="new" onclick="addRow();return false;"><spring:message code="button.add"/></a>
 			<a href="#" class="save" onclick="saveData();return false;"><spring:message code="button.save"/></a>
 			<a href="#" class="delete" onclick="deleteData();return false;"><spring:message code="button.delete"/></a>
-			<a href="#" class="edit" onclick="deleteData();return false;">복원</a>
+			<a href="#" class="edit" id="deleteData" onclick="return false;">복원</a>
 		</div>
 	</div>
 	<div class="page-noti">

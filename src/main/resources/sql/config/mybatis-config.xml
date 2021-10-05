@@ -82,8 +82,10 @@
 		<typeAlias alias="ideaSingleVO"	type="kr.ispark.system.system.menu.ideaSingle.service.IdeaSingleVO"/>
 		<typeAlias alias="ideaUsVO"	type="kr.ispark.system.system.menu.ideaUs.service.IdeaUsVO"/>
 		<typeAlias alias="ideaEvalItemVO"	type="kr.ispark.system.system.menu.ideaEvalItem.service.IdeaEvalItemVO"/>
+		<typeAlias alias="ideaReviewVO"	type="kr.ispark.system.system.menu.ideaReview.service.IdeaReviewVO"/>
 	</typeAliases>
 </configuration>
+
 
 
 

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.menu.ideaReview">
+	<select id="selectList" parameterType="ideaReviewVO" resultType="ideaReviewVO">
+		/*	IDEA+검토 조회	system.menu.ideaReview.selectList */
+		SELECT
+			IDEA_EXECUTION_CD,
+			IDEA_CD,
+			RESULT,
+			EXCUTION_DT,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			YEAR
+		FROM IDEA_EXECUTION
+		WHERE 1=1
+
+	</select>
+	
+	<select id="selectDetail" parameterType="ideaReviewVO" resultType="ideaReviewVO">
+		/*	IDEA+검토 상세 조회	 	system.menu.ideaReview.selectDetail	*/
+		SELECT
+			IDEA_EXECUTION_CD,
+			IDEA_CD,
+			RESULT,
+			EXCUTION_DT,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			YEAR
+		FROM IDEA_EXECUTION
+		WHERE 1=1
+			AND IDEA_EXECUTION_CD=#{ideaExecutionCd}
+			AND YEAR=#{year}
+
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="ideaReviewVO">
+	    /*	IDEA+검토 정렬순서저장	 ideaReview.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteIdeaReview" parameterType="ideaReviewVO">
+		/*	IDEA+검토 삭제	system.menu.ideaReview.deleteIdeaReview	*/
+		UPDATE IDEA_EXECUTION
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND IDEA_EXECUTION_CD=#{ideaExecutionCd}
+			AND YEAR=#{year}
+
+	</update>
+
+	<insert id="insertData" parameterType="ideaReviewVO">
+		/*	IDEA+검토 저장	system.menu.ideaReview.insertData	*/
+		INSERT INTO IDEA_EXECUTION(
+			IDEA_EXECUTION_CD,
+			IDEA_CD,
+			RESULT,
+			EXCUTION_DT,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			YEAR)
+		
+VALUES (
+			#{ideaExecutionCd},
+			#{ideaCd},
+			#{result},
+			#{excutionDt},
+			#{createDt},
+			#{updateDt},
+			#{deleteDt},
+			#{year})
+
+	</insert>
+
+	<update id="updateData" parameterType="ideaReviewVO">
+		/*	IDEA+검토 수정	system.menu.ideaReview.updateData	*/
+		UPDATE IDEA_EXECUTION
+		SET
+			IDEA_CD=#{ideaCd},
+			RESULT=#{result},
+			EXCUTION_DT=#{excutionDt},
+			CREATE_DT=#{createDt},
+			UPDATE_DT=#{updateDt},
+			DELETE_DT=#{deleteDt},
+		WHERE 1=1
+			AND IDEA_EXECUTION_CD=#{ideaExecutionCd}
+			AND YEAR=#{year}
+
+	</update>
+</mapper>
+

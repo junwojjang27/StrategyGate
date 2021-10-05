@@ -1036,7 +1036,7 @@ div.jqgridTextareaDiv {
 					min-width:200px; height:208px; margin-left:-46px; margin-top:-2px;}
 .sch-oga .acList ul {height:200px; overflow-y:auto; margin:3px;}
 .sch-oga .acList li {font-size:13px; padding:5px}
-.sch-oga .acList .acMatchedStr {font-weight:bold; color:red/*#0195D3*/}
+.sch-oga .acList .acMatchedStr {font-weight:bold; color:red/*#0195D3}*/
 
 /* 개발 가이드 */
 .devGuide {font-size:14px;margin:20px;padding:10px;border-radius:5px;background-color:#F0F0F0;}

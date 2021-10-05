@@ -6,23 +6,60 @@
 <form-validation>
 	<formset>
 		<form name="ideaReviewVO">
-			<field property="state" depends="required">
-				<arg0 key="진행상태(대기/진행/완료)" resource="true"/>
-			</field>
-			<field property="startDt" depends="maxByteLength, integer">
-				<arg0 key="평가시작일자" resource="true"/>
-				<arg1 key="8" resource="false"/>
+			<field property="ideaExecutionCd" depends="maxlength">
+				<arg0 key="실행안코드" resource="true"/>
+				<arg1 key="7" resource="false"/>
 				<var>
-					<var-name>maxByteLength</var-name>
-					<var-value>8</var-value>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
 				</var>
 			</field>
-			<field property="endDt" depends="maxByteLength, integer">
-				<arg0 key="평가종료일자" resource="true"/>
-				<arg1 key="8" resource="false"/>
+			<field property="ideaCd" depends="maxlength">
+				<arg0 key="제안번호" resource="true"/>
+				<arg1 key="7" resource="false"/>
 				<var>
-					<var-name>maxByteLength</var-name>
-					<var-value>8</var-value>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="result" depends="maxlength">
+				<arg0 key="폐기,실행" resource="true"/>
+				<arg1 key="10" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>10</var-value>
+				</var>
+			</field>
+			<field property="excutionDt" depends="maxlength">
+				<arg0 key="실행시작일자" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="createDt" depends="maxlength">
+				<arg0 key="생성일자" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="updateDt" depends="maxlength">
+				<arg0 key="수정일자" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="deleteDt" depends="maxlength">
+				<arg0 key="삭제일자" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
 				</var>
 			</field>
 
