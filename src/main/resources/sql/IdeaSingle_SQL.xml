@@ -115,7 +115,7 @@
 		   #{title},
 		   #{content},
 		   #{state},
-		   SYSDATE,
+ 		   SYSDATE,
 		   #{updateDt},
 		   #{deleteDt},
 		   #{startDt},

@@ -12,6 +12,8 @@ package kr.ispark.system.system.menu.ideaReview.web;
 
 import java.util.List;
 
+import kr.ispark.common.util.CommonUtil;
+import kr.ispark.system.system.menu.ideaUs.service.IdeaUsVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -53,46 +55,6 @@ public class IdeaReviewController extends BaseController {
 	public ModelAndView ideaReviewList_json(@ModelAttribute("searchVO") IdeaReviewVO searchVO) throws Exception {
 		List<IdeaReviewVO> dataList = ideaReviewService.selectList(searchVO);
 		return makeGridJsonData(dataList, dataList.size(), searchVO);
-	}
-	
-	//excelDownload
-	/**
-	 * 엑셀양식다운로드
-	 * @param	IdeaReviewVO searchVO
-	 * @param	Model model
-	 * @return	ModelAndView
-	 * @throws	Exception
-	 */
-	@RequestMapping("/system/system/menu/ideaReview/excelDownload.do")
-	public String excelDownload(@ModelAttribute("searchVO") IdeaReviewVO searchVO, Model model) throws Exception {
-		
-		/*
-		 * 현재페이지 화면에 맞게 반드시 수정할 것.
-		 */
-		
-		List<IdeaReviewVO> dataList = ideaReviewService.selectList(searchVO);
-		
-		// 타이틀
-		model.addAttribute("title", egovMessageSource.getMessage("word.ideaReviewManage"));
-		
-		// 검색조건
-		model.addAttribute("year", egovMessageSource.getMessage("word.year"));
-		model.addAttribute("findYear", searchVO.getFindYear());
-		
-		// header
-		model.addAttribute("ideaReviewNm", egovMessageSource.getMessage("word.ideaReviewNm"));	// IDEA+검토
-		model.addAttribute("sortOrder", egovMessageSource.getMessage("word.sortOrder"));			// 정렬순서
-		
-		// 조직 데이터
-		model.addAttribute("dataList", dataList);
-		
-		// 시트명
-		model.addAttribute("sheetName", egovMessageSource.getMessage("word.ideaReviewNm"));
-		
-		model.addAttribute("destJxlsFileName", egovMessageSource.getMessage("word.ideaReviewNm") + "_" + EgovStringUtil.getTimeStamp()+".xlsx");
-		model.addAttribute("templateJxlsFileName", "ideaReviewList.xlsx");
-
-		return "excelDownloadView";
 	}
 
 	/**
@@ -151,8 +113,24 @@ public class IdeaReviewController extends BaseController {
 		if(bindingResult.hasErrors()){
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
+		System.out.println("저장 : 컨트롤러");
 
-		return makeJsonDataByResultCnt(ideaReviewService.saveData(dataVO));
+		int resultCnt = ideaReviewService.saveData(dataVO);
+		if(resultCnt == 0) {
+			return makeFailJsonData();
+		}
+
+		System.out.println("저장 : 컨트롤러 성공");
+
+		return makeSuccessJsonData();
+	}
+
+	@RequestMapping("/system/system/menu/ideaReview/ideaReviewDetail.do")
+	public String getAtchFileForm(@ModelAttribute("searchVO") IdeaReviewVO ideaReviewVO, Model model) {
+		//model.addAttribute("searchVO",IdeaUsVO);
+		System.out.println("첨부파일 : 컨트롤러");
+		System.out.println("!!!!!!!!!!searchVO : "+ideaReviewVO);
+		return "/system/system/menu/ideaReview/ideaReviewAtchFileForm";
 	}
 }
 

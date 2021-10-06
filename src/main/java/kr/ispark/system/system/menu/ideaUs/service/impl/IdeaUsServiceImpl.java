@@ -92,6 +92,8 @@ public class IdeaUsServiceImpl extends EgovAbstractServiceImpl {
 
 		dataVO.setState("001");
 		dataVO.setIdeaGbnCd("002");
+		dataVO.setDegree("001");
+		dataVO.setEvalState("001");
 
 		return ideaUsDAO.insertData(dataVO);
 	}

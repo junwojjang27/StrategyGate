@@ -14,6 +14,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import kr.ispark.common.security.service.UserVO;
+import kr.ispark.common.util.SessionUtil;
 import org.springframework.stereotype.Service;
 
 import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
@@ -81,14 +83,31 @@ public class IdeaReviewServiceImpl extends EgovAbstractServiceImpl {
 	 * @throws	Exception
 	 */
 	public int saveData(IdeaReviewVO dataVO) throws Exception {
+
+		int resultCnt = 0;
 		String key = "";
-		if(CommonUtil.isEmpty(dataVO.getIdeaCd())) {
-			key = idgenService.selectNextSeqByYear("originalTableName", dataVO.getYear(), "S", 6, "0");
-			dataVO.setIdeaCd(key);
-			return ideaReviewDAO.insertData(dataVO);
-		} else {
-			return ideaReviewDAO.updateData(dataVO);
+		System.out.println("저장 : 서비스");
+
+
+
+		if(dataVO.getState().equals("001")) {
+			dataVO.setEvalState("001");
 		}
+		else if(dataVO.getState().equals("002")) {
+			dataVO.setEvalState("002");
+		}
+		else {
+			dataVO.setEvalState("005");
+		}
+
+		if(CommonUtil.isEmpty(dataVO.getIdeaCd())) {
+			key = idgenService.selectNextSeqByYear("IDEA_INFO", dataVO.getYear(), "S", 6, "0");
+			dataVO.setIdeaCd(key);
+			resultCnt +=  ideaReviewDAO.insertData(dataVO);
+		} else {
+			resultCnt += ideaReviewDAO.updateData(dataVO);
+		}
+		return resultCnt;
 	}
 }
 

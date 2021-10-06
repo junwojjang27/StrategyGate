@@ -82,7 +82,7 @@ public class IdeaEvalItemController extends BaseController {
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
 
-		return makeJsonDataByResultCnt(ideaEvalItemService.updateSortOrder(dataVO));
+		return makeJsonDataByResultCnt(ideaEvalItemService.updateSortOrder(dataVO));	//화면에서 해당버튼 누르면 처리된 개수가 나오는데 처리된 개수에 따라 성공 실패
 	}
 
 	/**
@@ -113,6 +113,7 @@ public class IdeaEvalItemController extends BaseController {
 	public ModelAndView saveIdeaEvalItem(@ModelAttribute("dataVO") IdeaEvalItemVO dataVO, Model model, BindingResult bindingResult) throws Exception {
 
 
+		//아래줄 설명 : array로 들어온 모든 그리트데이타 넣어서 한건한건 문제가 있는지 검증
 		validateList(dataVO.getGridDataList(), bindingResult);
 		if(bindingResult.hasErrors()){
 			return makeFailJsonData(getListErrorMsg(bindingResult));

@@ -241,7 +241,7 @@ function saveData() {
 function doSaveData() {
     sendAjax({
         "url" : "${context_path}/system/system/menu/ideaEvalItem/saveIdeaEvalItem.do",
-        "data" : getFormData("form"),
+        "data" : getFormData("form"),		//
         "doneCallbackFunc" : "checkResult"
     });
 }

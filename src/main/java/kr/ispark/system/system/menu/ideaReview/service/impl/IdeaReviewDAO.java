@@ -67,7 +67,8 @@ public class IdeaReviewDAO extends EgovComAbstractDAO {
 	 * @throws	Exception
 	 */
 	public int insertData(IdeaReviewVO searchVO) throws Exception {
-		return insert("system.menu.ideaReview.insertData", searchVO);
+		System.out.println("저장 : DAO-insert");
+		return update("system.menu.ideaReview.insertData", searchVO);
 	}
 
 	/**
@@ -77,6 +78,8 @@ public class IdeaReviewDAO extends EgovComAbstractDAO {
 	 * @throws	Exception
 	 */
 	public int updateData(IdeaReviewVO searchVO) throws Exception {
+		System.out.println("저장 : DAO-update");
+		System.out.println("!!!!!!!!!!searchVO : "+searchVO);
 		return update("system.menu.ideaReview.updateData", searchVO);
 	}
 }

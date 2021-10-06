@@ -84,6 +84,8 @@ public class IdeaSingleServiceImpl extends EgovAbstractServiceImpl {
 			dataVO.setIdeaCd(key);
 			dataVO.setState("001");
 			dataVO.setIdeaGbnCd("001");
+			dataVO.setDegree("001");
+			dataVO.setEvalState("001");
 			return ideaSingleDAO.insertData(dataVO);
 		}
 	}

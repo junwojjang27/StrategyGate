@@ -24,7 +24,7 @@
 				{name:"userNm",	index:"userNm",	width:30,	align:"center",	label:"<spring:message code="word.insertUser"/>"},
 				{name:"deptNm",	index:"deptNm",	width:30,	align:"center",	label:"<spring:message code="word.deptNm"/>"},
 				{name:"state",		index:"state", width:30,	align:"center",	label:"진행상태"},
-				{name:"createDt",	index:"creatDt",	width:50,	align:"center",	label:"<spring:message code="word.insertDT"/>"},
+				{name:"createDt",	index:"creatDt",	width:50,	align:"center",	label:"<spring:message code="word.insertDT"/>"}
 			],
 			pager		: "pager",
 			rowNum		: 10,
@@ -42,6 +42,9 @@
 					var loginUserId = "${sessionScope.loginVO.userId}";
 					hideGridCheckbox("list", "userId", loginUserId, false);
 				}
+				//byte check
+				showBytes("content", "contentBytes");
+				setMaxLength("form");
 			}
 		});
 
@@ -158,9 +161,6 @@
 
 		$(".save").show();
 
-		//byte
-		showBytes("content", "contentBytes");
-		setMaxLength("form");
 	}
 	// 저장
 	function saveData() {
@@ -168,6 +168,8 @@
 		if(!validateIdeaSingleVO(f)) {	//유효성 체크
 			return;
 		}
+
+
 
 		if (first != true) {
 			isUse = false;

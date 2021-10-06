@@ -44,6 +44,10 @@
 					var loginUserId = "${sessionScope.loginVO.userId}"; //로그인 정보를 가져온다.
 					hideGridCheckbox("list", "userId", loginUserId, false);
 				}
+
+				//byte check
+				showBytes("content", "contentBytes");
+				setMaxLength("form");
 			}
 
 
@@ -121,8 +125,11 @@
 	var upload1;
 	// 상세 조회 값 세팅
 	function setDetail(data) {
+
+
 		$("#newForm").show();
 		var dataVO = data.dataVO;
+
 		voToForm(dataVO, "form", ["year","category","title", "userNm", "deptNm", "content"]);	//VO의 값을 form에 세팅
 		$("#userNm").text(dataVO.userNm);
 		$("#deptNm").text(dataVO.deptNm);
@@ -170,8 +177,8 @@
 			}
 		});
 		//byte check
-		showBytes("content", "contentBytes");
-		setMaxLength("form");
+		// showBytes("content", "contentBytes");
+		// setMaxLength("form");
 	}
 	// 등록
 	function addData() {
@@ -216,8 +223,8 @@
 			}
 		});
 		//byte
-		showBytes("content", "contentBytes");
-		setMaxLength("form");
+		// showBytes("content", "contentBytes");
+		// setMaxLength("form");
 	}
 	// 저장
 	function saveData() {
@@ -225,6 +232,8 @@
 		if(!validateIdeaUsVO(f)) {  //유효성
 			return;
 		}
+
+		alert($("#ideaCd").val());
 
 		isUse = false;
 		var num = $("#list").getGridParam("reccount");
