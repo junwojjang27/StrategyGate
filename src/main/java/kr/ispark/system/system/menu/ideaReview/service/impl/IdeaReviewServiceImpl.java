@@ -53,42 +53,13 @@ public class IdeaReviewServiceImpl extends EgovAbstractServiceImpl {
 	}
 	
 	/**
-	 * IDEA+검토 정렬순서저장
-	 * @param	IdeaReviewVO searchVO
-	 * @return	int
-	 * @throws	Exception
-	 */
-	public int updateSortOrder(IdeaReviewVO dataVO) throws Exception {
-		int resultCnt = 0;
-		for(IdeaReviewVO paramVO : dataVO.getGridDataList()) {
-			resultCnt += ideaReviewDAO.updateSortOrder(paramVO);
-		}
-		return resultCnt;
-	}
-
-	/**
-	 * IDEA+검토 삭제
-	 * @param	IdeaReviewVO searchVO
-	 * @return	int
-	 * @throws	Exception
-	 */
-	public int deleteIdeaReview(IdeaReviewVO dataVO) throws Exception {
-		return ideaReviewDAO.deleteIdeaReview(dataVO);
-	}
-	
-	/**
 	 * IDEA+검토 저장
 	 * @param	IdeaReviewVO searchVO
 	 * @return	int
 	 * @throws	Exception
 	 */
 	public int saveData(IdeaReviewVO dataVO) throws Exception {
-
 		int resultCnt = 0;
-		String key = "";
-		System.out.println("저장 : 서비스");
-
-
 
 		if(dataVO.getState().equals("001")) {
 			dataVO.setEvalState("001");
@@ -100,13 +71,8 @@ public class IdeaReviewServiceImpl extends EgovAbstractServiceImpl {
 			dataVO.setEvalState("005");
 		}
 
-		if(CommonUtil.isEmpty(dataVO.getIdeaCd())) {
-			key = idgenService.selectNextSeqByYear("IDEA_INFO", dataVO.getYear(), "S", 6, "0");
-			dataVO.setIdeaCd(key);
-			resultCnt +=  ideaReviewDAO.insertData(dataVO);
-		} else {
-			resultCnt += ideaReviewDAO.updateData(dataVO);
-		}
+		resultCnt += ideaReviewDAO.updateData(dataVO);
+
 		return resultCnt;
 	}
 }

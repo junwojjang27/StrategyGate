@@ -33,6 +33,8 @@ public class ScDeptMngDAO extends EgovComAbstractDAO {
 	 * 성과조직 조회
 	 */
 	public List<ScDeptVO> selectExcelList(ScDeptVO searchVO) throws Exception {
+		System.out.println("DAO");
+		System.out.println("searchVO : " + searchVO);
 		return selectList("base.scDept.scDeptMng.selectExcelList", searchVO);
 	}
 

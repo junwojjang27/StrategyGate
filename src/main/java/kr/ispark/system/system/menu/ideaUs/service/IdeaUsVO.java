@@ -13,8 +13,6 @@ public class IdeaUsVO extends CommonVO {
 	private String ideaCd;
 	private String userId;
 	private String category;
-	private String findCategory;
-
 	private String title;
 	private String content;
 	private String state;
@@ -30,8 +28,8 @@ public class IdeaUsVO extends CommonVO {
 	private String atchFileId;
 	private String modifyYn;
 
+	private String findCategory;
 	private String searchKeyword;
-
 	private String deptNm;
 
 	private List<IdeaUsVO> gridDataList;

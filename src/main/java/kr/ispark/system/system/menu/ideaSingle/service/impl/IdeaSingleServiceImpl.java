@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import kr.ispark.common.security.service.UserVO;
+import kr.ispark.common.system.service.ScDeptVO;
 import kr.ispark.common.util.SessionUtil;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,16 @@ public class IdeaSingleServiceImpl extends EgovAbstractServiceImpl {
 	 */
 	public List<IdeaSingleVO> selectList(IdeaSingleVO searchVO) throws Exception {
 		return ideaSingleDAO.selectList(searchVO);
+	}
+
+	/**
+	 * 간단 IDEA+ 엑셀용 조회
+	 * @param searchVO
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IdeaSingleVO> selectExcelList(IdeaSingleVO searchVO) throws Exception {
+		return ideaSingleDAO.selectExcelList(searchVO);
 	}
 
 	/**

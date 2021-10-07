@@ -1,165 +1,141 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="system.menu.ideaReview">
-	<select id="selectList" parameterType="ideaReviewVO" resultType="ideaReviewVO">
-		/*	IDEA+검토 조회	system.menu.ideaReview.selectList */
-		SELECT
-		A.IDEA_CD,
-		A.YEAR,
-		A.USER_ID,
-		CA.CODE_NM AS CATEGORY,
-		A.TITLE,
-		A.CONTENT,
-		CB.CODE_NM AS STATE,
-		TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
-		A.UPDATE_DT,
-		A.DELETE_DT,
-		TO_CHAR(A.START_DT, 'YYYY.MM.DD') AS START_DT,
-		TO_CHAR(A.END_DT, 'YYYY.MM.DD') AS END_DT,
-		A.ATCH_FILE_ID,
-		CC.CODE_NM AS IDEA_GBN_CD,
-		CD.CODE_NM AS DEGREE,
-		CE.CODE_NM AS EVAL_STATE,
-		B.USER_NM,
-		B.DEPT_NM
-		FROM IDEA_INFO A
-		LEFT JOIN V_ROLE_USER B
-		ON A.USER_ID = B.USER_ID
-		<include refid="common.func.getCodeJoin">
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'385'"/>
-			<property name="pAlias" value="CA"/>
-			<property name="pCompareColumn" value="A.CATEGORY"/>
-		</include>
-		<include refid="common.func.getCodeJoin">
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'390'"/>
-			<property name="pAlias" value="CB"/>
-			<property name="pCompareColumn" value="A.STATE"/>
-		</include>
-		<include refid="common.func.getCodeJoin">
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'389'"/>
-			<property name="pAlias" value="CC"/>
-			<property name="pCompareColumn" value="A.IDEA_GBN_CD"/>
-		</include>
-		<include refid="common.func.getCodeJoin">
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'387'"/>
-			<property name="pAlias" value="CD"/>
-			<property name="pCompareColumn" value="A.DEGREE"/>
-		</include>
-		<include refid="common.func.getCodeJoin">
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'391'"/>
-			<property name="pAlias" value="CE"/>
-			<property name="pCompareColumn" value="A.EVAL_STATE"/>
-		</include>
-		WHERE
-		A.YEAR = #{findYear}
-		<if test='colName == "title"'>
-			AND UPPER(A.TITLE) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
-		</if>
-		<if test='colName == "userNm"'>
-			AND UPPER(B.USER_NM) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
-		</if>
-		<if test='findState != null and findState != ""'>
-			AND A.STATE = #{findState}
-		</if>
-		<if test='findDegree != null and findDegree != ""'>
-			AND A.DEGREE = #{findDegree}
-		</if>
-		<if test='findEvalState != null and findEvalState != ""'>
-			AND A.EVAL_STATE = #{findEvalState}
-		</if>
+    <select id="selectList" parameterType="ideaReviewVO" resultType="ideaReviewVO">
+        /* IDEA+검토 조회 system.menu.ideaReview.selectList */
+        SELECT
+			A.IDEA_CD,
+			A.YEAR,
+			A.USER_ID,
+			CA.CODE_NM AS CATEGORY,
+			A.TITLE,
+			A.CONTENT,
+			CB.CODE_NM AS STATE,
+			TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
+			A.UPDATE_DT,
+			A.DELETE_DT,
+			TO_CHAR(A.START_DT, 'YYYY.MM.DD') AS START_DT,
+			TO_CHAR(A.END_DT, 'YYYY.MM.DD') AS END_DT,
+			A.ATCH_FILE_ID,
+			CC.CODE_NM AS IDEA_GBN_CD,
+			CD.CODE_NM AS DEGREE,
+			CE.CODE_NM AS EVAL_STATE,
+			B.USER_NM,
+			B.DEPT_NM
+        FROM IDEA_INFO A
+        	LEFT JOIN V_ROLE_USER B
+        		ON A.USER_ID = B.USER_ID
+					<include refid="common.func.getCodeJoin">
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'385'"/>
+						<property name="pAlias" value="CA"/>
+						<property name="pCompareColumn" value="A.CATEGORY"/>
+					</include>
+					<include refid="common.func.getCodeJoin">
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'390'"/>
+						<property name="pAlias" value="CB"/>
+						<property name="pCompareColumn" value="A.STATE"/>
+					</include>
+					<include refid="common.func.getCodeJoin">
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'389'"/>
+						<property name="pAlias" value="CC"/>
+						<property name="pCompareColumn" value="A.IDEA_GBN_CD"/>
+					</include>
+					<include refid="common.func.getCodeJoin">
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'387'"/>
+						<property name="pAlias" value="CD"/>
+						<property name="pCompareColumn" value="A.DEGREE"/>
+					</include>
+					<include refid="common.func.getCodeJoin">
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'391'"/>
+						<property name="pAlias" value="CE"/>
+						<property name="pCompareColumn" value="A.EVAL_STATE"/>
+					</include>
+        WHERE
+			A.YEAR = #{findYear}
+			<if test='colName == "title"'>
+				AND UPPER(A.TITLE) LIKE '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
+			</if>
+			<if test='colName == "userNm"'>
+				AND UPPER(B.USER_NM) LIKE '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
+			</if>
+			<if test='findState != null and findState != ""'>
+				AND A.STATE = #{findState}
+			</if>
+			<if test='findDegree != null and findDegree != ""'>
+				AND A.DEGREE = #{findDegree}
+			</if>
+			<if test='findEvalState != null and findEvalState != ""'>
+				AND A.EVAL_STATE = #{findEvalState}
+			</if>
+        ORDER BY A.CREATE_DT DESC        <!--생성날짜를 기준으로 내림차순 정렬-->
 
+    </select>
 
-		ORDER BY   A.CREATE_DT DESC		<!--생성날짜를 기준으로 내림차순 정렬-->
-
-	</select>
-
-	<select id="selectDetail" parameterType="ideaReviewVO" resultType="ideaReviewVO">
-		/*	IDEA+검토 상세 조회	 	system.menu.ideaReview.selectDetail	*/
-		SELECT
-		    A.IDEA_CD,
+    <select id="selectDetail" parameterType="ideaReviewVO" resultType="ideaReviewVO">
+        /* IDEA+검토 상세 조회 system.menu.ideaReview.selectDetail */
+        SELECT
+			A.IDEA_CD,
 			CA.CODE_NM AS CATEGORY,
 			A.TITLE,
 			A.CONTENT,
 			A.STATE,
-		    A.CREATE_DT,
+			A.CREATE_DT,
 			CD.CODE_NM AS DEGREE,
 			CC.CODE_NM AS IDEA_GBN_CD,
 			CE.CODE_NM AS EVAL_STATE,
 			TO_CHAR(A.START_DT, 'YYYY.MM.DD') AS START_DT,
 			TO_CHAR(A.END_DT, 'YYYY.MM.DD') AS END_DT,
-
 			A.ATCH_FILE_ID AS ATCH_FILE_KEY,
 			B.USER_NM,
 			B.DEPT_NM
-		FROM IDEA_INFO A
-				 LEFT JOIN V_ROLE_USER B
-						   ON A.USER_ID = B.USER_ID
-		<include refid="common.func.getCodeJoin">	<!--카테고리 코드를 해당하는 문자로 변경-->
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'385'"/>
-			<property name="pAlias" value="CA"/>
-			<property name="pCompareColumn" value="A.CATEGORY"/>
-		</include>
-		<include refid="common.func.getCodeJoin">	<!--제안구분 코드를 해당하는 문자로 변경-->
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'389'"/>
-			<property name="pAlias" value="CC"/>
-			<property name="pCompareColumn" value="A.IDEA_GBN_CD"/>
-		</include>
-		<include refid="common.func.getCodeJoin">	<!--평가차수 코드를 해당하는 문자로 변경-->
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'387'"/>
-			<property name="pAlias" value="CD"/>
-			<property name="pCompareColumn" value="A.DEGREE"/>
-		</include>
-		<include refid="common.func.getCodeJoin">	<!--평가상태 코드를 해당하는 문자로 변경-->
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'391'"/>
-			<property name="pAlias" value="CE"/>
-			<property name="pCompareColumn" value="A.EVAL_STATE"/>
-		</include>
-		WHERE A.IDEA_CD=#{ideaCd}
-		  AND A.YEAR=#{findYear}
+        FROM IDEA_INFO A
+			LEFT JOIN V_ROLE_USER B
+				ON A.USER_ID = B.USER_ID
+					<include refid="common.func.getCodeJoin">    <!--카테고리 코드를 해당하는 문자로 변경-->
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'385'"/>
+						<property name="pAlias" value="CA"/>
+						<property name="pCompareColumn" value="A.CATEGORY"/>
+					</include>
+					<include refid="common.func.getCodeJoin">    <!--제안구분 코드를 해당하는 문자로 변경-->
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'389'"/>
+						<property name="pAlias" value="CC"/>
+						<property name="pCompareColumn" value="A.IDEA_GBN_CD"/>
+					</include>
+					<include refid="common.func.getCodeJoin">    <!--평가차수 코드를 해당하는 문자로 변경-->
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'387'"/>
+						<property name="pAlias" value="CD"/>
+						<property name="pCompareColumn" value="A.DEGREE"/>
+					</include>
+					<include refid="common.func.getCodeJoin">    <!--평가상태 코드를 해당하는 문자로 변경-->
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'391'"/>
+						<property name="pAlias" value="CE"/>
+						<property name="pCompareColumn" value="A.EVAL_STATE"/>
+					</include>
+        WHERE A.IDEA_CD=#{ideaCd}
+        	AND A.YEAR=#{findYear}
+    </select>
 
-	</select>	
-	
-	<!-- 
-	<update id="updateSortOrder" parameterType="ideaReviewVO">
-	    /*	IDEA+검토 정렬순서저장	 ideaReview.updateSortOrder	*/
-		updateSortOrderQuery
-	</update>
-	-->
-	
-	<update id="deleteIdeaReview" parameterType="ideaReviewVO">
-		/*	IDEA+검토 삭제	system.menu.ideaReview.deleteIdeaReview	*/
-		UPDATE IDEA_INFO
-		SET
-			DELETE_DT = SYSDATE
-		WHERE 1=1
-			AND IDEA_CD=#{ideaCd}
-			AND YEAR=#{year}
-			AND CREATE_DT=#{createDt}
-
-	</update>
-
-	<update id="updateData" parameterType="ideaReviewVO">
-		/*	IDEA+검토 수정	system.menu.ideaReview.updateData	*/
-		UPDATE IDEA_INFO
-		SET
-		    EVAL_STATE=#{evalState},
-			UPDATE_DT=SYSDATE,
-		    STATE=#{state},
-			START_DT=TO_DATE(#{startDt},'YYYY-MM-DD'),
- 			END_DT=TO_DATE(#{endDt},'YYYY-MM-DD')
-		WHERE 1=1
-			AND IDEA_CD=#{ideaCd}
-			AND YEAR=#{findYear}
-
-	</update>
+    <update id="updateData" parameterType="ideaReviewVO">
+        /*	IDEA+검토 수정	system.menu.ideaReview.updateData	*/
+        UPDATE IDEA_INFO
+        SET
+            EVAL_STATE=#{evalState},
+            UPDATE_DT=SYSDATE,
+            STATE=#{state},
+            START_DT=TO_DATE(#{startDt}, 'YYYY-MM-DD'),
+            END_DT=TO_DATE(#{endDt}, 'YYYY-MM-DD')
+        WHERE 1 = 1
+			AND IDEA_CD = #{ideaCd}
+			AND YEAR = #{findYear}
+    </update>
 </mapper>
 

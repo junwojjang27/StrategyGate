@@ -47,6 +47,41 @@ public class IdeaSingleController extends BaseController {
 		return makeGridJsonData(dataList, dataList.size(), searchVO);
 	}
 
+	//excelDownload
+	/**
+	 * 엑셀양식다운로드
+	 * @param	IdeaSingleVO searchVO
+	 * @param	Model model
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/ideaSingle/excelDownload.do")
+	public String excelDownload(@ModelAttribute("searchVO") IdeaSingleVO searchVO, Model model) throws Exception {
+
+		List<IdeaSingleVO> dataList = ideaSingleService.selectExcelList(searchVO);
+
+		// 타이틀
+		model.addAttribute("ideaSingleManage", egovMessageSource.getMessage("word.ideaSingleManage"));
+		// 검색조건
+		model.addAttribute("year", egovMessageSource.getMessage("word.year"));
+		model.addAttribute("findYear", searchVO.getFindYear());
+		// header
+		model.addAttribute("category", egovMessageSource.getMessage("word.category"));
+		model.addAttribute("title", egovMessageSource.getMessage("word.title"));
+		model.addAttribute("content", egovMessageSource.getMessage("word.content"));
+		model.addAttribute("userNm", egovMessageSource.getMessage("word.insertUser"));
+		model.addAttribute("deptNm", egovMessageSource.getMessage("word.deptNm"));
+		model.addAttribute("state", egovMessageSource.getMessage("word.progressStatus"));
+		model.addAttribute("createDt", egovMessageSource.getMessage("word.createDT"));
+		// 조직 데이터
+		model.addAttribute("dataList", dataList);
+		// 시트명
+		model.addAttribute("sheetName", egovMessageSource.getMessage("word.ideaSingleNm"));
+		model.addAttribute("destJxlsFileName", egovMessageSource.getMessage("word.ideaSingleNm") + "_" + EgovStringUtil.getTimeStamp()+".xlsx");
+		model.addAttribute("templateJxlsFileName", "ideaSingleList.xlsx");
+		return "excelDownloadView";
+	}
+
 	/**
 	 * 간단 IDEA+ 조회
 	 * @param	IdeaSingleVO searchVO

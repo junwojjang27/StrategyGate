@@ -1,101 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="system.menu.ideaUs">
-	<select id="selectList" parameterType="ideaUsVO" resultType="ideaUsVO">
-		/*	혁신 IDEA+ 조회	system.menu.ideaUs.selectList */
-		SELECT
-		A.IDEA_CD,
-		A.YEAR,
-		A.USER_ID,
-		CA.CODE_NM AS CATEGORY,
-		A.TITLE,
-		A.CONTENT,
-		<!--A.STATE,-->
-		CB.CODE_NM AS STATE,
-		<!--CREATE_DT,-->
-		TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
-		A.UPDATE_DT,
-		A.DELETE_DT,
-		A.START_DT,
-		A.END_DT,
-		A.ATCH_FILE_ID,
-		A.IDEA_GBN_CD,
-		A.DEGREE,
-		A.EVAL_STATE,
-		B.USER_NM,
-		B.DEPT_NM
-		FROM IDEA_INFO A
-		LEFT JOIN V_ROLE_USER B
-		ON A.USER_ID = B.USER_ID
-		<include refid="common.func.getCodeJoin">	<!--카테고리 코드를 해당하는 문자로 변경-->
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'385'"/>
-			<property name="pAlias" value="CA"/>
-			<property name="pCompareColumn" value="A.CATEGORY"/>
-		</include>
-		<include refid="common.func.getCodeJoin">	<!--상태 코드를 해당하는 문자로 변경-->
-			<property name="pYear" value="#{findYear}"/>
-			<property name="pCodeGrpId" value="'390'"/>
-			<property name="pAlias" value="CB"/>
-			<property name="pCompareColumn" value="A.STATE"/>
-		</include>
-		WHERE A.IDEA_GBN_CD ='002' <!--혁신제안만 조회-->
-		<if test='findUseYn != null and findUseYn == "Y"'>
-			AND A.DELETE_DT IS NULL
-		</if>
-		<if test='findUseYn != null and findUseYn == "N"'>
-			AND A.DELETE_DT IS NOT NULL
-		</if>
-		<if test='colName == "title"'> <!--검색조건이 제목일 떄 title에 searchKeyword가 포함된 경우-->
-			AND UPPER(A.TITLE) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
-		</if>
-		<if test='colName == "userNm"'> <!--검색조건이 등록자일 때 userNm에 searchKeyword가 포함된 경우-->
-			AND UPPER(B.USER_NM) LIKE  '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
-		</if>
-		AND A.YEAR = #{findYear}	<!--년도가 같을 때-->
-		<if test='findCategory != null and findCategory != ""'>
-			AND A.CATEGORY = #{findCategory}
-		</if>
-		ORDER BY	A.CREATE_DT DESC	<!--생성날짜를 기준으로 내림차순 정렬-->
-	</select>
-
-	<select id="selectDetail" parameterType="ideaUsVO" resultType="ideaUsVO">
-		/*	혁신 IDEA+ 상세 조회	 	system.menu.ideaUs.selectDetail	*/
-		SELECT
-			A.CATEGORY,
+    <select id="selectList" parameterType="ideaUsVO" resultType="ideaUsVO">
+        /* 혁신 IDEA+ 조회 system.menu.ideaUs.selectList */
+        SELECT
+			A.IDEA_CD,
+			A.YEAR,
+			A.USER_ID,
+			CA.CODE_NM AS CATEGORY,
 			A.TITLE,
 			A.CONTENT,
-		    A.STATE,
-			A.ATCH_FILE_ID AS ATCH_FILE_KEY,
+			<!--A.STATE,-->
+			CB.CODE_NM AS STATE,
+			<!--CREATE_DT,-->
+			TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
+			A.UPDATE_DT,
+			A.DELETE_DT,
+			A.START_DT,
+			A.END_DT,
+			A.ATCH_FILE_ID,
+			A.IDEA_GBN_CD,
+			A.DEGREE,
+			A.EVAL_STATE,
 			B.USER_NM,
 			B.DEPT_NM
-		FROM IDEA_INFO A
-				 LEFT JOIN V_ROLE_USER B
-						   ON A.USER_ID = B.USER_ID
-		WHERE A.IDEA_CD=#{ideaCd}
-		  AND A.YEAR=#{findYear}
+        FROM IDEA_INFO A
+			LEFT JOIN V_ROLE_USER B
+				ON A.USER_ID = B.USER_ID
+					<include refid="common.func.getCodeJoin">    <!--카테고리 코드를 해당하는 문자로 변경-->
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'385'"/>
+						<property name="pAlias" value="CA"/>
+						<property name="pCompareColumn" value="A.CATEGORY"/>
+					</include>
+					<include refid="common.func.getCodeJoin">    <!--상태 코드를 해당하는 문자로 변경-->
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'390'"/>
+						<property name="pAlias" value="CB"/>
+						<property name="pCompareColumn" value="A.STATE"/>
+					</include>
+        WHERE A.IDEA_GBN_CD ='002' <!--혁신제안만 조회-->
+			<if test='findUseYn != null and findUseYn == "Y"'>
+				AND A.DELETE_DT IS NULL
+			</if>
+			<if test='findUseYn != null and findUseYn == "N"'>
+				AND A.DELETE_DT IS NOT NULL
+			</if>
+			<if test='colName == "title"'> <!--검색조건이 제목일 떄 title에 searchKeyword가 포함된 경우-->
+				AND UPPER(A.TITLE) LIKE '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
+			</if>
+			<if test='colName == "userNm"'> <!--검색조건이 등록자일 때 userNm에 searchKeyword가 포함된 경우-->
+				AND UPPER(B.USER_NM) LIKE '%' || TRIM(UPPER(#{searchKeyword})) ||'%'
+			</if>
+			AND A.YEAR = #{findYear}    <!--년도가 같을 때-->
+			<if test='findCategory != null and findCategory != ""'>
+				AND A.CATEGORY = #{findCategory}
+			</if>
+        ORDER BY A.CREATE_DT DESC    <!--생성날짜를 기준으로 내림차순 정렬-->
+    </select>
 
-	</select>
+    <select id="selectDetail" parameterType="ideaUsVO" resultType="ideaUsVO">
+        /*	혁신 IDEA+ 상세 조회	 	system.menu.ideaUs.selectDetail	*/
+        SELECT
+               A.CATEGORY,
+               A.TITLE,
+               A.CONTENT,
+               A.STATE,
+               A.ATCH_FILE_ID AS ATCH_FILE_KEY,
+               B.USER_NM,
+               B.DEPT_NM
+        FROM IDEA_INFO A
+                 LEFT JOIN V_ROLE_USER B
+                           ON A.USER_ID = B.USER_ID
+        WHERE A.IDEA_CD = #{ideaCd}
+          AND A.YEAR = #{findYear}
+    </select>
 
 
+    <update id="deleteIdeaUs" parameterType="ideaUsVO">
+        /* 혁신 IDEA+ 삭제 system.menu.ideaUs.deleteIdeaUs */
+        UPDATE IDEA_INFO A
+        SET
+        	A.DELETE_DT = SYSDATE
+        WHERE 1=1
+			AND A.IDEA_CD IN
+			<foreach collection="keys" item="key" open="(" close=")" separator=",">
+				#{key}
+			</foreach>
+			AND A.YEAR=#{findYear}
+    </update>
 
-	<update id="deleteIdeaUs" parameterType="ideaUsVO">
-		/*	혁신 IDEA+ 삭제	system.menu.ideaUs.deleteIdeaUs	*/
-		UPDATE IDEA_INFO A
-		SET
-		A.DELETE_DT = SYSDATE
-		WHERE 1=1
-		AND A.IDEA_CD IN
-		<foreach collection="keys" item="key" open="(" close=")" separator=",">
-			#{key}
-		</foreach>
-		AND A.YEAR=#{findYear}
-
-	</update>
-
-	<insert id="insertData" parameterType="ideaUsVO">
-		/*	혁신 IDEA+ 저장	system.menu.ideaUs.insertData	*/
-		INSERT INTO IDEA_INFO(
+    <insert id="insertData" parameterType="ideaUsVO">
+        /* 혁신 IDEA+ 저장 system.menu.ideaUs.insertData */
+        INSERT INTO IDEA_INFO(
 			IDEA_CD,
 			YEAR,
 			USER_ID,
@@ -112,38 +109,38 @@
 			IDEA_GBN_CD,
 			DEGREE,
 			EVAL_STATE)
-		VALUES (
-				   #{ideaCd},
-				   #{year},
-				   #{userId},
-				   #{category},
-				   #{title},
+        VALUES (
+			#{ideaCd},
+			#{year},
+			#{userId},
+			#{category},
+			#{title},
 
-				   #{content},
-				   #{state},
-				   SYSDATE,
-				   #{updateDt},
-				   CASE WHEN #{useYn} = 'Y' THEN NULL ELSE SYSDATE END, 	<!--미사용으로 생성시 현재시각으로-->
-				   #{startDt},
-				   #{endDt},
-				   #{atchFileId},
-				   #{ideaGbnCd},
-				   #{degree},
-				   #{evalState})
-	</insert>
+			#{content},
+			#{state},
+			SYSDATE,
+			#{updateDt},
+			CASE WHEN #{useYn} = 'Y' THEN NULL ELSE SYSDATE END,    <!--미사용으로 생성시 현재시각으로-->
+			#{startDt},
+			#{endDt},
+			#{atchFileId},
+			#{ideaGbnCd},
+			#{degree},
+			#{evalState})
+    </insert>
 
-	<update id="updateData" parameterType="ideaUsVO">
-		/*	혁신 IDEA+ 수정	system.menu.ideaUs.updateData	*/
-		UPDATE IDEA_INFO A
-		SET
-			A.CATEGORY=#{category},
-			A.TITLE=#{title},
-			A.CONTENT=#{content},
-			A.UPDATE_DT=SYSDATE,
-			A.ATCH_FILE_ID=#{atchFileId},
-			A.DELETE_DT=CASE WHEN #{useYn}='Y' THEN NULL ELSE SYSDATE END
-		WHERE 1=1
-		  AND A.IDEA_CD=#{ideaCd}
-		  AND A.YEAR=#{findYear}
-	</update>
+    <update id="updateData" parameterType="ideaUsVO">
+        /*	혁신 IDEA+ 수정	system.menu.ideaUs.updateData	*/
+        UPDATE IDEA_INFO A
+        SET
+            A.CATEGORY=#{category},
+            A.TITLE=#{title},
+            A.CONTENT=#{content},
+            A.UPDATE_DT=SYSDATE,
+            A.ATCH_FILE_ID=#{atchFileId},
+            A.DELETE_DT=CASE WHEN #{useYn} = 'Y' THEN NULL ELSE SYSDATE END
+        WHERE 1 = 1
+          AND A.IDEA_CD = #{ideaCd}
+          AND A.YEAR = #{findYear}
+    </update>
 </mapper>

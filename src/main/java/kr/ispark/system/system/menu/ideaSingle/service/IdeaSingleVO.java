@@ -23,9 +23,6 @@ public class IdeaSingleVO extends CommonVO {
 	private String ideaCd;
 	private String userId;
 	private String category;
-
-	private String findCategory;
-
 	private String title;
 	private String content;
 	private String state;
@@ -39,15 +36,12 @@ public class IdeaSingleVO extends CommonVO {
 	private String degree;
 	private String evalState;
 
+	private String findCategory;
 	private String searchKeyword;
-
 	private String findSearch;
-
 	private String colName;
-
 	private String userNm;
 	private String deptNm;
-
 	private String categoryNm;
 	
 	private List<IdeaSingleVO> gridDataList;	//위는 하나하나씩 사용(ex 수정), 이건 통채로 한번에 사용(ex 삭제)

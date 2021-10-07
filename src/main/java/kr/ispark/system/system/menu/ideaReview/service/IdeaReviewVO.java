@@ -37,23 +37,18 @@ public class IdeaReviewVO extends CommonVO {
 	private String evalState;
 
 	private String modifyYn;
-
-
-	private String atchFileKey;
-
-	private String ideaExecutionCd;
-	private String result;
-	private String excutionDt;
-
 	private String searchKeyword;
 	private String findState;
 	private String findDegree;
 	private String findEvalState;
-
 	private String userNm;
 	private String deptNm;
+	private String atchFileKey;
 
-	
+//	private String ideaExecutionCd;
+//	private String result;
+//	private String excutionDt;
+
 	private List<IdeaReviewVO> gridDataList;
 }
 

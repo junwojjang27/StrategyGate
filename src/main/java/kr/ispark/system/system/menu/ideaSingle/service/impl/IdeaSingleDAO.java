@@ -3,6 +3,7 @@ package kr.ispark.system.system.menu.ideaSingle.service.impl;
 
 import java.util.List;
 
+import kr.ispark.common.system.service.ScDeptVO;
 import org.springframework.stereotype.Repository;
 
 import egovframework.com.cmm.service.impl.EgovComAbstractDAO;
@@ -19,6 +20,15 @@ public class IdeaSingleDAO extends EgovComAbstractDAO {
 	public List<IdeaSingleVO> selectList(IdeaSingleVO searchVO) throws Exception {
 		return selectList("system.menu.ideaSingle.selectList", searchVO);
 	}
+
+	/**
+	 * 간단 IDEA+ 엑셀용 조회
+	 */
+	public List<IdeaSingleVO> selectExcelList(IdeaSingleVO searchVO) throws Exception {
+		System.out.println("searchVO : " + searchVO);
+		return selectList("system.menu.ideaSingle.selectExcelList", searchVO);
+	}
+
 
 	/**
 	 * 간단 IDEA+ 상세 조회

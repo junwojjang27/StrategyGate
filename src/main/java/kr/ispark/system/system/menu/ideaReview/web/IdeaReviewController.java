@@ -67,38 +67,7 @@ public class IdeaReviewController extends BaseController {
 	public ModelAndView selectDetail(@ModelAttribute("searchVO") IdeaReviewVO searchVO) throws Exception {
 		return makeJsonData(ideaReviewService.selectDetail(searchVO));
 	}
-	
-	/**
-	 * IDEA+검토 정렬순서저장
-	 * @param	IdeaReviewVO dataVO
-	 * @param	Model model
-	 * @param	BindingResult bindingResult
-	 * @return	ModelAndView
-	 * @throws	Exception
-	 */
-	@RequestMapping("/system/system/menu/ideaReview/saveSortOrder.do")
-	public ModelAndView saveSortOrder(@ModelAttribute("dataVO") IdeaReviewVO dataVO, Model model, BindingResult bindingResult) throws Exception {
-		// list 유효성 체크
-		validateList(dataVO.getGridDataList(), bindingResult);
-		if(bindingResult.hasErrors()) {
-			return makeFailJsonData(getListErrorMsg(bindingResult));
-		}
-		
-		return makeJsonDataByResultCnt(ideaReviewService.updateSortOrder(dataVO));
-	}
-	
-	/**
-	 * IDEA+검토 삭제
-	 * @param	IdeaReviewVO dataVO
-	 * @param	Model model
-	 * @return	ModelAndView
-	 * @throws	Exception
-	 */
-	@RequestMapping("/system/system/menu/ideaReview/deleteIdeaReview.do")
-	public ModelAndView deleteIdeaReview(@ModelAttribute("dataVO") IdeaReviewVO dataVO, Model model) throws Exception {
-		return makeJsonDataByResultCnt(ideaReviewService.deleteIdeaReview(dataVO));
-	}
-	
+
 	/**
 	 * IDEA+검토 저장
 	 * @param	IdeaReviewVO dataVO
@@ -113,23 +82,20 @@ public class IdeaReviewController extends BaseController {
 		if(bindingResult.hasErrors()){
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
-		System.out.println("저장 : 컨트롤러");
 
 		int resultCnt = ideaReviewService.saveData(dataVO);
 		if(resultCnt == 0) {
 			return makeFailJsonData();
 		}
-
-		System.out.println("저장 : 컨트롤러 성공");
-
 		return makeSuccessJsonData();
 	}
 
+	/**
+	 * IDEA+검토 첨부파일
+	 */
 	@RequestMapping("/system/system/menu/ideaReview/ideaReviewDetail.do")
 	public String getAtchFileForm(@ModelAttribute("searchVO") IdeaReviewVO ideaReviewVO, Model model) {
 		//model.addAttribute("searchVO",IdeaUsVO);
-		System.out.println("첨부파일 : 컨트롤러");
-		System.out.println("!!!!!!!!!!searchVO : "+ideaReviewVO);
 		return "/system/system/menu/ideaReview/ideaReviewAtchFileForm";
 	}
 }

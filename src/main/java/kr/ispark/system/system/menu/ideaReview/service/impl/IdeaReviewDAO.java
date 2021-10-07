@@ -39,37 +39,6 @@ public class IdeaReviewDAO extends EgovComAbstractDAO {
 	public IdeaReviewVO selectDetail(IdeaReviewVO searchVO) throws Exception {
 		return (IdeaReviewVO)selectOne("system.menu.ideaReview.selectDetail", searchVO);
 	}
-	
-	/**
-	 * IDEA+검토 정렬순서저장
-	 * @param	IdeaReviewVO searchVO
-	 * @return	int
-	 * @throws	Exception
-	 */
-	public int updateSortOrder(IdeaReviewVO searchVO) throws Exception {
-		return update("system.menu.ideaReview.updateSortOrder", searchVO);
-	}
-
-	/**
-	 * IDEA+검토 삭제
-	 * @param	IdeaReviewVO searchVO
-	 * @return	int
-	 * @throws	Exception
-	 */
-	public int deleteIdeaReview(IdeaReviewVO searchVO) throws Exception {
-		return update("system.menu.ideaReview.deleteIdeaReview", searchVO);
-	}
-	
-	/**
-	 * IDEA+검토 저장
-	 * @param	IdeaReviewVO searchVO
-	 * @return	int
-	 * @throws	Exception
-	 */
-	public int insertData(IdeaReviewVO searchVO) throws Exception {
-		System.out.println("저장 : DAO-insert");
-		return update("system.menu.ideaReview.insertData", searchVO);
-	}
 
 	/**
 	 * IDEA+검토 수정
@@ -78,8 +47,6 @@ public class IdeaReviewDAO extends EgovComAbstractDAO {
 	 * @throws	Exception
 	 */
 	public int updateData(IdeaReviewVO searchVO) throws Exception {
-		System.out.println("저장 : DAO-update");
-		System.out.println("!!!!!!!!!!searchVO : "+searchVO);
 		return update("system.menu.ideaReview.updateData", searchVO);
 	}
 }

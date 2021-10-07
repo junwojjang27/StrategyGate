@@ -112,7 +112,6 @@ public class IdeaUsController extends BaseController {
 		//return makeJsonDataByResultCnt(ideaUsService.deleteIdeaUs(dataVO));
 	}
 
-
 	/**
 	 * 혁신 IDEA+ 저장
 	 * @param	IdeaUsVO dataVO
@@ -185,8 +184,6 @@ public class IdeaUsController extends BaseController {
 				EgovFileTool.deletePath(fileVO.getFileStreCours()+fileVO.getStreFileNm());
 			}
 		}
-
-
 		resultHandling(true, multiRequest, response, dataVO);
 	}
 
