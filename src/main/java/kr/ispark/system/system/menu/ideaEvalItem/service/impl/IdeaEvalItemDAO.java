@@ -13,6 +13,7 @@ package kr.ispark.system.system.menu.ideaEvalItem.service.impl;
 
 import java.util.List;
 
+import kr.ispark.system.system.menu.ideaSingle.service.IdeaSingleVO;
 import org.springframework.stereotype.Repository;
 
 import egovframework.com.cmm.service.impl.EgovComAbstractDAO;
@@ -29,7 +30,15 @@ public class IdeaEvalItemDAO extends EgovComAbstractDAO {
 	public List<IdeaEvalItemVO> selectList(IdeaEvalItemVO searchVO) throws Exception {
 		return selectList("system.menu.ideaEvalItem.selectList", searchVO);
 	}
-	
+
+	/**
+	 * 간단 IDEA+ 엑셀용 조회
+	 */
+	public List<IdeaEvalItemVO> selectExcelList(IdeaEvalItemVO searchVO) throws Exception {
+		System.out.println("searchVO : " + searchVO);
+		return selectList("system.menu.ideaEvalItem.selectExcelList", searchVO);
+	}
+
 	/**
 	 * 평가항목관리 상세 조회
 	 * @param	IdeaEvalItemVO searchVO

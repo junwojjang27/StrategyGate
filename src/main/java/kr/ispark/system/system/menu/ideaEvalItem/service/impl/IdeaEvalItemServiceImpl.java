@@ -15,6 +15,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import kr.ispark.bsc.base.strategy.perspective.service.PerspectiveVO;
+import kr.ispark.system.system.menu.ideaSingle.service.IdeaSingleVO;
 import org.springframework.stereotype.Service;
 
 import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
@@ -53,6 +54,16 @@ public class IdeaEvalItemServiceImpl extends EgovAbstractServiceImpl {
 			resultCnt += ideaEvalItemDAO.updateSortOrder(paramVO);
 		}
 		return resultCnt;
+	}
+
+	/**
+	 * 간단 IDEA+ 엑셀용 조회
+	 * @param searchVO
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IdeaEvalItemVO> selectExcelList(IdeaEvalItemVO searchVO) throws Exception {
+		return ideaEvalItemDAO.selectExcelList(searchVO);
 	}
 	
 	/**

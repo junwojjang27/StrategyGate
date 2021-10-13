@@ -120,7 +120,7 @@ function addComma(val) {
 function removeComma(val) {
 	return val.split(",").join("");
 }
-
+												/********************************************/
 function getNumberFormat(val, decimal, removeZero) {
 	if(isEmpty(val)) return "";
 	if(isEmpty(decimal)){decimal = DECIMAL_SCALE;}
@@ -136,7 +136,7 @@ function getNumberFormat(val, decimal, removeZero) {
 	var arr = result.toString().split(".");
 	arr[0] = arr[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-	return arr.join(".");;
+	return arr.join(".");
 }
 
 // 소수점 이하 0 제거

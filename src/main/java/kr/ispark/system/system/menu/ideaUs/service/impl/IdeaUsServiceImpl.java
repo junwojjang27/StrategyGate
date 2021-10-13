@@ -11,6 +11,7 @@ import kr.ispark.bsc.system.system.notice.service.NoticeVO;
 import kr.ispark.common.security.service.UserVO;
 import kr.ispark.common.util.CustomEgovFileMngUtil;
 import kr.ispark.common.util.SessionUtil;
+import kr.ispark.system.system.menu.ideaSingle.service.IdeaSingleVO;
 import org.springframework.stereotype.Service;
 
 import egovframework.rte.fdl.cmmn.EgovAbstractServiceImpl;
@@ -41,6 +42,16 @@ public class IdeaUsServiceImpl extends EgovAbstractServiceImpl {
 	 */
 	public List<IdeaUsVO> selectList(IdeaUsVO searchVO) throws Exception {
 		return ideaUsDAO.selectList(searchVO);
+	}
+
+	/**
+	 * 간단 IDEA+ 엑셀용 조회
+	 * @param searchVO
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IdeaUsVO> selectExcelList(IdeaUsVO searchVO) throws Exception {
+		return ideaUsDAO.selectExcelList(searchVO);
 	}
 
 	/**

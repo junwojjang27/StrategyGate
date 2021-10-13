@@ -12,6 +12,7 @@ package kr.ispark.system.system.menu.ideaEvalItem.web;
 
 import java.util.List;
 
+import kr.ispark.system.system.menu.ideaSingle.service.IdeaSingleVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -53,6 +54,41 @@ public class IdeaEvalItemController extends BaseController {
 	public ModelAndView ideaEvalItemList_json(@ModelAttribute("searchVO") IdeaEvalItemVO searchVO) throws Exception {
 		List<IdeaEvalItemVO> dataList = ideaEvalItemService.selectList(searchVO);
 		return makeGridJsonData(dataList, dataList.size(), searchVO);
+	}
+
+	//excelDownload
+	/**
+	 * 엑셀양식다운로드
+	 * @param	IdeaEvalItemVO searchVO
+	 * @param	Model model
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/ideaEvalItem/excelDownload.do")
+	public String excelDownload(@ModelAttribute("searchVO") IdeaEvalItemVO searchVO, Model model) throws Exception {
+
+		List<IdeaEvalItemVO> dataList = ideaEvalItemService.selectExcelList(searchVO);
+
+		// 타이틀
+		model.addAttribute("ideaEvalItemManage", egovMessageSource.getMessage("word.ideaEvalItemManage"));
+		// 검색조건
+//		model.addAttribute("year", egovMessageSource.getMessage("word.year"));
+//		model.addAttribute("findYear", searchVO.getFindYear());
+		// header
+		model.addAttribute("year", egovMessageSource.getMessage("word.year"));
+		model.addAttribute("evalDegreeId", egovMessageSource.getMessage("word.evalDegreeId"));
+		model.addAttribute("deleteDt", egovMessageSource.getMessage("word.deleteDT"));
+		model.addAttribute("evalItemTitle", egovMessageSource.getMessage("word.evalItemTitle"));
+		model.addAttribute("evalItemContent", egovMessageSource.getMessage("word.evalItemContent"));
+		model.addAttribute("weightId", egovMessageSource.getMessage("word.weightId"));
+		model.addAttribute("particalTypeId", egovMessageSource.getMessage("word.particalTypeId"));
+		// 조직 데이터
+		model.addAttribute("dataList", dataList);
+		// 시트명
+		model.addAttribute("sheetName", egovMessageSource.getMessage("word.ideaEvalItemNm"));
+		model.addAttribute("destJxlsFileName", egovMessageSource.getMessage("word.ideaEvalItemNm") + "_" + EgovStringUtil.getTimeStamp()+".xlsx");
+		model.addAttribute("templateJxlsFileName", "ideaEvalItemList.xlsx");
+		return "excelDownloadView";
 	}
 
 	/**

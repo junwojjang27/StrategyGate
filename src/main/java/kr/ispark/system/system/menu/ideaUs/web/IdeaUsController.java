@@ -10,6 +10,7 @@ import kr.ispark.common.util.CommonUtil;
 import kr.ispark.common.util.CustomEgovFileMngUtil;
 import kr.ispark.common.util.PropertyUtil;
 import kr.ispark.common.util.SessionUtil;
+import kr.ispark.system.system.menu.ideaSingle.service.IdeaSingleVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -60,6 +61,42 @@ public class IdeaUsController extends BaseController {
 	public ModelAndView ideaUsList_json(@ModelAttribute("searchVO") IdeaUsVO searchVO) throws Exception {
 		List<IdeaUsVO> dataList = ideaUsService.selectList(searchVO);
 		return makeGridJsonData(dataList, dataList.size(), searchVO);
+	}
+
+	//excelDownload
+	/**
+	 * 엑셀양식다운로드
+	 * @param	IdeaUsVO searchVO
+	 * @param	Model model
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/ideaUs/excelDownload.do")
+	public String excelDownload(@ModelAttribute("searchVO") IdeaUsVO searchVO, Model model) throws Exception {
+
+		List<IdeaUsVO> dataList = ideaUsService.selectExcelList(searchVO);
+
+		// 타이틀
+		model.addAttribute("ideaUsManage", egovMessageSource.getMessage("word.ideaUsManage"));
+		// 검색조건
+		model.addAttribute("year", egovMessageSource.getMessage("word.year"));
+		model.addAttribute("findYear", searchVO.getFindYear());
+		// header
+		model.addAttribute("category", egovMessageSource.getMessage("word.category"));
+		model.addAttribute("title", egovMessageSource.getMessage("word.title"));
+		model.addAttribute("content", egovMessageSource.getMessage("word.content"));
+		model.addAttribute("atchFile", egovMessageSource.getMessage("word.atchFile"));
+		model.addAttribute("userNm", egovMessageSource.getMessage("word.insertUser"));
+		model.addAttribute("deptNm", egovMessageSource.getMessage("word.deptNm"));
+		model.addAttribute("state", egovMessageSource.getMessage("word.progressStatus"));
+		model.addAttribute("createDt", egovMessageSource.getMessage("word.createDT"));
+		// 조직 데이터
+		model.addAttribute("dataList", dataList);
+		// 시트명
+		model.addAttribute("sheetName", egovMessageSource.getMessage("word.ideaUsNm"));
+		model.addAttribute("destJxlsFileName", egovMessageSource.getMessage("word.ideaUsNm") + "_" + EgovStringUtil.getTimeStamp()+".xlsx");
+		model.addAttribute("templateJxlsFileName", "ideaUsList.xlsx");
+		return "excelDownloadView";
 	}
 
 	/**

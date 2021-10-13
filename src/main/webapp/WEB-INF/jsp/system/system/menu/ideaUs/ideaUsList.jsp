@@ -64,6 +64,13 @@
         });
     });
 
+    // 엑셀 다운로드
+    function excelDownload() {
+        var f = document.form;
+        f.action = "${context_path}/system/system/menu/ideaUs/excelDownload.do";
+        f.submit();
+    }
+
     // 목록 조회
     function searchList() {
         $("#newForm").hide();
@@ -338,7 +345,10 @@
         </ul>
         <a href="#" class="btn-sch" onclick="searchList();return false;"><spring:message code="button.search"/></a>
     </div>
-    <div class="btn-dw"></div>
+    <div class="btn-dw">
+        <a href="#" class="excel" onclick="excelDownload();return false;"><span><spring:message
+                code="button.excelDownload"/></span></a>
+    </div>
     <div class="gridContainer">
         <table id="list"></table>
         <div id="pager"></div>

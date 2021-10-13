@@ -7,7 +7,7 @@
 	<formset>
 		<form name="ideaEvalVO">
 			<field property="ideaCd" depends="maxlength">
-				<arg0 key="제안번호" resource="true"/>
+				<arg0 key="제안코드" resource="true"/>
 				<arg1 key="7" resource="false"/>
 				<var>
 					<var-name>maxlength</var-name>
@@ -47,7 +47,7 @@
 				</var>
 			</field>
 			<field property="state" depends="maxlength">
-				<arg0 key="진행상태(대기/진행/완료)" resource="true"/>
+				<arg0 key="상태(접수/승인/반려)" resource="true"/>
 				<arg1 key="20" resource="false"/>
 				<var>
 					<var-name>maxlength</var-name>
@@ -78,6 +78,22 @@
 					<var-value>7</var-value>
 				</var>
 			</field>
+			<field property="startDt" depends="maxlength">
+				<arg0 key="평가시작일자" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="endDt" depends="maxlength">
+				<arg0 key="평가종료일자" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
 			<field property="atchFileId" depends="maxlength">
 				<arg0 key="첨부파일ID" resource="true"/>
 				<arg1 key="20" resource="false"/>
@@ -87,27 +103,27 @@
 				</var>
 			</field>
 			<field property="ideaGbnCd" depends="maxlength">
-				<arg0 key="제안구분코드" resource="true"/>
+				<arg0 key="평가구분코드" resource="true"/>
 				<arg1 key="20" resource="false"/>
 				<var>
 					<var-name>maxlength</var-name>
 					<var-value>20</var-value>
 				</var>
 			</field>
-			<field property="startDt" depends="maxlength">
-				<arg0 key="평가시작일" resource="true"/>
-				<arg1 key="7" resource="false"/>
+			<field property="degree" depends="maxlength">
+				<arg0 key="차수" resource="true"/>
+				<arg1 key="20" resource="false"/>
 				<var>
 					<var-name>maxlength</var-name>
-					<var-value>7</var-value>
+					<var-value>20</var-value>
 				</var>
 			</field>
-			<field property="endDt" depends="maxlength">
-				<arg0 key="평가종료일" resource="true"/>
-				<arg1 key="7" resource="false"/>
+			<field property="evalState" depends="maxlength">
+				<arg0 key="평가상태(대기/진행/종료)" resource="true"/>
+				<arg1 key="20" resource="false"/>
 				<var>
 					<var-name>maxlength</var-name>
-					<var-value>7</var-value>
+					<var-value>20</var-value>
 				</var>
 			</field>
 

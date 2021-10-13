@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.menu.ideaEval">
+	<select id="selectList" parameterType="ideaEvalVO" resultType="ideaEvalVO">
+		/*	평가하기 조회	system.menu.ideaEval.selectList */
+		SELECT
+			A.IDEA_CD,
+			A.YEAR,
+			A.USER_ID,
+			CA.CODE_NM AS CATEGORY,
+			A.TITLE,
+			A.CONTENT,
+			CB.CODE_NM AS STATE,
+			A.CREATE_DT,
+			A.UPDATE_DT,
+			A.DELETE_DT,
+			TO_CHAR(A.START_DT, 'YYYY.MM.DD') AS START_DT,
+			TO_CHAR(A.END_DT, 'YYYY.MM.DD') AS END_DT,
+			A.ATCH_FILE_ID,
+			CC.CODE_NM AS IDEA_GBN_CD,
+			CD.CODE_NM AS DEGREE,
+			CE.CODE_NM AS EVAL_STATE,
+		    B.USER_NM
+		FROM IDEA_INFO A
+			LEFT JOIN V_ROLE_USER B
+				ON A.USER_ID = B.USER_ID
+					<include refid="common.func.getCodeJoin">
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'385'"/>
+						<property name="pAlias" value="CA"/>
+						<property name="pCompareColumn" value="A.CATEGORY"/>
+					</include>
+					<include refid="common.func.getCodeJoin">
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'390'"/>
+						<property name="pAlias" value="CB"/>
+						<property name="pCompareColumn" value="A.STATE"/>
+					</include>
+					<include refid="common.func.getCodeJoin">
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'389'"/>
+						<property name="pAlias" value="CC"/>
+						<property name="pCompareColumn" value="A.IDEA_GBN_CD"/>
+					</include>
+					<include refid="common.func.getCodeJoin">
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'387'"/>
+						<property name="pAlias" value="CD"/>
+						<property name="pCompareColumn" value="A.DEGREE"/>
+					</include>
+					<include refid="common.func.getCodeJoin">
+						<property name="pYear" value="#{findYear}"/>
+						<property name="pCodeGrpId" value="'391'"/>
+						<property name="pAlias" value="CE"/>
+						<property name="pCompareColumn" value="A.EVAL_STATE"/>
+					</include>
+		WHERE 1=1
+			AND A.EVAL_STATE='002'
+		ORDER BY A.END_DT, A.START_DT
+	</select>
+	
+	<select id="selectDetail" parameterType="ideaEvalVO" resultType="ideaEvalVO">
+		/*	평가하기 상세 조회	 	system.menu.ideaEval.selectDetail	*/
+		SELECT
+			IDEA_CD,
+			YEAR,
+			USER_ID,
+			CATEGORY,
+			TITLE,
+			CONTENT,
+			STATE,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			START_DT,
+			END_DT,
+			ATCH_FILE_ID,
+			IDEA_GBN_CD,
+			DEGREE,
+			EVAL_STATE
+		FROM IDEA_INFO
+		WHERE 1=1
+			AND IDEA_CD=#{ideaCd}
+			AND YEAR=#{year}
+			AND CREATE_DT=#{createDt}
+
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="ideaEvalVO">
+	    /*	평가하기 정렬순서저장	 ideaEval.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteIdeaEval" parameterType="ideaEvalVO">
+		/*	평가하기 삭제	system.menu.ideaEval.deleteIdeaEval	*/
+		UPDATE IDEA_INFO
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND IDEA_CD=#{ideaCd}
+			AND YEAR=#{year}
+			AND CREATE_DT=#{createDt}
+
+	</update>
+
+	<insert id="insertData" parameterType="ideaEvalVO">
+		/*	평가하기 저장	system.menu.ideaEval.insertData	*/
+		INSERT INTO IDEA_INFO(
+			IDEA_CD,
+			YEAR,
+			USER_ID,
+			CATEGORY,
+			TITLE,
+			CONTENT,
+			STATE,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			START_DT,
+			END_DT,
+			ATCH_FILE_ID,
+			IDEA_GBN_CD,
+			DEGREE,
+			EVAL_STATE)
+		
+VALUES (
+			#{ideaCd},
+			#{year},
+			#{userId},
+			#{category},
+			#{title},
+			#{content},
+			#{state},
+			#{createDt},
+			#{updateDt},
+			#{deleteDt},
+			#{startDt},
+			#{endDt},
+			#{atchFileId},
+			#{ideaGbnCd},
+			#{degree},
+			#{evalState})
+
+	</insert>
+
+	<update id="updateData" parameterType="ideaEvalVO">
+		/*	평가하기 수정	system.menu.ideaEval.updateData	*/
+		UPDATE IDEA_INFO
+		SET
+			USER_ID=#{userId},
+			CATEGORY=#{category},
+			TITLE=#{title},
+			CONTENT=#{content},
+			STATE=#{state},
+			UPDATE_DT=#{updateDt},
+			DELETE_DT=#{deleteDt},
+			START_DT=#{startDt},
+			END_DT=#{endDt},
+			ATCH_FILE_ID=#{atchFileId},
+			IDEA_GBN_CD=#{ideaGbnCd},
+			DEGREE=#{degree},
+			EVAL_STATE=#{evalState}
+		WHERE 1=1
+			AND IDEA_CD=#{ideaCd}
+			AND YEAR=#{year}
+			AND CREATE_DT=#{createDt}
+
+	</update>
+</mapper>
+

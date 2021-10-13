@@ -16,25 +16,22 @@
 			A.EVAL_ITEM_CONTENT
 		FROM IDEA_EVAL_ITEM A
 		WHERE A.YEAR = #{findYear}
-		<if test='findUseYn == null or findUseYn == "Y"'>
-			AND A.DELETE_DT IS NULL
-		</if>
-		<if test='findUseYn != null and findUseYn == "N"'>
-			AND A.DELETE_DT IS NOT NULL
-		</if>
-		<if test='findEvalDegreeId != null and findEvalDegreeId == "001"'>
-			AND A.EVAL_DEGREE_ID = '001'
-		</if>
-		<if test='findEvalDegreeId != null and findEvalDegreeId == "002"'>
-			AND A.EVAL_DEGREE_ID = '002'
-		</if>
-		<if test='findEvalDegreeId != null and findEvalDegreeId == "003"'>
-			AND A.EVAL_DEGREE_ID = '003'
-		</if>
-
-
-		ORDER BY	A.CREATE_DT DESC	<!--생성날짜를 기준으로 내림차순 정렬-->
-
+			<if test='findUseYn == null or findUseYn == "Y"'>
+				AND A.DELETE_DT IS NULL
+			</if>
+			<if test='findUseYn != null and findUseYn == "N"'>
+				AND A.DELETE_DT IS NOT NULL
+			</if>
+			<if test='findEvalDegreeId != null and findEvalDegreeId == "001"'>
+				AND A.EVAL_DEGREE_ID = '001'
+			</if>
+			<if test='findEvalDegreeId != null and findEvalDegreeId == "002"'>
+				AND A.EVAL_DEGREE_ID = '002'
+			</if>
+			<if test='findEvalDegreeId != null and findEvalDegreeId == "003"'>
+				AND A.EVAL_DEGREE_ID = '003'
+			</if>
+		ORDER BY	A.CREATE_DT ASC	<!--생성날짜를 기준으로 오름차순 정렬-->
 	</select>
 	
 	<select id="selectDetail" parameterType="ideaEvalItemVO" resultType="ideaEvalItemVO">
@@ -55,9 +52,39 @@
 			AND EVAL_ITEM_CD=#{evalItemCd}
 			AND YEAR=#{year}
 			AND EVAL_DEGREE_ID=#{evalDegreeId}
+	</select>
 
-	</select>	
-	
+	<select id="selectExcelList" parameterType="ideaEvalItemVO" resultType="ideaEvalItemVO">
+		/* 평가항목관리 엑셀용 조회 system.menu.ideaEvalItem.selectExcelList */
+		SELECT
+		A.EVAL_ITEM_CD,
+		A.YEAR,
+	    CA.CODE_NM AS EVAL_DEGREE_ID,
+		/*A.EVAL_DEGREE_ID,*/
+		A.EVAL_ITEM_TITLE,
+		CB.CODE_NM AS PARTICAL_TYPE_ID,
+		/*A.PARTICAL_TYPE_ID,*/
+		A.WEIGHT_ID,
+		TO_CHAR(A.CREATE_DT, 'YYYY.MM.DD') AS CREATE_DT,
+		A.UPDATE_DT,
+		TO_CHAR(A.DELETE_DT, 'YYYY.MM.DD') AS DELETE_DT,
+		A.EVAL_ITEM_CONTENT
+		FROM IDEA_EVAL_ITEM A
+			<include refid="common.func.getCodeJoin">    <!--평가차수 코드를 해당하는 문자로 변경-->
+				<property name="pYear" value="#{findYear}"/>
+				<property name="pCodeGrpId" value="'387'"/>
+				<property name="pAlias" value="CA"/>
+				<property name="pCompareColumn" value="A.EVAL_DEGREE_ID"/>
+			</include>
+			<include refid="common.func.getCodeJoin">    <!--평가자구분 코드를 해당하는 문자로 변경-->
+				<property name="pYear" value="#{findYear}"/>
+				<property name="pCodeGrpId" value="'386'"/>
+				<property name="pAlias" value="CB"/>
+				<property name="pCompareColumn" value="A.PARTICAL_TYPE_ID"/>
+			</include>
+		WHERE 1=1
+		ORDER BY	A.YEAR , A.EVAL_DEGREE_ID , A.DELETE_DT DESC, A.WEIGHT_ID DESC
+	</select>
 
 	<update id="updateSortOrder" parameterType="ideaEvalItemVO">
 	    /*	평가항목관리 정렬순서저장	 ideaEvalItem.updateSortOrder	*/
@@ -94,8 +121,7 @@
 			UPDATE_DT,
 			DELETE_DT,
 			EVAL_ITEM_CONTENT)
-		
-VALUES (
+		VALUES (
 			#{evalItemCd},
 			#{year},
 			#{evalDegreeId},
@@ -106,7 +132,6 @@ VALUES (
 			#{updateDt},
 			#{deleteDt},
 			#{evalItemContent})
-
 	</insert>
 
 	<update id="updateData" parameterType="ideaEvalItemVO">

@@ -59,7 +59,7 @@
 
 
     <select id="selectExcelList" parameterType="ideaSingleVO" resultType="ideaSingleVO">
-        /* 성과조직 조회 system.menu.ideaSingle.selectExcelList */
+        /* 간단제안 조회 system.menu.ideaSingle.selectExcelList */
         SELECT
 			A.IDEA_CD,
 			A.YEAR,
