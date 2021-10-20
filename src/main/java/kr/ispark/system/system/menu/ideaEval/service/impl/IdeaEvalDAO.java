@@ -29,6 +29,16 @@ public class IdeaEvalDAO extends EgovComAbstractDAO {
 	public List<IdeaEvalVO> selectList(IdeaEvalVO searchVO) throws Exception {
 		return selectList("system.menu.ideaEval.selectList", searchVO);
 	}
+
+	/**
+	 * 평가하기 > 평가항목 목록 조회
+	 * @param	IdeaEvalVO searchVO
+	 * @return	List<IdeaEvalVO>
+	 * @throws	Exception
+	 */
+	public List<IdeaEvalVO> selectItemList(IdeaEvalVO searchVO) throws Exception {
+		return selectList("system.menu.ideaEval.selectItemList", searchVO);
+	}
 	
 	/**
 	 * 평가하기 상세 조회
@@ -67,7 +77,9 @@ public class IdeaEvalDAO extends EgovComAbstractDAO {
 	 * @throws	Exception
 	 */
 	public int insertData(IdeaEvalVO searchVO) throws Exception {
-		return insert("system.menu.ideaEval.insertData", searchVO);
+		System.out.println("평가하기 (저장) : DAO");
+		System.out.println("searchVO : " + searchVO);
+		return update("system.menu.ideaEval.insertData", searchVO);
 	}
 
 	/**
@@ -77,7 +89,21 @@ public class IdeaEvalDAO extends EgovComAbstractDAO {
 	 * @throws	Exception
 	 */
 	public int updateData(IdeaEvalVO searchVO) throws Exception {
+		System.out.println("평가하기 (수정) : DAO");
+		System.out.println("searchVO : " + searchVO);
 		return update("system.menu.ideaEval.updateData", searchVO);
+	}
+
+	/**
+	 * 평가하기 제출
+	 * @param	IdeaEvalVO searchVO
+	 * @return	int
+	 * @throws	Exception
+	 */
+	public int submitData(IdeaEvalVO searchVO) throws Exception {
+		System.out.println("평가 제출하기 : DAO");
+		System.out.println("searchVO : " + searchVO);
+		return update("system.menu.ideaEval.submitData", searchVO);
 	}
 }
 

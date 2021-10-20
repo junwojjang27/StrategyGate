@@ -14,6 +14,7 @@
 			A.CREATE_DT,
 			A.UPDATE_DT,
 			A.DELETE_DT,
+			A.ATCH_FILE_ID AS ATCH_FILE_KEY,
 			TO_CHAR(A.START_DT, 'YYYY.MM.DD') AS START_DT,
 			TO_CHAR(A.END_DT, 'YYYY.MM.DD') AS END_DT,
 			A.ATCH_FILE_ID,
@@ -55,34 +56,81 @@
 						<property name="pCompareColumn" value="A.EVAL_STATE"/>
 					</include>
 		WHERE 1=1
+			AND A.YEAR = #{findYear}    <!--년도가 같을 때-->
 			AND A.EVAL_STATE='002'
+			<if test='findEvalDegreeId != null and findEvalDegreeId == "001"'>
+				AND A.DEGREE = '001'
+			</if>
+			<if test='findEvalDegreeId != null and findEvalDegreeId == "002"'>
+				AND A.DEGREE = '002'
+			</if>
+			<if test='findEvalDegreeId != null and findEvalDegreeId == "003"'>
+				AND A.DEGREE = '003'
+			</if>
+			<if test='findCategory != null and findCategory != ""'>
+				AND A.CATEGORY = #{findCategory}
+			</if>
+			AND UPPER(B.USER_NM) LIKE '%' || TRIM(UPPER(#{findUserNm})) ||'%'
 		ORDER BY A.END_DT, A.START_DT
+	</select>
+
+	<select id="selectItemList" parameterType="ideaEvalVO" resultType="ideaEvalVO">
+		/*	평가하기 > 평가항목 조회	system.menu.ideaEval.selectItemList */
+		SELECT
+			A.EVAL_ITEM_TITLE,
+			A.EVAL_ITEM_CONTENT,
+			A.WEIGHT_ID,
+			A.EVAL_DEGREE_ID,
+			A.EVAL_ITEM_CD,
+			A.YEAR,
+			B.EVAL_CD,
+		    B.EVAL_GRADE,
+		    C.EVAL_SUM
+		FROM IDEA_EVAL_ITEM A
+			LEFT JOIN IDEA_EVAL_SCORE B
+				ON A.EVAL_ITEM_CD = B.EVAL_ITEM_CD AND B.EVAL_USER_ID = #{loginUserId} AND B.IDEA_CD = #{ideaCd}
+			LEFT JOIN IDEA_EVAL_INFO C
+				ON B.EVAL_USER_ID = C.USER_ID AND B.IDEA_CD = C.IDEA_CD
+		WHERE A.YEAR = #{year}
+		  	AND A.WEIGHT_ID!='0'
+			<if test='degree != null and degree == "001"'>
+				AND A.EVAL_DEGREE_ID = '001'
+			</if>
+			<if test='degree != null and degree == "002"'>
+				AND A.EVAL_DEGREE_ID = '002'
+			</if>
+			<if test='degree != null and degree == "003"'>
+				AND A.EVAL_DEGREE_ID = '003'
+			</if>
+		ORDER BY	A.WEIGHT_ID DESC
 	</select>
 	
 	<select id="selectDetail" parameterType="ideaEvalVO" resultType="ideaEvalVO">
 		/*	평가하기 상세 조회	 	system.menu.ideaEval.selectDetail	*/
 		SELECT
-			IDEA_CD,
-			YEAR,
-			USER_ID,
-			CATEGORY,
-			TITLE,
-			CONTENT,
-			STATE,
-			CREATE_DT,
-			UPDATE_DT,
-			DELETE_DT,
-			START_DT,
-			END_DT,
-			ATCH_FILE_ID,
-			IDEA_GBN_CD,
-			DEGREE,
-			EVAL_STATE
-		FROM IDEA_INFO
-		WHERE 1=1
-			AND IDEA_CD=#{ideaCd}
-			AND YEAR=#{year}
-			AND CREATE_DT=#{createDt}
+			CA.CODE_NM AS CATEGORY,
+			A.TITLE,
+			A.CONTENT,
+			A.STATE,
+		    A.CREATE_DT,
+		    A.DEGREE,
+		    A.IDEA_CD,
+		    A.YEAR,
+		    A.IDEA_GBN_CD,
+			A.ATCH_FILE_ID AS ATCH_FILE_KEY,
+			B.USER_NM,
+			B.DEPT_NM
+		FROM IDEA_INFO A
+				 LEFT JOIN V_ROLE_USER B
+						   ON A.USER_ID = B.USER_ID
+								<include refid="common.func.getCodeJoin">
+									<property name="pYear" value="#{findYear}"/>
+									<property name="pCodeGrpId" value="'385'"/>
+									<property name="pAlias" value="CA"/>
+									<property name="pCompareColumn" value="A.CATEGORY"/>
+								</include>
+		WHERE A.IDEA_CD = #{ideaCd}
+		  AND A.YEAR = #{findYear}
 
 	</select>	
 	
@@ -107,66 +155,70 @@
 
 	<insert id="insertData" parameterType="ideaEvalVO">
 		/*	평가하기 저장	system.menu.ideaEval.insertData	*/
-		INSERT INTO IDEA_INFO(
-			IDEA_CD,
-			YEAR,
-			USER_ID,
-			CATEGORY,
-			TITLE,
-			CONTENT,
-			STATE,
-			CREATE_DT,
-			UPDATE_DT,
-			DELETE_DT,
-			START_DT,
-			END_DT,
-			ATCH_FILE_ID,
-			IDEA_GBN_CD,
-			DEGREE,
-			EVAL_STATE)
-		
-VALUES (
-			#{ideaCd},
+		INSERT INTO IDEA_EVAL_SCORE(
+			EVAL_CD,
+		    YEAR,
+		    IDEA_CD,
+		    EVAL_ITEM_CD,
+		    EVAL_USER_ID,
+		    EVAL_GRADE,
+		    CREATE_DT,
+		    UPDATE_DT,
+		    DELETE_DT,
+		    EVAL_DEGREE
+		)
+		VALUES (
+			#{evalCd},
 			#{year},
-			#{userId},
-			#{category},
-			#{title},
-			#{content},
-			#{state},
-			#{createDt},
+			#{ideaCd},
+			#{evalItemCd},
+			#{evalUserId},
+			#{evalGrade},
+			SYSDATE,
 			#{updateDt},
 			#{deleteDt},
-			#{startDt},
-			#{endDt},
-			#{atchFileId},
-			#{ideaGbnCd},
-			#{degree},
-			#{evalState})
-
+			#{evalDegree}
+		)
 	</insert>
 
 	<update id="updateData" parameterType="ideaEvalVO">
 		/*	평가하기 수정	system.menu.ideaEval.updateData	*/
-		UPDATE IDEA_INFO
+		UPDATE IDEA_EVAL_SCORE
 		SET
-			USER_ID=#{userId},
-			CATEGORY=#{category},
-			TITLE=#{title},
-			CONTENT=#{content},
-			STATE=#{state},
-			UPDATE_DT=#{updateDt},
-			DELETE_DT=#{deleteDt},
-			START_DT=#{startDt},
-			END_DT=#{endDt},
-			ATCH_FILE_ID=#{atchFileId},
-			IDEA_GBN_CD=#{ideaGbnCd},
-			DEGREE=#{degree},
-			EVAL_STATE=#{evalState}
-		WHERE 1=1
-			AND IDEA_CD=#{ideaCd}
-			AND YEAR=#{year}
-			AND CREATE_DT=#{createDt}
+			EVAL_GRADE=#{evalGrade},
+			UPDATE_DT=SYSDATE
+		WHERE YEAR=#{year}
+			AND EVAL_USER_ID=#{evalUserId}
+		    AND EVAL_ITEM_CD=#{evalItemCd}
 
 	</update>
+
+	<insert id="submitData" parameterType="ideaEvalVO">
+		/*	평가하기 제출	system.menu.ideaEval.submitData	*/
+		INSERT INTO IDEA_EVAL_INFO(
+			EVAL_CD,
+			YEAR,
+			IDEA_CD,
+			USER_ID,
+			EVAL_SUM,
+			EVAL_DEGREE,
+			CREATE_DT,
+			UPDATE_DT,
+			DELETE_DT,
+			IDEA_GBN_CD
+		)
+		VALUES (
+				   (SELECT DISTINCT EVAL_CD FROM IDEA_EVAL_SCORE WHERE IDEA_CD = #{ideaCd} AND EVAL_USER_ID = #{userId}),
+				   #{year},
+				   #{ideaCd},
+				   #{userId},
+				   #{evalSum},
+				   #{evalDegree},
+				   SYSDATE,
+				   #{updateDt},
+				   #{deleteDt},
+				   #{ideaGbnCd}
+			   )
+	</insert>
 </mapper>
 

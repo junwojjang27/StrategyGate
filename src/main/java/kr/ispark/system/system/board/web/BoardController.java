@@ -83,6 +83,7 @@ public class BoardController extends BaseController {
 	 */
 	@RequestMapping(value="/system/system/board/boardDetail.do")
 	public String boardDetail(@ModelAttribute BoardVO searchVO, Model model) throws Exception {
+		System.out.println(searchVO.getSeq());
 		BoardVO boardSetting = boardService.selectBoardSetting(searchVO);
 		BoardVO dataVO = boardService.selectBoard(searchVO, true);
 		if(!dataVO.isReadable()) {

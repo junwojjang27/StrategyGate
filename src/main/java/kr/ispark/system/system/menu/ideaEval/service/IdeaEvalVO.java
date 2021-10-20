@@ -36,12 +36,35 @@ public class IdeaEvalVO extends CommonVO {
 	private String degree;
 	private String evalState;
 
+	private String atchFileKey;
+
 	private String findEvalState;
-	private String findDegree;
+	private String findEvalDegreeId;
 	private String findCategory;
 	private String findUserNm;
 
-	
+	private String evalItemCd;
+	private String evalDegreeId;
+	private String evalItemTitle;
+	private String particalTypeId;
+	private String weightId;
+	private String evalItemContent;
+
+	private String evalCd;
+	private String evalUserId;
+	private String evalDegree;
+
+	private String evalGrade;
+	//private String score;
+
+	private String evalSum;
+
+	private String loginUserId;
+
+	private String saveYn;
+
+	private String modifyYn;
+
 	private List<IdeaEvalVO> gridDataList;
 }
 

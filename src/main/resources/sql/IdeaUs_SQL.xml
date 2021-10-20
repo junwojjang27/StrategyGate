@@ -60,7 +60,7 @@
     </select>
 
 	<select id="selectExcelList" parameterType="ideaUsVO" resultType="ideaUsVO">
-		/* 간단제안 조회 system.menu.ideaUs.selectExcelList */
+		/* 혁신제안 엑셀조회 system.menu.ideaUs.selectExcelList */
 		SELECT
 		A.IDEA_CD,
 		A.YEAR,

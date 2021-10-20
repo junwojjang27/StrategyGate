@@ -12,6 +12,7 @@ package kr.ispark.system.system.menu.ideaEval.web;
 
 import java.util.List;
 
+import kr.ispark.system.system.menu.ideaUs.service.IdeaUsVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -52,6 +53,19 @@ public class IdeaEvalController extends BaseController {
 	@RequestMapping("/system/system/menu/ideaEval/ideaEvalList_json.do")
 	public ModelAndView ideaEvalList_json(@ModelAttribute("searchVO") IdeaEvalVO searchVO) throws Exception {
 		List<IdeaEvalVO> dataList = ideaEvalService.selectList(searchVO);
+		return makeGridJsonData(dataList, dataList.size(), searchVO);
+	}
+
+	/**
+	 * 평가하기 > 평가항목 그리드 조회(json)
+	 * @param	IdeaEvalVO searchVO
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/ideaEval/ideaEvalItemList_json.do")
+	public ModelAndView ideaEvalItemList_json(@ModelAttribute("searchVO") IdeaEvalVO searchVO) throws Exception {
+
+		List<IdeaEvalVO> dataList = ideaEvalService.selectItemList(searchVO);
 		return makeGridJsonData(dataList, dataList.size(), searchVO);
 	}
 	
@@ -98,12 +112,19 @@ public class IdeaEvalController extends BaseController {
 	/**
 	 * 평가하기 조회
 	 * @param	IdeaEvalVO searchVO
-	 * @return	ModelAndView
+	 * @param	Model model
+	 * @return	String
 	 * @throws	Exception
 	 */
 	@RequestMapping("/system/system/menu/ideaEval/ideaEvalDetail.do")
-	public ModelAndView selectDetail(@ModelAttribute("searchVO") IdeaEvalVO searchVO) throws Exception {
-		return makeJsonData(ideaEvalService.selectDetail(searchVO));
+	public String ideaEvalDetail(@ModelAttribute("searchVO") IdeaEvalVO searchVO, Model model) throws Exception {
+
+
+		IdeaEvalVO dataVO = ideaEvalService.selectDetail(searchVO);
+
+		model.addAttribute("dataVO", dataVO);
+
+		return "/system/system/menu/ideaEval/ideaEvalDetail." + searchVO.getLayout();
 	}
 	
 	/**
@@ -147,12 +168,46 @@ public class IdeaEvalController extends BaseController {
 	 */
 	@RequestMapping("/system/system/menu/ideaEval/saveIdeaEval.do")
 	public ModelAndView saveIdeaEval(@ModelAttribute("dataVO") IdeaEvalVO dataVO, Model model, BindingResult bindingResult) throws Exception {
-		beanValidator.validate(dataVO, bindingResult);
+		System.out.println("평가하기 : 컨트롤러");
+		validateList(dataVO.getGridDataList(), bindingResult);
 		if(bindingResult.hasErrors()){
 			return makeFailJsonData(getListErrorMsg(bindingResult));
 		}
+		int resultCnt = ideaEvalService.saveData(dataVO);
+		if(resultCnt == 0) {
+			return makeFailJsonData();
+		}
+		return makeSuccessJsonData();
+	}
 
-		return makeJsonDataByResultCnt(ideaEvalService.saveData(dataVO));
+	/**
+	 * 평가하기 제출
+	 * @param	IdeaEvalVO dataVO
+	 * @param	Model model
+	 * @param	BindingResult bindingResult
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/ideaEval/submitIdeaEval.do")
+	public ModelAndView submitIdeaEval(@ModelAttribute("dataVO") IdeaEvalVO dataVO, Model model, BindingResult bindingResult) throws Exception {
+		System.out.println("평가 제출하기 : 컨트롤러");
+		//validateList(dataVO.getGridDataList(), bindingResult);
+		if(bindingResult.hasErrors()){
+			return makeFailJsonData(getListErrorMsg(bindingResult));
+		}
+		int resultCnt = ideaEvalService.submitData(dataVO);
+		if(resultCnt == 0) {
+			return makeFailJsonData();
+		}
+		return makeSuccessJsonData();
+	}
+
+	@RequestMapping("/system/system/menu/ideaEval/ideaEvalAtchFileForm.do")
+	public String getAtchFileForm(@ModelAttribute("searchVO") IdeaEvalVO ideaEvalVO, Model model) {
+		//model.addAttribute("searchVO",IdeaUsVO);
+		System.out.println("첨부파일 : 컨토를러");
+		System.out.println("ideaEvalVO : " + ideaEvalVO);
+		return "/system/system/menu/ideaEval/ideaEvalAtchFileForm";
 	}
 }
 

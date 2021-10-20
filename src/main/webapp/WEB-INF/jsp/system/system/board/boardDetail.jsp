@@ -140,6 +140,8 @@ function checkCommentResult(data) {
 	<form:hidden path="commentSeq"/>
 	<form:hidden path="page"/>
 	<form:hidden path="rows"/>
+
+
 	<div class="tbl-type02 mt20">
 		<table summary="">
 			<colgroup>

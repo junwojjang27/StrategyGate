@@ -24,16 +24,15 @@ $(function(){
 		url			:	"${context_path}/system/system/menu/ideaEval/ideaEvalList_json.do",
 		postData	:	getFormData("form"),
 		width		:	"${jqgrid_width}",
-		height		:	"(count%10)*30",		//jqGrid크기를 제안 수에 맞게 변경
+		height		:	"300",		//jqGrid크기를 제안 수에 맞게 변경
 		colModel	:	[
 						{name:"ideaGbnCd",	index:"ideaGbnCd",	width:20,	align:"center",	label:"제안구분"},
 						{name:"category",	index:"category",	width:20,	align:"center",	label:"카테고리"},
 						{name:"title",		index:"title",		width:100,	align:"left",	label:"제목",
 							formatter: function (cellvalue, options, rowObject) {
 								return "<a href='#' onclick='showDetail(\"" + removeNull(rowObject.ideaCd) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
-								//escapeHTML뜻 : DB에 이거 없이 넣으면 digit가 나옴?....
-							},							//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
-							unformat: linkUnformatter	//포메터로 포맷된 데이터가 저장이 될 떄 언포맷 된 상태에서 나가야 한다.. (순수 데이터만 데이터에 날라가기(포매터에서 가공된 데이터를 다시 본래의 데이터로 저장))
+							},//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
+							unformat: linkUnformatter
 						},
 						{name:"userNm",		index:"userNm",		width:20,	align:"center",	label:"등록자"},
 						{name:"degree",		index:"degree",		width:20,	align:"center",	label:"평가차수"},
@@ -55,13 +54,12 @@ $(function(){
 		sortname: "createDt",
 		sortorder: "asc",
 		loadComplete : function() {
-			var count = $('#list').getGridParam('records'); //jqGrid크기 조절하기 위함. (서버에서 받은 실제 레코드 수)
 		}
 	});
 
 	$("#newForm").hide();
 
-	$("#searchKeyword").keyup(function (e) {		//enter눌렀을 때 searchList()로 이동
+	$("#findUserNm").keyup(function (e) {		//enter눌렀을 때 searchList()로 이동
 		if (e.keyCode == 13) searchList();
 	});
 });
@@ -79,97 +77,46 @@ function excelDownload() {
 	f.submit();
 }
 
-/*// 상세 조회
-function showDetail(parameter) {
-	var f = document.form;
-	f.ideaCd.value = ideaCd;
-	f.year.value = year;
-	f.createDt.value = createDt;
-
-	
-	sendAjax({
-		"url" : "${context_path}/system/system/menu/ideaEval/selectDetail.do",
-		"data" : getFormData("form"),
-		"doneCallbackFunc" : "setDetail"
-	});
-}*/
-
 // 상세 조회
-function showDetail(parameter) {
+function showDetail(ideaCd) {
 	var f = document.form;
 	f.ideaCd.value = ideaCd;
-	f.year.value = year;
+
+    var num = $("#list").getGridParam("reccount");		//현재 화면에 표시되고있는 레코드 숫자
+    var rowData;
+    for (var n = 1; n <= num; n++) {	//1 ~ (화면에 표시되고있는 레코드 숫자) 까지 반복하여 ideaCd를 비교해서 해당 제안을 찾음.
+        rowData = $("#list").jqGrid("getRowData", n);
+        if(rowData.ideaCd == $("#ideaCd").val()) {
+            if (rowData.userId == "${sessionScope.loginVO.userId}") {
+                $.showMsgBox("본인의 제안은 평가할 수 없습니다.");
+                return false;
+            }
+
+            var startTemp = rowData.startDt.replace(/\./g, ''); //날짜 비교를 위함.
+            var endTemp = rowData.endDt.replace(/\./g, '');
+            var now = new Date(); //현재 시간 구하기
+
+            year = now.getFullYear();
+            month = now.getMonth() + 1;
+            date = now.getDate();
+
+            today = year * 10000 + month * 100 + date;
+
+            if (today < startTemp) {
+                $.showMsgBox("평가 시작일 이전입니다");
+                return false;
+            }
+
+            if (today > endTemp) {
+                $.showMsgBox("평가가 종료되었습니다.");
+                return false;
+            }
+        }
+    }
 
 	loadPage("${context_path}/system/system/menu/ideaEval/ideaEvalDetail.do", "form");
 }
 
-// 상세 조회 값 세팅
-function setDetail(data) {
-	$("#newForm").show();
-	var dataVO = data.dataVO;
-	
-	$("#titleIdeaEvalNm").text("평가하기 : " + dataVO.userId);
-	
-	voToForm(dataVO, "form", ["ideaCd","userId","category","title","content","state","createDt","updateDt","deleteDt","startDt","endDt","atchFileId","ideaGbnCd","degree","evalState"]);
-	$("#userId").focus();
-}
-
-// 정렬순서저장
-function saveSortOrder() {
-	if(!gridToForm("list", "form", true)) return false;
-	
-	sendAjax({
-		"url" : "${context_path}/system/system/menu/ideaEval/saveSortOrder.do",
-		"data" : getFormData("form"),
-		"doneCallbackFunc" : "searchList"
-	});
-}
-
-// 등록
-function addData() {
-	$("#newForm").show();
-	
-	$("#titleIdeaEvalNm").text("평가하기");
-	
-	resetForm("form", ["ideaCd","userId","category","title","content","state","createDt","updateDt","deleteDt","startDt","endDt","atchFileId","ideaGbnCd","degree","evalState"]);
-	$("#year").val($("#findYear").val());
-	$("#userId").focus();
-}
-
-// 저장
-function saveData() {
-	var f = document.form;
-	if(!validatePerspectiveVO(f)) {
-		return;
-	}
-	
-	sendAjax({
-		"url" : "${context_path}/system/system/menu/ideaEval/saveIdeaEval.do",
-		"data" : getFormData("form"),
-		"doneCallbackFunc" : "searchList"
-	});
-}
-
-// 삭제
-function deleteData() {
-	if(deleteDataToForm("list", "userId", "form")) {
-		$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
-	}
-}
-
-// 삭제 처리
-function doDeleteData() {
-	var delList = [];
-	$("#form").find("[name=keys]").each(function(i, e) {
-		delList.push($(this).val());
-	});
-	
-	sendAjax({
-		"url" : "${context_path}/system/system/menu/ideaEval/deleteIdeaEval.do",
-		"data" : getFormData("form"),
-		"doneCallbackFunc" : "searchList"
-	});
-}
 </script>
 
 <form:form commandName="searchVO" id="form" name="form" method="post">
@@ -187,16 +134,9 @@ function doDeleteData() {
 				<form:select path="findYear" class="select wx100" items="${codeUtil:getCodeList('017')}" itemLabel="codeNm" itemValue="codeId">
 				</form:select>
 			</li>
-			<%--<li>
-				<label for="findEvalState"><spring:message code="word.evalStatus"/></label>
-				<form:select path="findEvalState" class="select wx80">
-					<option value=""><spring:message code="word.all"/></option>
-					<form:options items="${codeUtil:getCodeList('391')}" itemLabel="codeNm" itemValue="codeId"/>
-				</form:select>
-			</li>--%>
 			<li>
-				<label for="findDegree"><spring:message code="word.evalDegree"/></label>
-				<form:select path="findDegree" class="select wx100">
+				<label for="findEvalDegreeId"><spring:message code="word.evalDegree"/></label>
+				<form:select path="findEvalDegreeId" class="select wx100">
 					<option value=""><spring:message code="word.all"/></option>
 					<form:options items="${codeUtil:getCodeList('387')}" itemLabel="codeNm" itemValue="codeId"/>
 				</form:select>
@@ -223,91 +163,6 @@ function doDeleteData() {
 	</div>
 	<div class="tbl-bottom tbl-bottom2">
 		<div class="tbl-btn"></div>
-	</div>
-
-	<div id="newForm">
-		<div class="ptitle" id="titleIdeaEvalNm"></div>
-		<div class="tbl-type02">
-			<table summary="">
-				<caption></caption>
-				<colgroup>
-					<col width="15%"/>
-					<col width="35%"/>
-					<col width="15%"/>
-					<col width="35%"/>
-				</colgroup>
-				<tbody>
-					<tr> 
-						<th scope="row"><label for="ideaCd">제안코드</label><span class="red">(*)</span></th> 
-						<td ><form:input path="ideaCd" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="userId">아이디</label></th> 
-						<td ><form:input path="userId" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="category">카테고리</label></th> 
-						<td ><form:input path="category" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="title">제목</label></th> 
-						<td ><form:input path="title" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="content">내용</label></th> 
-						<td ><form:input path="content" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="state">상태(접수/승인/반려)</label></th> 
-						<td ><form:input path="state" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="createDt">생성일자</label><span class="red">(*)</span></th> 
-						<td ><form:input path="createDt" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="updateDt">수정일자</label></th> 
-						<td ><form:input path="updateDt" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="deleteDt">삭제일자</label></th> 
-						<td ><form:input path="deleteDt" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="startDt">평가시작일자</label></th> 
-						<td ><form:input path="startDt" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="endDt">평가종료일자</label></th> 
-						<td ><form:input path="endDt" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="atchFileId">첨부파일ID</label></th> 
-						<td ><form:input path="atchFileId" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="ideaGbnCd">평가구분코드</label></th> 
-						<td ><form:input path="ideaGbnCd" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="degree">차수</label></th> 
-						<td ><form:input path="degree" class="t-box01"/></td> 
-					</tr> 
-					<tr> 
-						<th scope="row"><label for="evalState">평가상태(대기/진행/종료)</label></th> 
-						<td ><form:input path="evalState" class="t-box01"/></td> 
-					</tr> 
-
-				</tbody>
-			</table>
-		</div>
-		<div class="tbl-bottom">
-			<div class="tbl-wbtn">
-			</div>
-			<div class="tbl-btn">
-				<a href="#" class="save" onclick="saveData();return false;"><spring:message code="button.save"/></a>
-			</div>
-		</div>
 	</div>
 </form:form>
 
