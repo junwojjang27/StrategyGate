@@ -91,7 +91,7 @@ $(function(){	//전략목표@@@@@@@@@@@@@@@@@@@@@@
 		width		:	"${jqgrid_width}-50",
 		height		:	"250",
 		colModel	:	[
-			{name:"temp",	index:"temp",	width:20,	align:"center",	label:"성과지표", 	editable: true,  edittype: "text",
+			{name:"kpiNm",	index:"kpiNm",	width:20,	align:"center",	label:"성과지표", 	editable: true,  edittype: "text",
 				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 30}},
 			{name:"unitId",	index:"unitId",	width:10,	align:"center",	label:"단위", editable: true,  edittype: "select",
 				formatter: 'select', editrules: {required: true}, editoptions: {value: getUnitSelect()}},
@@ -174,7 +174,7 @@ $(function(){	//성과목표@@@@@@@@@@@@@@@@@@@@@@
 		width		:	"${jqgrid_width}-50",
 		height		:	"250",
 		colModel	:	[
-			{name:"temp",	index:"temp",	width:20,	align:"center",	label:"성과지표"},
+			{name:"kpiNm",	index:"kpiNm",	width:20,	align:"center",	label:"성과지표"},
 			{name:"unitId",	index:"unitId",	width:10,	align:"center",	label:"단위"},
 			{name:"year2Actual",	index:"year2Actual",	width:10,	align:"center",	label:"2018"},
 			{name:"year3Actual",	index:"year3Actual",	width:10,	align:"center",	label:"2019"},
@@ -429,13 +429,13 @@ function saveData2() {
 function saveData3() {
 	var f = document.form;
 
-	gridToFormChanged("list2", "form")
+	gridToFormChanged("list2", "form");
 
 	sendMultipartForm({
 		"url": "${context_path}/system/system/menu/cha/saveCha3.do",
 		"formId": "form",
 		"fileModules": [upload1],
-		"doneCallbackFunc" : "saveData33"
+		"doneCallbackFunc" : "searchList"
 	});
 }
 
@@ -658,20 +658,20 @@ function doDeleteData() {
 				</colgroup>
 				<tbody>
 				<tr>
-					<th scope="row"><label for="straTgtNm">전략목표명(*)</label></th>
-					<td ><form:input path="straTgtNm" class="t-box01" maxlength="300" id="straTgtNm"/></td>
+					<th scope="row"><label for="straTgtNm2">전략목표명(*)</label></th>
+					<td ><form:input path="straTgtNm2" class="t-box01" maxlength="300" id="straTgtNm2"/></td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="resultTgtNm">성과목표명(*)</label></th>
-					<td ><form:input path="resultTgtNm" class="t-box01" maxlength="300" id="resultTgtNm"/></td>
+					<th scope="row"><label for="resultTgtNm2">성과목표명(*)</label></th>
+					<td ><form:input path="resultTgtNm2" class="t-box01" maxlength="300" id="resultTgtNm2"/></td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="straNo">번호(*)</label></th>
-					<td ><form:input path="straNo" class="t-box01" maxlength="300" id="straNo"/></td>
+					<th scope="row"><label for="straNo2">번호(*)</label></th>
+					<td ><form:input path="straNo2" class="t-box01" maxlength="300" id="straNo2"/></td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="atchFileId">첨부파일(*)</label></th>
-					<td ><%--<span id="spanAttachFile"></span>--%></td>
+					<th scope="row"><label for="atchFileId2">첨부파일(*)</label></th>
+					<td ><span id="spanAttachFile2"></span></td>
 				</tr>
 				</tbody>
 			</table>

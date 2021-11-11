@@ -122,12 +122,17 @@ public class ChaDAO extends EgovComAbstractDAO {
 	 * @return	int
 	 * @throws	Exception
 	 */
-	public String insertData3(ChaVO searchVO) throws Exception {
+	public int insertData3(ChaVO searchVO) throws Exception {
+
+		int resultCnt = 0 ;
+
 		System.out.println("저장 DAO");
 		System.out.println("searchVO : " + searchVO);
-		insert("system.menu.cha.insertData3", searchVO);
 
-		return searchVO.getFindYear();
+		resultCnt += insert("system.menu.cha.insertData33", searchVO);
+		resultCnt += insert("system.menu.cha.insertData3", searchVO);
+
+		return resultCnt;
 	}
 
 	/**

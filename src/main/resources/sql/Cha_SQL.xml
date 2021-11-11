@@ -140,6 +140,48 @@
 				   #{deleteDt})
 	</insert>
 
+	<insert id="insertData33" parameterType="chaVO">
+		/*	문화재청 저장(전략목표 윗부분)	system.menu.cha.insertData33	*/
+		INSERT INTO BSC_SELF_KPI(
+			YEAR,
+			KPI_ID,
+			KPI_GBN_ID,
+			STRA_TGT_ID,
+			UNIT_ID,
+			KPI_NM,
+			YEAR1_ACTUAL,
+			YEAR0_TARGET,
+			YEAR1_TARGET,
+			YEAR2_TARGET,
+			YEAR3_TARGET,
+			YEAR4_TARGET,
+			BASIS_CONTENT,
+			CAL_CONTENT,
+			DATA_CONTENT,
+			CREATE_DT,
+			MODIFY_DT,
+			DELETE_DT)
+		VALUES (
+				   #{findYear},
+				   #{kpiId},
+				   #{kpiGbnId},
+				   #{straTgtId},
+				   #{unitId},
+				   #{kpiNm},
+				   #{year1Actual},
+				   #{year0Target},
+				   #{year1Target},
+				   #{year2Target},
+				   #{year3Target},
+				   #{year4Target},
+				   #{basisContent},
+				   #{calContent},
+				   #{dataContent},
+				   SYSDATE,
+				   #{modifyDt},
+				   #{deleteDt})
+	</insert>
+
 	<update id="updateData" parameterType="chaVO">
 		/*	문화재청 수정(임무)	system.menu.cha.updateData	*/
 		UPDATE BSC_MISSION_VISION
