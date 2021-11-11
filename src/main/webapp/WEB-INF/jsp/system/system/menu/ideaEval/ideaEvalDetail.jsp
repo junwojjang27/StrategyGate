@@ -21,14 +21,13 @@
                 {name:"evalGrade",		    index:"evalGrade",		    width:20,	align:"center",	label:"평가등급", editable: true,  edittype: "select",
                     formatter: 'select', editrules: {required: true, custom: true, custom_func: test}, editoptions: {value: getEvalGradeSelect()}},
                 {name:"score",		        index:"score",		        width:20,	align:"center",	label:"평가점수"},
-                {name:"year",		    index:"year",		    width:20,	align:"center",	label:"년도" ,hidden: true},
-                {name:"evalItemCd",		    index:"evalItemCd",		    width:20,	align:"center",	label:"평가항목코드" ,hidden: true},
-                {name:"evalDegreeId",		    index:"evalDegreeId",		    width:20,	align:"center",	label:"평가차수" ,hidden: true},
-                {name:"ideaCd",		    index:"ideaCd",		    width:20,	align:"center",	label:"제안코드"  ,hidden: true},
-                {name:"ideaGbnCd",		    index:"ideaGbnCd",		    width:20,	align:"center",	label:"제안구분코드"  ,hidden: true},
-                {name:"saveYn",		    index:"saveYn",		    width:20,	align:"center",	label:"저장여부"  ,hidden: true},
-                {name:"evalSum",		    index:"evalSum",		    width:20,	align:"center",	label:"총점"  ,hidden: true},
-                {name:"evalCd",		    index:"evalCd",		    width:20,	align:"center",	label:"평가코드"  },
+                {name:"year",		        index:"year",		        width:20,	align:"center",	label:"년도" ,         hidden: true},
+                {name:"evalItemCd",		    index:"evalItemCd",		    width:20,	align:"center",	label:"평가항목코드" ,   hidden: true},
+                {name:"evalDegreeId",		index:"evalDegreeId",		width:20,	align:"center",	label:"평가차수" ,      hidden: true},
+                {name:"ideaCd",		        index:"ideaCd",		        width:20,	align:"center",	label:"제안코드"  ,     hidden: true},
+                {name:"ideaGbnCd",		    index:"ideaGbnCd",		    width:20,	align:"center",	label:"제안구분코드"  ,  hidden: true},
+                {name:"evalSum",		    index:"evalSum",		    width:20,	align:"center",	label:"총점"  ,        hidden: true},
+                {name:"evalCd",		        index:"evalCd",		        width:20,	align:"center",	label:"평가코드"  ,     hidden: true},
             ],
             cellEdit: true,
             cellsubmit: 'clientArray',
@@ -44,12 +43,6 @@
                         else if(rowData.evalGrade == "004") rowData.score = 40;
                         else rowData.score = 20;
                         jQuery("#list").setCell(n, "score", rowData.score);
-                        rowData.saveYn = "Y";
-                        jQuery("#list").setCell(n, "saveYn", rowData.saveYn);
-                    }
-                    else {
-                        rowData.saveYn = "N";
-                        jQuery("#list").setCell(n, "saveYn", rowData.saveYn);
                     }
                     if(isNotEmpty(rowData.evalCd)) {
                         $("#evalCd").val(rowData.evalCd);
@@ -98,8 +91,6 @@
                 /**********첨부파일 끝**********/
             }
         });
-
-
     });
 
 
@@ -123,7 +114,7 @@
         return [true, ""];
     }
 
-    //평가단 선택 여부
+    //평가등급 선택
     function getEvalGradeSelect() {
         var selectStr = "";
         <c:forEach var="evalGradeList" items="${codeUtil:getCodeList('388')}" varStatus="status">
@@ -149,12 +140,12 @@
         var sumWeightId = parseInt(zero);
         var num = $("#list").getGridParam("reccount");		//현재 화면에 표시되고있는 레코드 숫자
         var rowData;
-        for (var n = 1; n <= num; n++) {	//1 ~ (화면에 표시되고있는 레코드 숫자) 까지 반복하여 ideaCd를 비교해서 해당 제안을 찾음.
+        for (var n = 1; n <= num; n++) {
             rowData = $("#list").jqGrid("getRowData", n);
             temp = rowData.weightId;
             sumWeightId = sumWeightId + parseInt(temp);
         }
-        for (var n = 1; n <= num; n++) {	//1 ~ (화면에 표시되고있는 레코드 숫자) 까지 반복하여 ideaCd를 비교해서 해당 제안을 찾음.
+        for (var n = 1; n <= num; n++) {
             rowData = $("#list").jqGrid("getRowData", n);
             temp = rowData.score;
             if(isNotEmpty(temp)) {
@@ -182,8 +173,6 @@
 
     //제출
     function submitData() {
-
-
         $.showConfirmBox("제출하시겠습니까?", "doSubmitData");
     }
 
@@ -219,7 +208,6 @@
                 return false;
             }
         }
-
         $("#evalSum").val(Math.round(sum));
         sendAjax({
             "url": "${context_path}/system/system/menu/ideaEval/submitIdeaEval.do",
@@ -253,7 +241,6 @@
     <form:hidden path="loginUserId" value="${sessionScope.loginVO.userId}"/>
     <form:hidden path="evalCd" value="${dataVO.evalCd}"/>
     <form:hidden path="atchFileKey" value="${dataVO.atchFileKey}"/>
-
 
     <div id="newForm">
         <div class="ptitle" id="titleIdeaEvalNm"></div>

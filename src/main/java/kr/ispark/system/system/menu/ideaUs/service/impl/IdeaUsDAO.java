@@ -67,6 +67,8 @@ public class IdeaUsDAO extends EgovComAbstractDAO {
 	 */
 	public String insertData(IdeaUsVO searchVO) throws Exception {
 		insert("system.menu.ideaUs.insertData", searchVO);
+		System.out.println("저장 DAO");
+		System.out.println("searchVO : " + searchVO);
 		return searchVO.getIdeaCd();
 	}
 

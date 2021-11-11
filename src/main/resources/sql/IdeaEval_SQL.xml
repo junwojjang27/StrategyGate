@@ -90,7 +90,7 @@
 			LEFT JOIN IDEA_EVAL_SCORE B
 				ON A.EVAL_ITEM_CD = B.EVAL_ITEM_CD AND B.EVAL_USER_ID = #{loginUserId} AND B.IDEA_CD = #{ideaCd}
 			LEFT JOIN IDEA_EVAL_INFO C
-				ON B.EVAL_USER_ID = C.USER_ID AND B.IDEA_CD = C.IDEA_CD
+				ON B.EVAL_USER_ID = C.USER_ID AND B.IDEA_CD = C.IDEA_CD AND B.YEAR = C.YEAR
 		WHERE A.YEAR = #{year}
 		  	AND A.WEIGHT_ID!='0'
 			<if test='degree != null and degree == "001"'>

@@ -61,8 +61,6 @@ public class IdeaEvalVO extends CommonVO {
 
 	private String loginUserId;
 
-	private String saveYn;
-
 	private String modifyYn;
 
 	private List<IdeaEvalVO> gridDataList;

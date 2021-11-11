@@ -205,7 +205,7 @@ public class IdeaEvalController extends BaseController {
 	@RequestMapping("/system/system/menu/ideaEval/ideaEvalAtchFileForm.do")
 	public String getAtchFileForm(@ModelAttribute("searchVO") IdeaEvalVO ideaEvalVO, Model model) {
 		//model.addAttribute("searchVO",IdeaUsVO);
-		System.out.println("첨부파일 : 컨토를러");
+		System.out.println("첨부파일 : 컨트를러");
 		System.out.println("ideaEvalVO : " + ideaEvalVO);
 		return "/system/system/menu/ideaEval/ideaEvalAtchFileForm";
 	}

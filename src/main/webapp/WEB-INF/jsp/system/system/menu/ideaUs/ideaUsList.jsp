@@ -232,7 +232,6 @@
             return;
         }
 
-        alert($("#ideaCd").val());
 
         isUse = false;
         var num = $("#list").getGridParam("reccount");

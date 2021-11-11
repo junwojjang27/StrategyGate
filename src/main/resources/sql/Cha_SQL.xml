@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.menu.cha">
+	<select id="selectList" parameterType="chaVO" resultType="chaVO">
+		/*	문화재청 조회	system.menu.cha.selectList */
+		SELECT
+			YEAR,
+			KPI_ID,
+			KPI_GBN_ID,
+			STRA_TGT_ID,
+			RESULT_TGT_ID,
+			SUBJECT_TGT_ID,
+			UNIT_ID,
+			KPI_NM,
+			KPI_POOL_ID,
+			YEAR1_ACTUAL,
+			YEAR2_ACTUAL,
+			YEAR3_ACTUAL,
+			YEAR0_TARGET,
+			YEAR1_TARGET,
+			YEAR2_TARGET,
+			YEAR3_TARGET,
+			YEAR4_TARGET,
+			BASIS_CONTENT,
+			CAL_CONTENT,
+			DATA_CONTENT,
+			KEYWORD,
+			SORT_ORDER,
+			POOL_YN,
+			CREATE_DT,
+			MODIFY_DT,
+			DELETE_DT
+		FROM BSC_SELF_KPI
+		WHERE 1=1
+		  AND YEAR = #{findYear}
+
+
+	</select>
+	
+	<select id="selectDetail" parameterType="chaVO" resultType="chaVO">
+		/*	문화재청 상세 조회(임무, 비전)	 	system.menu.cha.selectDetail	*/
+		SELECT
+			YEAR,
+			MISSION,
+		   	MATCH_FILE_ID AS ATCH_FILE_KEY,
+		   	VISION,
+		   	VATCH_FILE_ID AS ATCH_FILE_KEY2
+		FROM BSC_MISSION_VISION
+		WHERE 1=1
+			AND YEAR=#{findYear}
+
+	</select>	
+	
+	<!-- 
+	<update id="updateSortOrder" parameterType="chaVO">
+	    /*	문화재청 정렬순서저장	 cha.updateSortOrder	*/
+		updateSortOrderQuery
+	</update>
+	-->
+	
+	<update id="deleteCha" parameterType="chaVO">
+		/*	문화재청 삭제	system.menu.cha.deleteCha	*/
+		UPDATE BSC_SELF_KPI
+		SET
+			DELETE_DT = SYSDATE
+		WHERE 1=1
+			AND YEAR=#{year}
+			AND KPI_ID=#{kpiId}
+
+	</update>
+
+	<insert id="insertData" parameterType="chaVO">
+	/*	문화재청 저장(임무)	system.menu.cha.insertData	*/
+	INSERT INTO BSC_MISSION_VISION(
+		YEAR,
+		MISSION)
+	VALUES (
+			   #{findYear},
+			   #{mission})
+	</insert>
+
+	<insert id="insertData11" parameterType="chaVO">
+		/*	문화재청 저장(임무첨부파일)	system.menu.cha.insertData11	*/
+		INSERT INTO BSC_MISSION_VISION(
+			YEAR,
+			MATCH_FILE_ID)
+		VALUES (
+				   #{findYear},
+				   #{matchFileId})
+	</insert>
+
+	<insert id="insertData2" parameterType="chaVO">
+		/*	문화재청 저장(비전)	system.menu.cha.insertData2	*/
+		INSERT INTO BSC_MISSION_VISION(
+			YEAR,
+			VISION)
+		VALUES (
+				   #{findYear},
+				   #{vision})
+	</insert>
+
+	<insert id="insertData22" parameterType="chaVO">
+		/*	문화재청 저장(비전첨부파일)	system.menu.cha.insertData22	*/
+		INSERT INTO BSC_MISSION_VISION(
+			YEAR,
+			VATCH_FILE_ID)
+		VALUES (
+				   #{findYear},
+				   #{vatchFileId})
+	</insert>
+
+	<update id="updateData" parameterType="chaVO">
+		/*	문화재청 수정(임무)	system.menu.cha.updateData	*/
+		UPDATE BSC_MISSION_VISION
+		SET
+			MISSION=#{mission}
+		WHERE 1=1
+			AND YEAR=#{findYear}
+	</update>
+
+	<update id="updateData11" parameterType="chaVO">
+		/*	문화재청 수정(임무첨부파일)	system.menu.cha.updateData11	*/
+		UPDATE BSC_MISSION_VISION
+		SET
+			MATCH_FILE_ID=#{matchFileId}
+		WHERE 1=1
+				  AND YEAR=#{findYear}
+	</update>
+
+	<update id="updateData2" parameterType="chaVO">
+		/*	문화재청 수정(비전)	system.menu.cha.updateData2	*/
+		UPDATE BSC_MISSION_VISION
+		SET
+			VISION=#{vision}
+		WHERE 1=1
+				  AND YEAR=#{findYear}
+	</update>
+
+	<update id="updateData22" parameterType="chaVO">
+		/*	문화재청 수정(비전첨부파일)	system.menu.cha.updateData22	*/
+		UPDATE BSC_MISSION_VISION
+		SET
+			VATCH_FILE_ID=#{vatchFileId}
+		WHERE 1=1
+				  AND YEAR=#{findYear}
+	</update>
+</mapper>
+

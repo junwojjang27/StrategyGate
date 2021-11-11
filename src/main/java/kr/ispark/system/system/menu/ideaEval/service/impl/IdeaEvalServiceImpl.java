@@ -145,8 +145,6 @@ public class IdeaEvalServiceImpl extends EgovAbstractServiceImpl {
 
 		resultCnt +=  ideaEvalDAO.submitData(dataVO);
 
-
-
 		return resultCnt;
 	}
 }

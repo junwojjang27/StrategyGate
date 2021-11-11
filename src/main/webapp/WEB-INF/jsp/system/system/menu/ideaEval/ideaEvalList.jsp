@@ -54,6 +54,28 @@ $(function(){
 		sortname: "createDt",
 		sortorder: "asc",
 		loadComplete : function() {
+			now = new Date(); //현재 시간 구하기
+
+			year = now.getFullYear();
+			month = now.getMonth() + 1;
+			date = now.getDate();
+
+			today = year * 10000 + month * 100 + date;
+
+			var $grid = $("#list");
+			var ids = $grid.jqGrid("getDataIDs");
+			var rowObj;
+
+			$(ids).each(function (idx, rowId) {
+				rowObj = $grid.jqGrid("getRowData", rowId);
+				startTemp = rowObj.startDt.replace(/\./g, ''); //날짜 비교를 위함.
+				endTemp = rowObj.endDt.replace(/\./g, '');
+				if (startTemp <= today && endTemp >= today) {                 //평가 가능한 리스트는 배경을 분홍색으로.
+					if(rowObj.userId != "${sessionScope.loginVO.userId}") {
+						$grid.find("#" + rowId).css("backgroundColor", "#FFBBBB");
+					}
+				}
+			});
 		}
 	});
 
@@ -163,6 +185,12 @@ function showDetail(ideaCd) {
 	</div>
 	<div class="tbl-bottom tbl-bottom2">
 		<div class="tbl-btn"></div>
+	</div>
+	<div class="page-noti">
+		<ul>
+			<li>본인의 제안은 평가할 수 없습니다.</li>
+			<li>평가가 가능한 제안만 분홍색으로 표시됩니다.</li>
+		</ul>
 	</div>
 </form:form>
 

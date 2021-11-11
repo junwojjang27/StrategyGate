@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC
+	"-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"
+	"http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+	<formset>
+		<form name="chaVO">
+			<field property="kpiId" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="kpiGbnId" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="8" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>8</var-value>
+				</var>
+			</field>
+			<field property="straTgtId" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="resultTgtId" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="subjectTgtId" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="unitId" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="8" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>8</var-value>
+				</var>
+			</field>
+			<field property="kpiNm" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="300" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>300</var-value>
+				</var>
+			</field>
+			<field property="kpiPoolId" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="year1Actual" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="year2Actual" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="year3Actual" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="year0Target" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="year1Target" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="year2Target" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="year3Target" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="year4Target" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="basisContent" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+			<field property="calContent" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+			<field property="dataContent" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="1000" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>1000</var-value>
+				</var>
+			</field>
+			<field property="keyword" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="200" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>200</var-value>
+				</var>
+			</field>
+			<field property="sortOrder" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="22" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>22</var-value>
+				</var>
+			</field>
+			<field property="poolYn" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="1" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>1</var-value>
+				</var>
+			</field>
+			<field property="createDt" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="modifyDt" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+			<field property="deleteDt" depends="maxlength">
+				<arg0 key="null" resource="true"/>
+				<arg1 key="7" resource="false"/>
+				<var>
+					<var-name>maxlength</var-name>
+					<var-value>7</var-value>
+				</var>
+			</field>
+
+		</form>
+	</formset>
+</form-validation>
+

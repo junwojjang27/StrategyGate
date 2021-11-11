@@ -165,6 +165,8 @@ public class IdeaUsController extends BaseController {
 			@ModelAttribute("dataVO") IdeaUsVO dataVO,
 			Model model, BindingResult bindingResult) throws Exception {
 
+		System.out.println("컨트롤러");
+
 		// 유효성 체크
 		beanValidator.validate(dataVO, bindingResult);
 		if(bindingResult.hasErrors()){
@@ -185,6 +187,7 @@ public class IdeaUsController extends BaseController {
 			resultHandling(false, multiRequest, response, dataVO, errMsg);
 			return;
 		}
+
 
 		// 첨부파일을 List로 변환
 		List<FileVO> fileList1 = fileUtil.parseFileInf(multiRequest, "upFile1", "example", dataVO.getAtchFileId());
@@ -227,6 +230,7 @@ public class IdeaUsController extends BaseController {
 	@RequestMapping("/system/system/menu/ideaUs/ideaUsDetail.do")
 	public String getAtchFileForm(@ModelAttribute("searchVO") IdeaUsVO ideaUsVO,  Model model) {
 		//model.addAttribute("searchVO",IdeaUsVO);
+		System.out.println("ideaUsVO : " + ideaUsVO);
 		return "/system/system/menu/ideaUs/ideaUsAtchFileForm";
 	}
 }

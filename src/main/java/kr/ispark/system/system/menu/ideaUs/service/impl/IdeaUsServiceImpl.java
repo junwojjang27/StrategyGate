@@ -95,7 +95,7 @@ public class IdeaUsServiceImpl extends EgovAbstractServiceImpl {
 	 * @throws	Exception
 	 */
 	public String insertData(IdeaUsVO dataVO, List<FileVO> fileList1) throws Exception {
-		if(!CommonUtil.isEmpty(fileList1)) {
+		if(!CommonUtil.isEmpty(fileList1)) { //이부분 중요... 있어야동작... (id를 통해 파일을 찾을 때 필요)
 			fileMngService.insertFileInfs(fileList1);
 		}
 		dataVO.setAtchFileId(fileUtil.getAtchFileId(fileList1));

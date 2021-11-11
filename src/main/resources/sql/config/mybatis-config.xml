@@ -85,8 +85,10 @@
 		<typeAlias alias="ideaReviewVO"	type="kr.ispark.system.system.menu.ideaReview.service.IdeaReviewVO"/>
 		<typeAlias alias="ideaReviewVO"	type="kr.ispark.system.system.menu.ideaReview.service.IdeaReviewVO"/>
 		<typeAlias alias="ideaEvalVO"	type="kr.ispark.system.system.menu.ideaEval.service.IdeaEvalVO"/>
+		<typeAlias alias="chaVO"	type="kr.ispark.system.system.menu.cha.service.ChaVO"/>
 	</typeAliases>
 </configuration>
+
 
 
 
