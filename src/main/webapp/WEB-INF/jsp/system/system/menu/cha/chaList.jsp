@@ -30,7 +30,7 @@ $(function(){
 	$("#list").jqGrid({
 		url			:	"${context_path}/system/system/menu/cha/chaList_json.do",
 		postData	:	getFormData("form"),
-		width		:	"${jqgrid_width}",
+		width		:	"${jqgrid_width}-50",
 		height		:	"250",
 		colModel	:	[
 						{name:"kpiGbnId",	index:"kpiGbnId",	width:15,	align:"center",	label:"체계구분"},
@@ -75,10 +75,6 @@ $(function(){
 		multiselect	: true,
 		loadComplete : function() {
 			//alert($("#findYear").val());
-
-
-
-
 			showDetail();
 		}
 	});
@@ -87,24 +83,36 @@ $(function(){
 });
 
 
-$(function(){
+$(function(){	//전략목표@@@@@@@@@@@@@@@@@@@@@@
+	var nowYear = parseInt($("#findYear").val());
 	$("#list2").jqGrid({
-		url			:	"${context_path}/system/system/menu/cha/chaList_json.do",
+		//url			:	"${context_path}/system/system/menu/cha/chaList_json.do",
 		postData	:	getFormData("form"),
-		width		:	"${jqgrid_width}",
+		width		:	"${jqgrid_width}-50",
 		height		:	"250",
 		colModel	:	[
-			{name:"temp",	index:"temp",	width:20,	align:"center",	label:"성과지표"},
-			{name:"unitId",	index:"unitId",	width:10,	align:"center",	label:"단위"},
-			{name:"year1Actual",	index:"year1Actual",	width:10,	align:"center",	label:"2020"},
-			{name:"year0Target",	index:"year0Target",	width:10,	align:"center",	label:"2021"},
-			{name:"year1Target",	index:"year1Target",	width:10,	align:"center",	label:"2022"},
-			{name:"year2Target",	index:"year2Target",	width:10,	align:"center",	label:"2023"},
-			{name:"year3Target",	index:"year3Target",	width:10,	align:"center",	label:"2024"},
-			{name:"year4Target",	index:"year4Target",	width:10,	align:"center",	label:"2025"},
-			{name:"basisContent",	index:"basisContent",	width:30,	align:"center",	label:"목표치 산출근거"},
-			{name:"calContent",	index:"calContent",	width:30,	align:"center",	label:"측정산식"},
-			{name:"dataContent",	index:"dataContent",	width:20,	align:"center",	label:"자료수집방법"},
+			{name:"temp",	index:"temp",	width:20,	align:"center",	label:"성과지표", 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 30}},
+			{name:"unitId",	index:"unitId",	width:10,	align:"center",	label:"단위", editable: true,  edittype: "select",
+				formatter: 'select', editrules: {required: true}, editoptions: {value: getUnitSelect()}},
+			{name:"year1Actual",	index:"year1Actual",	width:10,	align:"center",	label:nowYear-1, 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 20}},
+			{name:"year0Target",	index:"year0Target",	width:10,	align:"center",	label:nowYear, 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 20}},
+			{name:"year1Target",	index:"year1Target",	width:10,	align:"center",	label:nowYear+1, 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 20}},
+			{name:"year2Target",	index:"year2Target",	width:10,	align:"center",	label:nowYear+2, 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 20}},
+			{name:"year3Target",	index:"year3Target",	width:10,	align:"center",	label:nowYear+3, 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 20}},
+			{name:"year4Target",	index:"year4Target",	width:10,	align:"center",	label:nowYear+4, 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 20}},
+			{name:"basisContent",	index:"basisContent",	width:30,	align:"center",	label:"목표치 산출근거", 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 300}},
+			{name:"calContent",	index:"calContent",	width:30,	align:"center",	label:"측정산식", 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 300}},
+			{name:"dataContent",	index:"dataContent",	width:20,	align:"center",	label:"자료수집방법", 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 300}},
 
 			{name:"atchFileId",	index:"atchFileId",	width:15,	align:"center",	label:"첨부파일", hidden:true},
 			{name:"kpiGbnId",	index:"kpiGbnId",	width:15,	align:"center",	label:"체계구분", hidden:true},
@@ -132,6 +140,7 @@ $(function(){
 		cellEdit	: true,
 		multiselect	: true,
 		loadComplete : function() {
+
 		}
 	});
 	$("#addForm").hide();
@@ -144,11 +153,25 @@ jQuery("#list2").jqGrid('setGroupHeaders', {
 	]
 });
 
-$(function(){
+//단위 선택
+function getUnitSelect() {
+
+	var selectStr = "";
+	<c:forEach var="unitList" items="${codeUtil:getCodeList('013')}" varStatus="status">
+	selectStr += "<c:out value="${unitList.codeId}"/>" + ":" + "<c:out value="${unitList.codeNm}"/>";
+	<c:if test="${not status.last}">
+	selectStr += ";";
+	</c:if>
+	</c:forEach>
+
+	return selectStr;
+}
+
+$(function(){	//성과목표@@@@@@@@@@@@@@@@@@@@@@
 	$("#list3").jqGrid({
 		url			:	"${context_path}/system/system/menu/cha/chaList_json.do",
 		postData	:	getFormData("form"),
-		width		:	"${jqgrid_width}",
+		width		:	"${jqgrid_width}-50",
 		height		:	"250",
 		colModel	:	[
 			{name:"temp",	index:"temp",	width:20,	align:"center",	label:"성과지표"},
@@ -312,19 +335,71 @@ function addData() {
     $("#addForm").hide();
 	$("#addForm2").show();
 
+	resetForm("form", ["straTgtNm", "straNo", "resultTgtNm"]);
+
 	//resetForm("form", ["kpiId","kpiGbnId","straTgtId","resultTgtId","subjectTgtId","unitId","kpiNm","kpiPoolId","year1Actual","year2Actual","year3Actual","year0Target","year1Target","year2Target","year3Target","year4Target","basisContent","calContent","dataContent","keyword","sortOrder","poolYn","createDt","modifyDt","deleteDt"]);
 	$("#year").val($("#findYear").val());
 	//$("#kpiId").focus();
+
+
 }
 
 // 등록2(전략목표추가)
 function addData2() {
-    $("#addForm2").hide();
-    $("#addForm").show();
+    $("#addForm2").hide(); // 성과목표
+    $("#addForm").show();	// 전략목표
 
-    //resetForm("form", ["kpiId","kpiGbnId","straTgtId","resultTgtId","subjectTgtId","unitId","kpiNm","kpiPoolId","year1Actual","year2Actual","year3Actual","year0Target","year1Target","year2Target","year3Target","year4Target","basisContent","calContent","dataContent","keyword","sortOrder","poolYn","createDt","modifyDt","deleteDt"]);
+    resetForm("form", ["straTgtNm", "straNo"]);
     $("#year").val($("#findYear").val());
     //$("#kpiId").focus();
+
+	// nowYear = $("#findYear").val();
+	// $("#list2").jqGrid("setLabel", "year0Target", "test");
+	// alert(nowYear);
+
+	var modifyYn = "Y";
+	//첨부파일 ajax
+	$.ajax({
+		url: "${context_path}/system/system/menu/cha/chaAtchFile.do",
+		data: {
+			"modifyYn": modifyYn,
+			"_csrf": getCsrf("form")
+		},
+		method: "POST",
+		cache: false,
+		dataType: "html"
+	}).done(function (html) {
+		$("#spanAttachFile1").empty();
+		$("#spanAttachFile1").html(html);
+	}).fail(function (jqXHR, textStatus) {
+		try {
+			var json = JSON.parse(jqXHR.responseText);
+			if (!isEmpty(json.msg)) {
+				$.showMsgBox(json.msg);
+			} else {
+				$.showMsgBox(getMessage("errors.processing"));
+			}
+		} catch (e) {
+			$.showMsgBox(getMessage("errors.processing"));
+		}
+	});
+}
+
+//행 추가 (전략목표 행)
+function addRow() {
+	//var rowId = "newRow"+$.jgrid.guid++;
+	var rowId = $("#list2").getGridParam("reccount"); // 페이징 처리 시 현 페이지의 Max RowId 값
+
+	/*조회된 데이터 없을시 나타나는 문구 없앰.*/
+	if($("#list").find(".noGridResult").length > 0){
+		$("#list").find(".noGridResult").closest("tr").hide();
+	}
+
+	var rowData = {
+		year: $("#findYear").val()
+	};
+	$("#list2").jqGrid("addRowData", rowId + 1, rowData, 'last');
+	$('#list2 tr:last').focus();
 }
 
 // 저장 (임무)
@@ -336,6 +411,7 @@ function saveData() {
 		"data" : getFormData("form"),
 		"doneCallbackFunc" : "searchList"
 	});
+
 }
 
 // 저장 (비전)
@@ -348,6 +424,21 @@ function saveData2() {
 		"doneCallbackFunc" : "searchList"
 	});
 }
+
+// 저장 (전략목표)
+function saveData3() {
+	var f = document.form;
+
+	gridToFormChanged("list2", "form")
+
+	sendMultipartForm({
+		"url": "${context_path}/system/system/menu/cha/saveCha3.do",
+		"formId": "form",
+		"fileModules": [upload1],
+		"doneCallbackFunc" : "saveData33"
+	});
+}
+
 
 //파일 첨부(임무)
 function popAtchFile() {
@@ -489,7 +580,7 @@ function doDeleteData() {
 
 
 
-	<div id="addForm">
+	<div id="addForm">		<%--전략목표츄가@@@@@@@@--%>
 		<div class="tbl-type02">
 			<table summary="">
 				<caption></caption>
@@ -508,7 +599,7 @@ function doDeleteData() {
 				</tr>
 				<tr>
 					<th scope="row"><label for="atchFileId">첨부파일(*)</label></th>
-					<td ><form:input path="atchFileId" class="t-box01" maxlength="300" id="atchFileId"/></td>
+					<td ><span id="spanAttachFile1"></span></td>
 				</tr>
 				</tbody>
 			</table>
@@ -526,7 +617,7 @@ function doDeleteData() {
 					<th >성과지표(*)</th>
 					<td >
                         <div class="test1" >
-                            <a href="#" class="save" onclick="addData2();return false;">성과지표 추가</a>
+                            <a href="#" class="save" onclick="addRow();return false;">성과지표 추가</a>
                             <a href="#" class="new" onclick="addData();return false;">성과지표 삭제</a>
                         </div>
                    </td>
@@ -552,12 +643,12 @@ function doDeleteData() {
 
         <div class="tbl-bottom tbl-bottom2">
             <div class="tbl-btn">
-                <a href="#" class="save" onclick="addData2();return false;">일괄저장</a>
+                <a href="#" class="save" onclick="saveData3();return false;">일괄저장</a>
             </div>
         </div>
 	</div>
 
-	<div id="addForm2">
+	<div id="addForm2">		<%--성과목표츄가@@@@@@@@--%>
 		<div class="tbl-type02">
 			<table summary="">
 				<caption></caption>
@@ -571,8 +662,8 @@ function doDeleteData() {
 					<td ><form:input path="straTgtNm" class="t-box01" maxlength="300" id="straTgtNm"/></td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="straTgtNm">성과목표명(*)</label></th>
-					<td ><form:input path="straTgtNm" class="t-box01" maxlength="300" id="straTgtNm"/></td>
+					<th scope="row"><label for="resultTgtNm">성과목표명(*)</label></th>
+					<td ><form:input path="resultTgtNm" class="t-box01" maxlength="300" id="resultTgtNm"/></td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="straNo">번호(*)</label></th>
@@ -580,7 +671,7 @@ function doDeleteData() {
 				</tr>
 				<tr>
 					<th scope="row"><label for="atchFileId">첨부파일(*)</label></th>
-					<td ><form:input path="atchFileId" class="t-box01" maxlength="300" id="atchFileId"/></td>
+					<td ><%--<span id="spanAttachFile"></span>--%></td>
 				</tr>
 				</tbody>
 			</table>

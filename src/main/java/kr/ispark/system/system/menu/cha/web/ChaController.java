@@ -288,6 +288,78 @@ public class ChaController extends BaseController {
 		//return makeJsonDataByResultCnt(chaService.saveData11(dataVO));
 	}
 
+	/**
+	 * 문화재청 저장(전략목표 윗부분)
+	 * @param	ChaVO dataVO
+	 * @param	Model model
+	 * @param	BindingResult bindingResult
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/cha/saveCha3.do")
+	public void saveData3 (
+			final MultipartHttpServletRequest multiRequest,
+			HttpServletResponse response,
+			@ModelAttribute("dataVO") ChaVO dataVO,
+			Model model, BindingResult bindingResult) throws Exception {
+		System.out.println("컨트롤러");
+		System.out.println(dataVO.getAtchFileId());
+		System.out.println(dataVO.getMatchFileId());
+		System.out.println("dataVO : " + dataVO);
+		dataVO.setAtchFileId("");
+
+
+		// 첨부파일 유효성 체크
+		String errMsg;
+		errMsg = fileUtil.validation(multiRequest, "upFile2", dataVO.getAtchFileId(), (long)5242880, 5, PropertyUtil.getProperty("fileUpload.allowFileExts").split(","), dataVO.getChkAttachFiles());
+		if(errMsg != null) {
+			resultHandling(false, multiRequest, response, dataVO, errMsg);
+			return;
+		}
+
+		System.out.println("dataVO : " + dataVO);
+
+		// 첨부파일을 List로 변환
+		List<FileVO> fileList2 = fileUtil.parseFileInf(multiRequest, "upFile2", "example", dataVO.getAtchFileId());
+
+		try {
+			// 등록
+			if(!CommonUtil.isEmpty(dataVO.getMatchFileId())) {
+				 //수정
+//				List<FileVO> deleteFileList = chaService.saveData3(dataVO, fileList2);
+//				try {
+//					for(FileVO fileVO : deleteFileList) {
+//						EgovFileTool.deletePath(fileVO.getFileStreCours()+fileVO.getStreFileNm());
+//					}
+//				} catch(RuntimeException re) {
+//					log.error("error : "+re.getCause());
+//				} catch(Exception e) {
+//					log.error("error : "+e.getCause());
+//				}
+				System.out.println("수정쪽..");
+			} else {
+				dataVO.setUserId(SessionUtil.getUserId());
+				chaService.saveData3(dataVO, fileList2);
+			}
+		} catch(SQLException sqe) {
+			log.error("error : "+sqe.getCause());
+			// 업로드한 파일들 물리적으로 삭제
+			for(FileVO fileVO : fileList2) {
+				EgovFileTool.deletePath(fileVO.getFileStreCours()+fileVO.getStreFileNm());
+			}
+			resultHandling(false, multiRequest, response, dataVO);
+		} catch(Exception e) {
+			log.error(e.getMessage());
+			// 업로드한 파일들 물리적으로 삭제
+			for(FileVO fileVO : fileList2) {
+				EgovFileTool.deletePath(fileVO.getFileStreCours()+fileVO.getStreFileNm());
+			}
+		}
+		resultHandling(true, multiRequest, response, dataVO);
+
+		//return makeJsonDataByResultCnt(chaService.saveData11(dataVO));
+	}
+
 
 	/**
 	 * 첨부파일 팝업 화면1
@@ -299,7 +371,7 @@ public class ChaController extends BaseController {
 	@RequestMapping(value="/system/system/menu/cha/chaListDetail.do")
 	public String chaListDetail(@ModelAttribute("searchVO") ChaVO searchVO, Model model) throws Exception {
 		ChaVO dataVO = chaService.selectDetail(searchVO);
-		model.addAttribute("dataVO", searchVO);
+		model.addAttribute("dataVO", dataVO);
 		model.addAttribute("searchVO", searchVO);
 		System.out.println("디테일");
 		return "/system/system/menu/cha/chaListDetail." + searchVO.getLayout();
@@ -333,7 +405,7 @@ public class ChaController extends BaseController {
 	@RequestMapping(value="/system/system/menu/cha/chaListDetail2.do")
 	public String chaListDetail2(@ModelAttribute("searchVO") ChaVO searchVO, Model model) throws Exception {
 		ChaVO dataVO = chaService.selectDetail(searchVO);
-		model.addAttribute("dataVO", searchVO);
+		model.addAttribute("dataVO", dataVO);
 		model.addAttribute("searchVO", searchVO);
 		System.out.println("디테일");
 		return "/system/system/menu/cha/chaListDetail2." + searchVO.getLayout();
@@ -355,6 +427,23 @@ public class ChaController extends BaseController {
 		System.out.println("팝업");
 		System.out.println("ChaVO : " + ChaVO);
 		return "/system/system/menu/cha/popAtchFile2";
+	}
+
+	/**
+	 * 전략목표 첨부파일=
+	 * @param	ChaVO searchVO
+	 * @param	Model model
+	 * @return	String
+	 * @throws	Exception
+	 */
+	@RequestMapping(value="/system/system/menu/cha/chaAtchFile.do")
+	public String chaAtchFile(@ModelAttribute("searchVO") ChaVO ChaVO, Model model) {
+		//ChaVO dataVO = chaService.selectDetail(searchVO);
+		//model.addAttribute("dataVO", dataVO);
+		//model.addAttribute("searchVO", searchVO);
+		System.out.println("팝업");
+		System.out.println("ChaVO : " + ChaVO);
+		return "/system/system/menu/cha/chaAtchFile";
 	}
 
 

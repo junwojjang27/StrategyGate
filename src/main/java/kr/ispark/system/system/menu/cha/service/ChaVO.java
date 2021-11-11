@@ -54,6 +54,9 @@ public class ChaVO extends CommonVO {
 	private String atchFileKey2;
 	private String atchFileId;
 
+	private String resultTgtNm;
+	private String resultTgtNo;
+
 	private String matchFileId;
 	private String vatchFileId;
 

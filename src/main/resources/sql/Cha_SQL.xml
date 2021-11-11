@@ -4,33 +4,40 @@
 	<select id="selectList" parameterType="chaVO" resultType="chaVO">
 		/*	문화재청 조회	system.menu.cha.selectList */
 		SELECT
-			YEAR,
-			KPI_ID,
-			KPI_GBN_ID,
-			STRA_TGT_ID,
-			RESULT_TGT_ID,
-			SUBJECT_TGT_ID,
-			UNIT_ID,
-			KPI_NM,
-			KPI_POOL_ID,
-			YEAR1_ACTUAL,
-			YEAR2_ACTUAL,
-			YEAR3_ACTUAL,
-			YEAR0_TARGET,
-			YEAR1_TARGET,
-			YEAR2_TARGET,
-			YEAR3_TARGET,
-			YEAR4_TARGET,
-			BASIS_CONTENT,
-			CAL_CONTENT,
-			DATA_CONTENT,
-			KEYWORD,
-			SORT_ORDER,
-			POOL_YN,
-			CREATE_DT,
-			MODIFY_DT,
-			DELETE_DT
-		FROM BSC_SELF_KPI
+			A.YEAR,
+			A.KPI_ID,
+			A.KPI_GBN_ID,
+			A.STRA_TGT_ID,
+			A.RESULT_TGT_ID,
+			A.SUBJECT_TGT_ID,
+			/*A.UNIT_ID,*/
+		    CA.CODE_NM AS UNIT_ID,
+			A.KPI_NM,
+			A.KPI_POOL_ID,
+			A.YEAR1_ACTUAL,
+			A.YEAR2_ACTUAL,
+			A.YEAR3_ACTUAL,
+			A.YEAR0_TARGET,
+			A.YEAR1_TARGET,
+			A.YEAR2_TARGET,
+			A.YEAR3_TARGET,
+			A.YEAR4_TARGET,
+			A.BASIS_CONTENT,
+			A.CAL_CONTENT,
+			A.DATA_CONTENT,
+			A.KEYWORD,
+			A.SORT_ORDER,
+			A.POOL_YN,
+			A.CREATE_DT,
+			A.MODIFY_DT,
+			A.DELETE_DT
+		FROM BSC_SELF_KPI A
+			<include refid="common.func.getCodeJoin">    <!--카테고리 코드를 해당하는 문자로 변경-->
+				<property name="pYear" value="#{findYear}"/>
+				<property name="pCodeGrpId" value="'013'"/>
+				<property name="pAlias" value="CA"/>
+				<property name="pCompareColumn" value="A.UNIT_ID"/>
+			</include>
 		WHERE 1=1
 		  AND YEAR = #{findYear}
 
@@ -107,6 +114,30 @@
 		VALUES (
 				   #{findYear},
 				   #{vatchFileId})
+	</insert>
+
+	<insert id="insertData3" parameterType="chaVO">
+		/*	문화재청 저장(전략목표 윗부분)	system.menu.cha.insertData3	*/
+		INSERT INTO BSC_SELF_STRATEGY(
+			YEAR,
+			STRA_TGT_ID,
+			STRA_TGT_NM,
+			STRA_NO,
+			ATCH_FILE_ID,
+			SORT_ORDER,
+			CREATE_DT,
+			MODIFY_DT,
+			DELETE_DT)
+		VALUES (
+				   #{findYear},
+				   #{straTgtId},
+				   #{straTgtNm},
+				   #{straNo},
+				   #{atchFileId},
+				   #{sortOrder},
+				   SYSDATE,
+				   #{modifyDt},
+				   #{deleteDt})
 	</insert>
 
 	<update id="updateData" parameterType="chaVO">

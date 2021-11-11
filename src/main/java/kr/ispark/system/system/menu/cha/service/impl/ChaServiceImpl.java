@@ -157,5 +157,29 @@ public class ChaServiceImpl extends EgovAbstractServiceImpl {
 			return chaDAO.updateData22(dataVO);
 		}
 	}
+
+	/**
+	 * 문화재청 저장 (전락목표 윗부분)
+	 * @param	ChaVO searchVO
+	 * @return	int
+	 * @throws	Exception
+	 */
+	public String saveData3(ChaVO dataVO, List<FileVO> fileList2) throws Exception {
+		System.out.println("서비스");
+		if(!CommonUtil.isEmpty(fileList2)) {
+			fileMngService.insertFileInfs(fileList2);
+		}
+
+		if(true) {
+			dataVO.setAtchFileId(fileUtil.getAtchFileId(fileList2));
+			dataVO.setStraTgtId(idgenService.selectNextSeq("BSC_SELF_STRATEGY", "S", 6, "0"));
+			return chaDAO.insertData3(dataVO);
+		} else { //여기 구현해야함
+			System.out.println("수정은 아직 구현 놉");
+			return "asfsdfdfsfafdffda";
+//			dataVO.setMatchFileId(fileUtil.getAtchFileId(fileList2));
+//			return chaDAO.updateData3(dataVO);
+		}
+	}
 }
 

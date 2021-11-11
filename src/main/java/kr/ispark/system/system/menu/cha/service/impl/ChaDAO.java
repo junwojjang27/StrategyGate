@@ -117,6 +117,20 @@ public class ChaDAO extends EgovComAbstractDAO {
 	}
 
 	/**
+	 * 문화재청 저장(전략목표 윗부분)
+	 * @param	ChaVO searchVO
+	 * @return	int
+	 * @throws	Exception
+	 */
+	public String insertData3(ChaVO searchVO) throws Exception {
+		System.out.println("저장 DAO");
+		System.out.println("searchVO : " + searchVO);
+		insert("system.menu.cha.insertData3", searchVO);
+
+		return searchVO.getFindYear();
+	}
+
+	/**
 	 * 문화재청 수정(임무)
 	 * @param	ChaVO searchVO
 	 * @return	int
