@@ -13,6 +13,7 @@ package kr.ispark.system.system.menu.cha.service.impl;
 
 import java.util.List;
 
+import kr.ispark.system.system.survey.survReg.service.SurvRegVO;
 import org.springframework.stereotype.Repository;
 
 import egovframework.com.cmm.service.impl.EgovComAbstractDAO;
@@ -126,11 +127,68 @@ public class ChaDAO extends EgovComAbstractDAO {
 
 		int resultCnt = 0 ;
 
-		System.out.println("저장 DAO");
+		System.out.println("위저장 DAO");
+		System.out.println("searchVO : " + searchVO);
+
+		//resultCnt += insert("system.menu.cha.insertData33", searchVO);
+		resultCnt += insert("system.menu.cha.insertData3", searchVO);
+
+		return resultCnt;
+	}
+
+	/**
+	 * 문화재청 저장(전략목표 아래부분)
+	 * @param	ChaVO searchVO
+	 * @return	int
+	 * @throws	Exception
+	 */
+	public int insertData33(ChaVO searchVO) throws Exception {
+
+		int resultCnt = 1 ;
+
+		System.out.println("아래저장 DAO");
 		System.out.println("searchVO : " + searchVO);
 
 		resultCnt += insert("system.menu.cha.insertData33", searchVO);
-		resultCnt += insert("system.menu.cha.insertData3", searchVO);
+		//resultCnt += insert("system.menu.cha.insertData3", searchVO);
+
+		return resultCnt;
+	}
+
+	/**
+	 * 문화재청 저장(성과목표 윗부분)
+	 * @param	ChaVO searchVO
+	 * @return	int
+	 * @throws	Exception
+	 */
+	public int insertData4(ChaVO searchVO) throws Exception {
+
+		int resultCnt = 0 ;
+
+		System.out.println("위저장 DAO");
+		System.out.println("searchVO : " + searchVO);
+
+		//resultCnt += insert("system.menu.cha.insertData33", searchVO);
+		resultCnt += insert("system.menu.cha.insertData4", searchVO);
+
+		return resultCnt;
+	}
+
+	/**
+	 * 문화재청 저장(전략목표 아래부분)
+	 * @param	ChaVO searchVO
+	 * @return	int
+	 * @throws	Exception
+	 */
+	public int insertData44(ChaVO searchVO) throws Exception {
+
+		int resultCnt = 1 ;
+
+		System.out.println("아래저장 DAO");
+		System.out.println("searchVO : " + searchVO);
+
+		resultCnt += insert("system.menu.cha.insertData44", searchVO);
+		//resultCnt += insert("system.menu.cha.insertData3", searchVO);
 
 		return resultCnt;
 	}
@@ -183,6 +241,24 @@ public class ChaDAO extends EgovComAbstractDAO {
 		System.out.println("searchVO : " + searchVO);
 		update("system.menu.cha.updateData22", searchVO);
 		return searchVO.getFindYear();
+	}
+
+	/**
+	 * 콤보박스용ㅇ..
+	 */
+	public List<ChaVO> selectList9(ChaVO searchVO) throws Exception {
+		System.out.println("안되나?33333333333333333");
+		return selectList("system.menu.cha.selectList9", searchVO);
+	}
+
+	/**
+	 * 문화재청 상세 조회
+	 * @param	ChaVO searchVO
+	 * @return	ChaVO
+	 * @throws	Exception
+	 */
+	public ChaVO selectDetail7(ChaVO searchVO) throws Exception {
+		return (ChaVO)selectOne("system.menu.cha.selectDetail7", searchVO);
 	}
 }
 

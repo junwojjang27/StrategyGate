@@ -20,6 +20,7 @@ import kr.ispark.common.util.CustomEgovFileMngUtil;
 import kr.ispark.common.util.PropertyUtil;
 import kr.ispark.common.util.SessionUtil;
 import kr.ispark.system.system.comp.compMenuMng.service.CompMenuMngVO;
+import kr.ispark.system.system.menu.ideaEvalItem.service.IdeaEvalItemVO;
 import kr.ispark.system.system.menu.ideaUs.service.IdeaUsVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -56,9 +57,19 @@ public class ChaController extends BaseController {
 	 */
 	@RequestMapping("/system/system/menu/cha/chaList.do")
 	public String chaList(@ModelAttribute("searchVO") ChaVO searchVO, Model model) throws Exception {
+
+		System.out.println("안되나?1111111111");
+
+		ChaVO vo = new ChaVO();
+		List<ChaVO> straList = chaService.selectList9(vo);
+		model.addAttribute("straList", straList);
+
+		System.out.println("안되나?");
+		System.out.println(straList);
+
 		return "/system/system/menu/cha/chaList." + searchVO.getLayout();
 	}
-	
+
 	/**
 	 * 문화재청 그리드 조회(json)
 	 * @param	ChaVO searchVO
@@ -360,6 +371,112 @@ public class ChaController extends BaseController {
 		//return makeJsonDataByResultCnt(chaService.saveData11(dataVO));
 	}
 
+	/**
+	 * 문화재청 저장(전략목표 아래부분)
+	 * @param	ChaVO dataVO
+	 * @param	Model model
+	 * @param	BindingResult bindingResult
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/cha/saveCha33.do")
+	public ModelAndView saveData33(@ModelAttribute("dataVO") ChaVO dataVO, Model model, BindingResult bindingResult) throws Exception {
+
+		int resultCnt = chaService.saveData33(dataVO);
+		if(resultCnt == 0) {
+			return makeFailJsonData();
+		}
+		return makeSuccessJsonData();
+	}
+
+	/**
+	 * 문화재청 저장(성과목표 윗부분)
+	 * @param	ChaVO dataVO
+	 * @param	Model model
+	 * @param	BindingResult bindingResult
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/cha/saveCha4.do")
+	public void saveData4 (
+			final MultipartHttpServletRequest multiRequest,
+			HttpServletResponse response,
+			@ModelAttribute("dataVO") ChaVO dataVO,
+			Model model, BindingResult bindingResult) throws Exception {
+		System.out.println("컨트롤러");
+		System.out.println("dataVO : " + dataVO);
+		dataVO.setAtchFileId("");
+
+
+		// 첨부파일 유효성 체크
+		String errMsg;
+		errMsg = fileUtil.validation(multiRequest, "upFile2", dataVO.getAtchFileId(), (long)5242880, 5, PropertyUtil.getProperty("fileUpload.allowFileExts").split(","), dataVO.getChkAttachFiles());
+		if(errMsg != null) {
+			resultHandling(false, multiRequest, response, dataVO, errMsg);
+			return;
+		}
+
+		System.out.println("dataVO : " + dataVO);
+
+		// 첨부파일을 List로 변환
+		List<FileVO> fileList2 = fileUtil.parseFileInf(multiRequest, "upFile2", "example", dataVO.getAtchFileId());
+
+		try {
+			// 등록
+			if(!CommonUtil.isEmpty(dataVO.getMatchFileId())) {
+				//수정
+//				List<FileVO> deleteFileList = chaService.saveData3(dataVO, fileList2);
+//				try {
+//					for(FileVO fileVO : deleteFileList) {
+//						EgovFileTool.deletePath(fileVO.getFileStreCours()+fileVO.getStreFileNm());
+//					}
+//				} catch(RuntimeException re) {
+//					log.error("error : "+re.getCause());
+//				} catch(Exception e) {
+//					log.error("error : "+e.getCause());
+//				}
+				System.out.println("수정쪽..");
+			} else {
+				dataVO.setUserId(SessionUtil.getUserId());
+				chaService.saveData4(dataVO, fileList2);
+			}
+		} catch(SQLException sqe) {
+			log.error("error : "+sqe.getCause());
+			// 업로드한 파일들 물리적으로 삭제
+			for(FileVO fileVO : fileList2) {
+				EgovFileTool.deletePath(fileVO.getFileStreCours()+fileVO.getStreFileNm());
+			}
+			resultHandling(false, multiRequest, response, dataVO);
+		} catch(Exception e) {
+			log.error(e.getMessage());
+			// 업로드한 파일들 물리적으로 삭제
+			for(FileVO fileVO : fileList2) {
+				EgovFileTool.deletePath(fileVO.getFileStreCours()+fileVO.getStreFileNm());
+			}
+		}
+		resultHandling(true, multiRequest, response, dataVO);
+
+		//return makeJsonDataByResultCnt(chaService.saveData11(dataVO));
+	}
+
+	/**
+	 * 문화재청 저장(성과목표 아래부분)
+	 * @param	ChaVO dataVO
+	 * @param	Model model
+	 * @param	BindingResult bindingResult
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/cha/saveCha44.do")
+	public ModelAndView saveData44(@ModelAttribute("dataVO") ChaVO dataVO, Model model, BindingResult bindingResult) throws Exception {
+
+		int resultCnt = chaService.saveData44(dataVO);
+		if(resultCnt == 0) {
+			return makeFailJsonData();
+		}
+		return makeSuccessJsonData();
+	}
+
 
 	/**
 	 * 첨부파일 팝업 화면1
@@ -373,7 +490,7 @@ public class ChaController extends BaseController {
 		ChaVO dataVO = chaService.selectDetail(searchVO);
 		model.addAttribute("dataVO", dataVO);
 		model.addAttribute("searchVO", searchVO);
-		System.out.println("디테일");
+		System.out.println("디테일 : " + dataVO);
 		return "/system/system/menu/cha/chaListDetail." + searchVO.getLayout();
 	}
 
@@ -429,6 +546,7 @@ public class ChaController extends BaseController {
 		return "/system/system/menu/cha/popAtchFile2";
 	}
 
+
 	/**
 	 * 전략목표 첨부파일=
 	 * @param	ChaVO searchVO
@@ -446,7 +564,16 @@ public class ChaController extends BaseController {
 		return "/system/system/menu/cha/chaAtchFile";
 	}
 
-
+	/**
+	 * 성과목표 조회
+	 * @param	ChaVO searchVO
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/cha/selectDetail7.do")
+	public ModelAndView selectDetail7(@ModelAttribute("searchVO") ChaVO searchVO) throws Exception {
+		return makeJsonData(chaService.selectDetail7(searchVO));
+	}
 
 }
 

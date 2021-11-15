@@ -50,6 +50,8 @@ public class SurvResultController extends BaseController {
 		List<SurvRegVO> surveyList = survRegService.selectList(vo);
 		model.addAttribute("surveyList", surveyList);
 
+		System.out.println("여기여기여기여기 : " + surveyList);
+
 		if(CommonUtil.isEmpty(searchVO.getSurveyYear())) {
 			if(surveyList.size() > 0) {
 				searchVO.setSurveyYear(surveyList.get(0).getSurveyYear());

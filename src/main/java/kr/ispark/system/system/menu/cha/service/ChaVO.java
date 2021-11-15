@@ -63,9 +63,8 @@ public class ChaVO extends CommonVO {
 	private String modifyYn;
 
 	private String straTgtNm2;
-	private String resultTgtNm2;
-	private String straNo2;
 
+	private String straTgtId2;
 	
 	private List<ChaVO> gridDataList;
 }

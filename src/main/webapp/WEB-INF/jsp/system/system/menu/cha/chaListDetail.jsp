@@ -14,6 +14,8 @@
     <script type="text/javascript">
         $(function() {
             setMaxLength("form");
+            //alert("${dataVO.atchFileKey}");
+            //alert($("#atchFileKey").val());
         });
 
         var modifyYn = "Y";
@@ -22,6 +24,7 @@
             url: "${context_path}/system/system/menu/cha/popAtchFile.do",
             data: {
                 "modifyYn": modifyYn,
+                "atchFileId": "${dataVO.atchFileKey}",
                 "_csrf": getCsrf("form")
             },
             method: "POST",
@@ -67,6 +70,7 @@
 </head>
 <body>
 <form:form commandName="searchVO" id="form" name="form" method="post">
+    <form:hidden path="atchFileKey" value="${dataVO.atchFileKey}"/>
     <p>------------------------------------------------------------------------------------------------------------------------</p>
     <span id="spanAttachFile"></span>
     <div class="tbl-btn">

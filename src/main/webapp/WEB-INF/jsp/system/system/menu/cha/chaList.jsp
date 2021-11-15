@@ -33,19 +33,23 @@ $(function(){
 		width		:	"${jqgrid_width}-50",
 		height		:	"250",
 		colModel	:	[
-						{name:"kpiGbnId",	index:"kpiGbnId",	width:15,	align:"center",	label:"체계구분"},
-						{name:"straNo",	index:"straNo",	width:15,	align:"center",	label:"번호"},
-						{name:"kpiNm",	index:"kpiNm",	width:100,	align:"center",	label:"체계"},
-						{name:"temp",	index:"temp",	width:15,	align:"center",	label:"성과지표"},
-						{name:"atchFileId",	index:"atchFileId",	width:15,	align:"center",	label:"첨부파일"},
-
-						{name:"year",	index:"year",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"kpiId",	index:"kpiId",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"straTgtId",	index:"straTgtId",	width:100,	align:"center",	label:"null", hidden:true},
+						{name:"kpiGbnId",	    index:"kpiGbnId",	width:15,	align:"center",	label:"체계구분"},
+						{name:"straNo",	        index:"straNo",	    width:15,	align:"center",	label:"번호"},
+						{name:"kpiNm",	        index:"kpiNm",	    width:100,	align:"center",	label:"체계",
+							formatter: function (cellvalue, options, rowObject) {
+								return "<a href='#' onclick='showDetail2(\"" + removeNull(rowObject.straTgtId) + "\",\"" + removeNull(rowObject.resultTgtId) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
+							},//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
+							unformat: linkUnformatter
+						},
+						{name:"temp",	        index:"temp",	        width:15,	align:"center",	label:"성과지표"},
+						{name:"atchFileId",	    index:"atchFileId",	    width:15,	align:"center",	label:"첨부파일"},
+						{name:"year",	        index:"year",	        width:100,	align:"center",	label:"null", hidden:true},
+						{name:"kpiId",	        index:"kpiId",	        width:100,	align:"center",	label:"null", hidden:true},
+						{name:"straTgtId",	    index:"straTgtId",	    width:100,	align:"center",	label:"null", hidden:true},
 						{name:"resultTgtId",	index:"resultTgtId",	width:100,	align:"center",	label:"null", hidden:true},
 						{name:"subjectTgtId",	index:"subjectTgtId",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"unitId",	index:"unitId",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"kpiPoolId",	index:"kpiPoolId",	width:100,	align:"center",	label:"null", hidden:true},
+						{name:"unitId",	        index:"unitId",	        width:100,	align:"center",	label:"null", hidden:true},
+						{name:"kpiPoolId",	    index:"kpiPoolId",	    width:100,	align:"center",	label:"null", hidden:true},
 						{name:"year1Actual",	index:"year1Actual",	width:100,	align:"center",	label:"null", hidden:true},
 						{name:"year2Actual",	index:"year2Actual",	width:100,	align:"center",	label:"null", hidden:true},
 						{name:"year3Actual",	index:"year3Actual",	width:100,	align:"center",	label:"null", hidden:true},
@@ -55,18 +59,17 @@ $(function(){
 						{name:"year3Target",	index:"year3Target",	width:100,	align:"center",	label:"null", hidden:true},
 						{name:"year4Target",	index:"year4Target",	width:100,	align:"center",	label:"null", hidden:true},
 						{name:"basisContent",	index:"basisContent",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"calContent",	index:"calContent",	width:100,	align:"center",	label:"null", hidden:true},
+						{name:"calContent",	    index:"calContent",	    width:100,	align:"center",	label:"null", hidden:true},
 						{name:"dataContent",	index:"dataContent",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"keyword",	index:"keyword",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"sortOrder",	index:"sortOrder",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"poolYn",	index:"poolYn",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"createDt",	index:"createDt",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"modifyDt",	index:"modifyDt",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"deleteDt",	index:"deleteDt",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"straTgtNm",	index:"straTgtNm",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"straNo",	index:"straNo",	width:100,	align:"center",	label:"null", hidden:true},
-						{name:"atchFileId",	index:"atchFileId",	width:100,	align:"center",	label:"null", hidden:true}
-
+						{name:"keyword",	    index:"keyword",	    width:100,	align:"center",	label:"null", hidden:true},
+						{name:"sortOrder",	    index:"sortOrder",	    width:100,	align:"center",	label:"null", hidden:true},
+						{name:"poolYn",	        index:"poolYn",	        width:100,	align:"center",	label:"null", hidden:true},
+						{name:"createDt",	    index:"createDt",	    width:100,	align:"center",	label:"null", hidden:true},
+						{name:"modifyDt",	    index:"modifyDt",	    width:100,	align:"center",	label:"null", hidden:true},
+						{name:"deleteDt",	    index:"deleteDt",	    width:100,	align:"center",	label:"null", hidden:true},
+						{name:"straTgtNm",	    index:"straTgtNm",	    width:100,	align:"center",	label:"null", hidden:true},
+						{name:"straNo",	        index:"straNo",	        width:100,	align:"center",	label:"null", hidden:true},
+						{name:"atchFileId",	    index:"atchFileId",	    width:100,	align:"center",	label:"null", hidden:true}
 						],
 		rowNum		: ${jqgrid_rownum_max},
 		sortname	: "sortOrder",
@@ -74,14 +77,121 @@ $(function(){
 		cellEdit	: true,
 		multiselect	: true,
 		loadComplete : function() {
-			//alert($("#findYear").val());
 			showDetail();
 		}
 	});
-	
-
 });
 
+//성과목표 조회
+function showDetail2(straTgtId, resultTgtId) {
+
+	var f = document.form;
+	f.straTgtId.value = straTgtId;
+	f.resultTgtId.value = resultTgtId;
+
+	if(isNotEmpty(resultTgtId)) { //성과목표일때
+		sendAjax({
+			"url" : "${context_path}/system/system/menu/cha/selectDetail7.do",
+			"data" : getFormData("form"),
+			"doneCallbackFunc" : "setDetail2"
+		});
+	}
+	/*else {	//전략목표일때
+		sendAjax({
+			"url" : "${context_path}/system/system/menu/cha/selectDetail77.do",
+			"data" : getFormData("form"),
+			"doneCallbackFunc" : "setDetail22"
+		});
+	}*/
+}
+
+// 성과목표 상세 조회 값 세팅
+function setDetail2(data) {
+
+	$("#addForm2").show();
+	var dataVO = data.dataVO;
+
+	alert(dataVO.resultTgtNm);
+
+	voToForm(dataVO, "form", ["year", "resultTgtNm", "straTgtNm", "resultTgtNo"]);	//VO의 값을 form에 세팅
+	// $("#userNm").text(dataVO.userNm);
+	// $("#deptNm").text(dataVO.deptNm);
+	// $("#useYn").val($("#findUseYn").val());
+	// $("#title").val(dataVO.title);
+
+	alert(dataVO.atchFileKey);
+
+	var modifyYn = "Y";
+	//첨부파일 ajax
+	$.ajax({
+		url: "${context_path}/system/system/menu/cha/chaAtchFile.do",
+		data: {
+			"modifyYn": modifyYn,
+			//"atchFileId": dataVO.atchFileKey,
+			"_csrf": getCsrf("form")
+		},
+		method: "POST",
+		cache: false,
+		dataType: "html"
+	}).done(function (html) {
+		// $("#spanAttachFile2").empty();
+		// $("#spanAttachFile1").empty();
+		$("#spanAttachFile2").html(html);
+	}).fail(function (jqXHR, textStatus) {
+		try {
+			var json = JSON.parse(jqXHR.responseText);
+			if (!isEmpty(json.msg)) {
+				$.showMsgBox(json.msg);
+			} else {
+				$.showMsgBox(getMessage("errors.processing"));
+			}
+		} catch (e) {
+			$.showMsgBox(getMessage("errors.processing"));
+		}
+	});
+}
+
+// 전략목표 상세 조회 값 세팅
+function setDetail22(data) {
+
+	$("#newForm").show();
+	var dataVO = data.dataVO;
+
+	voToForm(dataVO, "form", ["year", "category", "title", "userNm", "deptNm", "content"]);	//VO의 값을 form에 세팅
+	$("#userNm").text(dataVO.userNm);
+	$("#deptNm").text(dataVO.deptNm);
+	$("#useYn").val($("#findUseYn").val());
+	// $("#title").val(dataVO.title);
+
+	var modifyYn = "Y";
+	//첨부파일 ajax
+	$.ajax({
+		url: "${context_path}/system/system/menu/cha/chaAtchFile.do",
+		data: {
+			"modifyYn": modifyYn,
+			"atchFileId": "${dataVO.atchFileKey}",
+			"_csrf": getCsrf("form")
+		},
+		method: "POST",
+		cache: false,
+		dataType: "html"
+	}).done(function (html) {
+		$("#spanAttachFile2").empty();
+		$("#spanAttachFile1").empty();
+		$("#spanAttachFile2").html(html);
+	}).fail(function (jqXHR, textStatus) {
+		try {
+			var json = JSON.parse(jqXHR.responseText);
+			if (!isEmpty(json.msg)) {
+				$.showMsgBox(json.msg);
+			} else {
+				$.showMsgBox(getMessage("errors.processing"));
+			}
+		} catch (e) {
+			$.showMsgBox(getMessage("errors.processing"));
+		}
+	});
+}
 
 $(function(){	//전략목표@@@@@@@@@@@@@@@@@@@@@@
 	var nowYear = parseInt($("#findYear").val());
@@ -114,25 +224,23 @@ $(function(){	//전략목표@@@@@@@@@@@@@@@@@@@@@@
 			{name:"dataContent",	index:"dataContent",	width:20,	align:"center",	label:"자료수집방법", 	editable: true,  edittype: "text",
 				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 300}},
 
-			{name:"atchFileId",	index:"atchFileId",	width:15,	align:"center",	label:"첨부파일", hidden:true},
-			{name:"kpiGbnId",	index:"kpiGbnId",	width:15,	align:"center",	label:"체계구분", hidden:true},
-			{name:"straNo",	index:"straNo",	width:15,	align:"center",	label:"번호", hidden:true},
-			{name:"kpiNm",	index:"kpiNm",	width:100,	align:"center",	label:"체계", hidden:true},
-			{name:"year",	index:"year",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"kpiId",	index:"kpiId",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"straTgtId",	index:"straTgtId",	width:100,	align:"center",	label:"null", hidden:true},
+			{name:"atchFileId",	    index:"atchFileId",	width:15,	align:"center",	label:"첨부파일", hidden:true},
+			{name:"kpiGbnId",	    index:"kpiGbnId",	width:15,	align:"center",	label:"체계구분", hidden:true},
+			{name:"straNo",	        index:"straNo",	    width:15,	align:"center",	label:"번호", hidden:true},
+			{name:"year",	        index:"year",	    width:100,	align:"center",	label:"null", hidden:true},
+			{name:"kpiId",	        index:"kpiId",	    width:100,	align:"center",	label:"null", hidden:true},
+			{name:"straTgtId",	    index:"straTgtId",	width:100,	align:"center",	label:"null", hidden:true},
 			{name:"resultTgtId",	index:"resultTgtId",	width:100,	align:"center",	label:"null", hidden:true},
 			{name:"subjectTgtId",	index:"subjectTgtId",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"kpiPoolId",	index:"kpiPoolId",	width:100,	align:"center",	label:"null", hidden:true},
+			{name:"kpiPoolId",	    index:"kpiPoolId",	width:100,	align:"center",	label:"null", hidden:true},
 			{name:"year2Actual",	index:"year2Actual",	width:100,	align:"center",	label:"null", hidden:true},
 			{name:"year3Actual",	index:"year3Actual",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"keyword",	index:"keyword",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"sortOrder",	index:"sortOrder",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"poolYn",	index:"poolYn",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"createDt",	index:"createDt",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"modifyDt",	index:"modifyDt",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"deleteDt",	index:"deleteDt",	width:100,	align:"center",	label:"null", hidden:true}
-
+			{name:"keyword",	    index:"keyword",	width:100,	align:"center",	label:"null", hidden:true},
+			{name:"sortOrder",	    index:"sortOrder",	width:100,	align:"center",	label:"null", hidden:true},
+			{name:"poolYn",	        index:"poolYn",	    width:100,	align:"center",	label:"null", hidden:true},
+			{name:"createDt",	    index:"createDt",	width:100,	align:"center",	label:"null", hidden:true},
+			{name:"modifyDt",   	index:"modifyDt",	width:100,	align:"center",	label:"null", hidden:true},
+			{name:"deleteDt",	    index:"deleteDt",	width:100,	align:"center",	label:"null", hidden:true}
 		],
 		rowNum		: ${jqgrid_rownum_max},
 		sortname	: "sortOrder",
@@ -140,7 +248,6 @@ $(function(){	//전략목표@@@@@@@@@@@@@@@@@@@@@@
 		cellEdit	: true,
 		multiselect	: true,
 		loadComplete : function() {
-
 		}
 	});
 	$("#addForm").hide();
@@ -155,7 +262,6 @@ jQuery("#list2").jqGrid('setGroupHeaders', {
 
 //단위 선택
 function getUnitSelect() {
-
 	var selectStr = "";
 	<c:forEach var="unitList" items="${codeUtil:getCodeList('013')}" varStatus="status">
 	selectStr += "<c:out value="${unitList.codeId}"/>" + ":" + "<c:out value="${unitList.codeNm}"/>";
@@ -169,57 +275,68 @@ function getUnitSelect() {
 
 $(function(){	//성과목표@@@@@@@@@@@@@@@@@@@@@@
 	$("#list3").jqGrid({
-		url			:	"${context_path}/system/system/menu/cha/chaList_json.do",
+		//url			:	"${context_path}/system/system/menu/cha/chaList_json.do",
 		postData	:	getFormData("form"),
-		width		:	"${jqgrid_width}-50",
+		width		:	"${jqgrid_width}",
 		height		:	"250",
 		colModel	:	[
-			{name:"kpiNm",	index:"kpiNm",	width:20,	align:"center",	label:"성과지표"},
-			{name:"unitId",	index:"unitId",	width:10,	align:"center",	label:"단위"},
-			{name:"year2Actual",	index:"year2Actual",	width:10,	align:"center",	label:"2018"},
-			{name:"year3Actual",	index:"year3Actual",	width:10,	align:"center",	label:"2019"},
-			{name:"year1Actual",	index:"year1Actual",	width:10,	align:"center",	label:"2020"},
-			{name:"year0Target",	index:"year0Target",	width:10,	align:"center",	label:"2021"},
+			{name:"kpiNm",	index:"kpiNm",	width:20,	align:"center",	label:"성과지표", 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 30}},
+			{name:"unitId",	index:"unitId",	width:10,	align:"center",	label:"단위",         editable: true,  edittype: "select",
+				formatter: 'select', editrules: {required: true}, editoptions: {value: getUnitSelect()}},
+			{name:"year3Actual",	index:"year2Actual",	width:10,	align:"center",	label:$("#findYear").val()-3, 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 30}},
+			{name:"year2Actual",	index:"year3Actual",	width:10,	align:"center",	label:$("#findYear").val()-2, 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 30}},
+			{name:"year1Actual",	index:"year1Actual",	width:10,	align:"center",	label:$("#findYear").val()-1, 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 30}},
+			{name:"year0Target",	index:"year0Target",	width:10,	align:"center",	label:$("#findYear").val(), 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 30}},
+			{name:"basisContent",	index:"basisContent",	width:30,	align:"center",	label:"목표치 산출근거", 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 30}},
+			{name:"calContent",	index:"calContent",	width:30,	align:"center",	label:"측정산식", 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 30}},
+			{name:"dataContent",	index:"dataContent",	width:20,	align:"center",	label:"자료수집방법", 	editable: true,  edittype: "text",
+				editrules: {required: true, custom: true, custom_func: jqGridChkBytes}, editoptions: {maxlength: 30}},
+
 			{name:"year1Target",	index:"year1Target",	width:10,	align:"center",	label:"2022", hidden:true},
 			{name:"year2Target",	index:"year2Target",	width:10,	align:"center",	label:"2023", hidden:true},
 			{name:"year3Target",	index:"year3Target",	width:10,	align:"center",	label:"2024", hidden:true},
 			{name:"year4Target",	index:"year4Target",	width:10,	align:"center",	label:"2025", hidden:true},
-			{name:"basisContent",	index:"basisContent",	width:30,	align:"center",	label:"목표치 산출근거"},
-			{name:"calContent",	index:"calContent",	width:30,	align:"center",	label:"측정산식"},
-			{name:"dataContent",	index:"dataContent",	width:20,	align:"center",	label:"자료수집방법"},
-
-			{name:"atchFileId",	index:"atchFileId",	width:15,	align:"center",	label:"첨부파일", hidden:true},
-			{name:"kpiGbnId",	index:"kpiGbnId",	width:15,	align:"center",	label:"체계구분", hidden:true},
-			{name:"straNo",	index:"straNo",	width:15,	align:"center",	label:"번호", hidden:true},
-			{name:"kpiNm",	index:"kpiNm",	width:100,	align:"center",	label:"체계", hidden:true},
-			{name:"year",	index:"year",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"kpiId",	index:"kpiId",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"straTgtId",	index:"straTgtId",	width:100,	align:"center",	label:"null", hidden:true},
+			{name:"atchFileId",	    index:"atchFileId",	    width:15,	align:"center",	label:"첨부파일", hidden:true},
+			{name:"kpiGbnId",	    index:"kpiGbnId",	    width:15,	align:"center",	label:"체계구분", hidden:true},
+			{name:"straNo",	        index:"straNo",	        width:15,	align:"center",	label:"번호", hidden:true},
+			{name:"year",	        index:"year",	        width:100,	align:"center",	label:"null", hidden:true},
+			{name:"kpiId",	        index:"kpiId",	        width:100,	align:"center",	label:"null", hidden:true},
+			{name:"straTgtId",	    index:"straTgtId",	    width:100,	align:"center",	label:"null", hidden:true},
 			{name:"resultTgtId",	index:"resultTgtId",	width:100,	align:"center",	label:"null", hidden:true},
 			{name:"subjectTgtId",	index:"subjectTgtId",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"kpiPoolId",	index:"kpiPoolId",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"keyword",	index:"keyword",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"sortOrder",	index:"sortOrder",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"poolYn",	index:"poolYn",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"createDt",	index:"createDt",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"modifyDt",	index:"modifyDt",	width:100,	align:"center",	label:"null", hidden:true},
-			{name:"deleteDt",	index:"deleteDt",	width:100,	align:"center",	label:"null", hidden:true}
-
+			{name:"kpiPoolId",	    index:"kpiPoolId",	    width:100,	align:"center",	label:"null", hidden:true},
+			{name:"keyword",	    index:"keyword",	    width:100,	align:"center",	label:"null", hidden:true},
+			{name:"sortOrder",	    index:"sortOrder",	    width:100,	align:"center",	label:"null", hidden:true},
+			{name:"poolYn",	        index:"poolYn",	        width:100,	align:"center",	label:"null", hidden:true},
+			{name:"createDt",	    index:"createDt",	    width:100,	align:"center",	label:"null", hidden:true},
+			{name:"modifyDt",	    index:"modifyDt",	    width:100,	align:"center",	label:"null", hidden:true},
+            {name:"deleteDt",	    index:"deleteDt",	width:100,	align:"center",	label:"null", hidden:true}
 		],
 		rowNum		: ${jqgrid_rownum_max},
 		sortname	: "sortOrder",
 		sortorder	: "asc",
 		cellEdit	: true,
 		multiselect	: true,
+		autowidth	: true,
 		loadComplete : function() {
 		}
 	});
 	$("#addForm2").hide();
+	$(window).resize(function(){
+		$("jqGridList").setGridWidth($(this).width() * .100);
+	});
 });
 jQuery("#list3").jqGrid('setGroupHeaders', {
 	useColSpanStyle: true,
 	groupHeaders:[
-		{startColumnName: 'year2Actual', numberOfColumns: 3, titleText: '실적'},
+		{startColumnName: 'year3Actual', numberOfColumns: 3, titleText: '실적'},
 		{startColumnName: 'year0Target', numberOfColumns: 1, titleText: '목표치'}
 	]
 });
@@ -243,7 +360,6 @@ function showDetail() {
 	f.year.value = year;
 	//f.kpiId.value = kpiId;
 
-	
 	sendAjax({
 		"url" : "${context_path}/system/system/menu/cha/selectDetail.do",
 		"data" : getFormData("form"),
@@ -256,7 +372,6 @@ function setDetail(data) {
 	var dataVO = data.dataVO;
 	
 	voToForm(dataVO, "form", ["mission", "vision"]);
-
 
     /**********첨부파일 시작**********/
     var modifyYn = "N";
@@ -314,9 +429,6 @@ function setDetail(data) {
 		}
 	});
 	/**********첨부파일 끝**********/
-
-
-	//$("#kpiId").focus();
 }
 
 // 정렬순서저장
@@ -337,11 +449,35 @@ function addData() {
 
 	resetForm("form", ["straTgtNm", "straNo", "resultTgtNm"]);
 
-	//resetForm("form", ["kpiId","kpiGbnId","straTgtId","resultTgtId","subjectTgtId","unitId","kpiNm","kpiPoolId","year1Actual","year2Actual","year3Actual","year0Target","year1Target","year2Target","year3Target","year4Target","basisContent","calContent","dataContent","keyword","sortOrder","poolYn","createDt","modifyDt","deleteDt"]);
 	$("#year").val($("#findYear").val());
-	//$("#kpiId").focus();
 
-
+	var modifyYn = "Y";
+	//첨부파일 ajax
+	$.ajax({
+		url: "${context_path}/system/system/menu/cha/chaAtchFile.do",
+		data: {
+			"modifyYn": modifyYn,
+			"_csrf": getCsrf("form")
+		},
+		method: "POST",
+		cache: false,
+		dataType: "html"
+	}).done(function (html) {
+		$("#spanAttachFile2").empty();
+		$("#spanAttachFile1").empty();
+		$("#spanAttachFile2").html(html);
+	}).fail(function (jqXHR, textStatus) {
+		try {
+			var json = JSON.parse(jqXHR.responseText);
+			if (!isEmpty(json.msg)) {
+				$.showMsgBox(json.msg);
+			} else {
+				$.showMsgBox(getMessage("errors.processing"));
+			}
+		} catch (e) {
+			$.showMsgBox(getMessage("errors.processing"));
+		}
+	});
 }
 
 // 등록2(전략목표추가)
@@ -351,11 +487,6 @@ function addData2() {
 
     resetForm("form", ["straTgtNm", "straNo"]);
     $("#year").val($("#findYear").val());
-    //$("#kpiId").focus();
-
-	// nowYear = $("#findYear").val();
-	// $("#list2").jqGrid("setLabel", "year0Target", "test");
-	// alert(nowYear);
 
 	var modifyYn = "Y";
 	//첨부파일 ajax
@@ -370,6 +501,8 @@ function addData2() {
 		dataType: "html"
 	}).done(function (html) {
 		$("#spanAttachFile1").empty();
+		$("#spanAttachFile2").empty();		//다 지워야 정상적으로 뜸.
+
 		$("#spanAttachFile1").html(html);
 	}).fail(function (jqXHR, textStatus) {
 		try {
@@ -391,8 +524,8 @@ function addRow() {
 	var rowId = $("#list2").getGridParam("reccount"); // 페이징 처리 시 현 페이지의 Max RowId 값
 
 	/*조회된 데이터 없을시 나타나는 문구 없앰.*/
-	if($("#list").find(".noGridResult").length > 0){
-		$("#list").find(".noGridResult").closest("tr").hide();
+	if($("#list2").find(".noGridResult").length > 0){
+		$("#list2").find(".noGridResult").closest("tr").hide();
 	}
 
 	var rowData = {
@@ -400,6 +533,23 @@ function addRow() {
 	};
 	$("#list2").jqGrid("addRowData", rowId + 1, rowData, 'last');
 	$('#list2 tr:last').focus();
+}
+
+//행 추가 (전략목표 행)
+function addRow2() {
+	//var rowId = "newRow"+$.jgrid.guid++;
+	var rowId = $("#list3").getGridParam("reccount"); // 페이징 처리 시 현 페이지의 Max RowId 값
+
+	/*조회된 데이터 없을시 나타나는 문구 없앰.*/
+	if($("#list3").find(".noGridResult").length > 0){
+		$("#list3").find(".noGridResult").closest("tr").hide();
+	}
+
+	var rowData = {
+		year: $("#findYear").val()
+	};
+	$("#list3").jqGrid("addRowData", rowId + 1, rowData, 'last');
+	$('#list3 tr:last').focus();
 }
 
 // 저장 (임무)
@@ -435,16 +585,56 @@ function saveData3() {
 		"url": "${context_path}/system/system/menu/cha/saveCha3.do",
 		"formId": "form",
 		"fileModules": [upload1],
-		"doneCallbackFunc" : "searchList"
+		"doneCallbackFunc": "saveData33"
 	});
+
+}
+
+function saveData33() {
+	var f = document.form;
+
+	gridToFormChanged("list2", "form");
+
+	sendAjax({
+		"url": "${context_path}/system/system/menu/cha/saveCha33.do",
+		"data": getFormData("form"),
+		"doneCallbackFunc": "searchList"
+	});
+
+}
+
+// 저장 (성과목표)
+function saveData4() {
+	var f = document.form;
+
+	gridToFormChanged("list3", "form");
+
+	sendMultipartForm({
+		"url": "${context_path}/system/system/menu/cha/saveCha4.do",
+		"formId": "form",
+		"fileModules": [upload1],
+		"doneCallbackFunc": "saveData44"
+	});
+
+}
+
+function saveData44() {
+	var f = document.form;
+
+	gridToFormChanged("list3", "form");
+
+	sendAjax({
+		"url": "${context_path}/system/system/menu/cha/saveCha44.do",
+		"data": getFormData("form"),
+		"doneCallbackFunc": "searchList"
+	});
+
 }
 
 
 //파일 첨부(임무)
 function popAtchFile() {
 	var f = document.form;
-	//f.pgmId.value = rowData.pgmId;
-
 	openFancybox({
 		"url" : "${context_path}/system/system/menu/cha/chaListDetail.do",
 		"data" : getFormData("form")
@@ -455,7 +645,6 @@ function popAtchFile() {
 //파일 첨부(비전)
 function popAtchFile2() {
 	var f = document.form;
-	//f.pgmId.value = rowData.pgmId;
 
 	openFancybox({
 		"url" : "${context_path}/system/system/menu/cha/chaListDetail2.do",
@@ -490,6 +679,8 @@ function doDeleteData() {
  	<form:hidden path="year"/>
 	<form:hidden path="kpiId"/>
     <form:hidden path="atchFileKey" value="${dataVO.atchFileKey}"/>
+	<form:hidden path="straTgtId"/>
+	<form:hidden path="resultTgtId"/>
 
 	<div class="sch-bx">
 		<ul>
@@ -558,17 +749,11 @@ function doDeleteData() {
 		<div class="tbl-bottom">
 			<div class="tbl-wbtn">
 			</div>
-			<%--<div class="tbl-btn">
-				<a href="#" class="save" onclick="saveData();return false;"><spring:message code="button.save"/></a>
-			</div>--%>
 		</div>
 	</div>
 
-<%--	<div class="btn-dw"></div>--%>
-
 	<div class="gridContainer">
 		<table id="list"></table>
-		<%--<div id="pager"></div>--%>
 	</div>
 	<div class="tbl-bottom tbl-bottom2">
 		<div class="tbl-btn">
@@ -577,8 +762,6 @@ function doDeleteData() {
 			<a href="#" class="delete" onclick="deleteData();return false;"><spring:message code="button.delete"/></a>
 		</div>
 	</div>
-
-
 
 	<div id="addForm">		<%--전략목표츄가@@@@@@@@--%>
 		<div class="tbl-type02">
@@ -659,15 +842,19 @@ function doDeleteData() {
 				<tbody>
 				<tr>
 					<th scope="row"><label for="straTgtNm2">전략목표명(*)</label></th>
-					<td ><form:input path="straTgtNm2" class="t-box01" maxlength="300" id="straTgtNm2"/></td>
+					<td >
+						<form:select path="straTgtNm2" class="select wx400" >
+							<form:options items="${straList}"  itemLabel="straTgtNm" itemValue="straTgtId" />
+						</form:select>
+					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="resultTgtNm2">성과목표명(*)</label></th>
-					<td ><form:input path="resultTgtNm2" class="t-box01" maxlength="300" id="resultTgtNm2"/></td>
+					<th scope="row"><label for="resultTgtNm">성과목표명(*)</label></th>
+					<td ><form:input path="resultTgtNm" class="t-box01" maxlength="300" id="resultTgtNm"/></td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="straNo2">번호(*)</label></th>
-					<td ><form:input path="straNo2" class="t-box01" maxlength="300" id="straNo2"/></td>
+					<th scope="row"><label for="resultTgtNo">번호(*)</label></th>
+					<td ><form:input path="resultTgtNo" class="t-box01" maxlength="300" id="resultTgtNo"/></td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="atchFileId2">첨부파일(*)</label></th>
@@ -689,7 +876,7 @@ function doDeleteData() {
 					<th >성과지표(*)</th>
 					<td >
                         <div class="test1" >
-                            <a href="#" class="save" onclick="addData2();return false;">성과지표 추가</a>
+                            <a href="#" class="save" onclick="addRow2();return false;">성과지표 추가</a>
                             <a href="#" class="new" onclick="addData();return false;">성과지표 삭제</a>
                         </div>
                     </td>
@@ -714,7 +901,7 @@ function doDeleteData() {
 
         <div class="tbl-bottom tbl-bottom2">
             <div class="tbl-btn">
-                <a href="#" class="save" onclick="addData2();return false;">일괄저장</a>
+                <a href="#" class="save" onclick="saveData4();return false;">일괄저장</a>
             </div>
         </div>
 	</div>

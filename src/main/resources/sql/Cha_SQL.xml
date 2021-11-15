@@ -141,7 +141,7 @@
 	</insert>
 
 	<insert id="insertData33" parameterType="chaVO">
-		/*	문화재청 저장(전략목표 윗부분)	system.menu.cha.insertData33	*/
+		/*	문화재청 저장(전략목표 아래부분)	system.menu.cha.insertData33	*/
 		INSERT INTO BSC_SELF_KPI(
 			YEAR,
 			KPI_ID,
@@ -162,10 +162,16 @@
 			MODIFY_DT,
 			DELETE_DT)
 		VALUES (
-				   #{findYear},
+				   #{year},
 				   #{kpiId},
 				   #{kpiGbnId},
-				   #{straTgtId},
+				   (
+				    SELECT DISTINCT A.STRA_TGT_ID
+				       FROM BSC_SELF_STRATEGY A
+				       WHERE A.YEAR = #{year}
+				       	AND A.STRA_NO = #{straNo}
+				       	AND A.STRA_TGT_NM = #{straTgtNm}
+					),
 				   #{unitId},
 				   #{kpiNm},
 				   #{year1Actual},
@@ -174,6 +180,78 @@
 				   #{year2Target},
 				   #{year3Target},
 				   #{year4Target},
+				   #{basisContent},
+				   #{calContent},
+				   #{dataContent},
+				   SYSDATE,
+				   #{modifyDt},
+				   #{deleteDt})
+	</insert>
+
+	<insert id="insertData4" parameterType="chaVO">
+		/*	문화재청 저장(성과목표 윗부분)	system.menu.cha.insertData4	*/
+		INSERT INTO BSC_SELF_RESULT(
+			YEAR,
+			RESULT_TGT_ID,
+			STRA_TGT_ID,
+			RESULT_TGT_NM,
+			RESULT_TGT_NO,
+			ATCH_FILE_ID,
+			SORT_ORDER,
+			CREATE_DT,
+			MODIFY_DT,
+			DELETE_DT)
+		VALUES (
+				   #{findYear},
+		           #{resultTgtId},
+				   #{straTgtNm2},
+				   #{resultTgtNm},
+				   #{resultTgtNo},
+				   #{atchFileId},
+				   #{sortOrder},
+				   SYSDATE,
+				   #{modifyDt},
+				   #{deleteDt})
+	</insert>
+
+	<insert id="insertData44" parameterType="chaVO">
+		/*	문화재청 저장(성과목표 아래부분)	system.menu.cha.insertData44	*/
+		INSERT INTO BSC_SELF_KPI(
+			YEAR,
+			KPI_ID,
+			KPI_GBN_ID,
+		    STRA_TGT_ID,
+			RESULT_TGT_ID,
+			UNIT_ID,
+			KPI_NM,
+			YEAR3_ACTUAL,
+			YEAR2_ACTUAL,
+			YEAR1_ACTUAL,
+			YEAR0_TARGET,
+			BASIS_CONTENT,
+			CAL_CONTENT,
+			DATA_CONTENT,
+			CREATE_DT,
+			MODIFY_DT,
+			DELETE_DT)
+		VALUES (
+				   #{year},
+				   #{kpiId},
+				   #{kpiGbnId},
+		           #{straTgtId},
+				   (
+					   SELECT DISTINCT A.RESULT_TGT_ID
+					   FROM BSC_SELF_RESULT A
+					   WHERE A.YEAR = #{year}
+						 AND A.RESULT_TGT_NO = #{resultTgtNo}
+						 AND A.RESULT_TGT_NM = #{resultTgtNm}
+				   ),
+				   #{unitId},
+				   #{kpiNm},
+				   #{year3Actual},
+				   #{year2Actual},
+				   #{year1Actual},
+				   #{year0Target},
 				   #{basisContent},
 				   #{calContent},
 				   #{dataContent},
@@ -217,5 +295,30 @@
 		WHERE 1=1
 				  AND YEAR=#{findYear}
 	</update>
+
+	<select id="selectList9" parameterType="chaVO" resultType="chaVO">
+		/*	콤보박스용..	system.menu.cha.selectList9 */
+		SELECT
+			A.YEAR,
+		       A.STRA_TGT_ID,
+		       A.STRA_TGT_NM
+		FROM BSC_SELF_STRATEGY A
+		WHERE 1=1
+
+	</select>
+
+	<select id="selectDetail7" parameterType="chaVO" resultType="chaVO">
+		/*	성과목표 상세 조회(임무, 비전)	 	system.menu.cha.selectDetail7	*/
+		SELECT
+			YEAR,
+			RESULT_TGT_NM,
+		    RESULT_TGT_NO,
+		    ATCH_FILE_ID AS ATCH_FILE_KEY
+
+		FROM BSC_SELF_RESULT
+		WHERE 1=1
+		  AND RESULT_TGT_ID = #{resultTgtId}
+
+	</select>
 </mapper>
 

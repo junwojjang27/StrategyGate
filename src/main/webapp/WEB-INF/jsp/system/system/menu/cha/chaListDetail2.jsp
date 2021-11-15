@@ -22,6 +22,7 @@
             url: "${context_path}/system/system/menu/cha/popAtchFile2.do",
             data: {
                 "modifyYn": modifyYn,
+                "atchFileId": "${dataVO.atchFileKey2}",
                 "_csrf": getCsrf("form")
             },
             method: "POST",
