@@ -54,6 +54,26 @@ public class ChaServiceImpl extends EgovAbstractServiceImpl {
 	public List<ChaVO> selectList(ChaVO searchVO) throws Exception {
 		return chaDAO.selectList(searchVO);
 	}
+
+	/**
+	 * 문화재청 성과목표 목록 조회
+	 * @param	ChaVO searchVO
+	 * @return	List<ChaVO>
+	 * @throws	Exception
+	 */
+	public List<ChaVO> selectList2(ChaVO searchVO) throws Exception {
+		return chaDAO.selectList2(searchVO);
+	}
+
+	/**
+	 * 문화재청 전략목표 목록 조회
+	 * @param	ChaVO searchVO
+	 * @return	List<ChaVO>
+	 * @throws	Exception
+	 */
+	public List<ChaVO> selectList3(ChaVO searchVO) throws Exception {
+		return chaDAO.selectList3(searchVO);
+	}
 	
 	/**
 	 * 문화재청 상세 조회
@@ -317,6 +337,16 @@ public class ChaServiceImpl extends EgovAbstractServiceImpl {
 	 */
 	public ChaVO selectDetail7(ChaVO searchVO) throws Exception {
 		return chaDAO.selectDetail7(searchVO);
+	}
+
+	/**
+	 * 성과목표 상세 조회
+	 * @param	ChaVO searchVO
+	 * @return	ChaVO
+	 * @throws	Exception
+	 */
+	public ChaVO selectDetail77(ChaVO searchVO) throws Exception {
+		return chaDAO.selectDetail77(searchVO);
 	}
 }
 

@@ -1,8 +1,8 @@
 <%--
   Created by IntelliJ IDEA.
   User: junwo
-  Date: 2021-11-10
-  Time: 오후 2:09
+  Date: 2021-11-17
+  Time: 오전 9:17
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
@@ -10,8 +10,9 @@
 <%@ include file="/WEB-INF/jsp/common/common-taglibs.jsp" %>
 <!doctype html>
 <html lang="ko">
-
+<head>
     <script type="text/javascript">
+        //alert("${searchVO.atchFileId}");
         var upload1 = null;
         $(function () {
             <c:choose>

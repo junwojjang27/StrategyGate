@@ -19,9 +19,6 @@ import kr.ispark.common.util.CommonUtil;
 import kr.ispark.common.util.CustomEgovFileMngUtil;
 import kr.ispark.common.util.PropertyUtil;
 import kr.ispark.common.util.SessionUtil;
-import kr.ispark.system.system.comp.compMenuMng.service.CompMenuMngVO;
-import kr.ispark.system.system.menu.ideaEvalItem.service.IdeaEvalItemVO;
-import kr.ispark.system.system.menu.ideaUs.service.IdeaUsVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
-import egovframework.let.utl.fcc.service.EgovStringUtil;
 import kr.ispark.system.system.menu.cha.service.impl.ChaServiceImpl;
 import kr.ispark.system.system.menu.cha.service.ChaVO;
 /*공통 컨트롤러*/
@@ -79,6 +75,30 @@ public class ChaController extends BaseController {
 	@RequestMapping("/system/system/menu/cha/chaList_json.do")
 	public ModelAndView chaList_json(@ModelAttribute("searchVO") ChaVO searchVO) throws Exception {
 		List<ChaVO> dataList = chaService.selectList(searchVO);
+		return makeGridJsonData(dataList, dataList.size(), searchVO);
+	}
+
+	/**
+	 * 문화재청 성과목표 그리드 조회(json)
+	 * @param	ChaVO searchVO
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/cha/chaList2_json.do")
+	public ModelAndView chaList2_json(@ModelAttribute("searchVO") ChaVO searchVO) throws Exception {
+		List<ChaVO> dataList = chaService.selectList2(searchVO);
+		return makeGridJsonData(dataList, dataList.size(), searchVO);
+	}
+
+	/**
+	 * 문화재청 전략목표 그리드 조회(json)
+	 * @param	ChaVO searchVO
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/cha/chaList3_json.do")
+	public ModelAndView chaList3_json(@ModelAttribute("searchVO") ChaVO searchVO) throws Exception {
+		List<ChaVO> dataList = chaService.selectList3(searchVO);
 		return makeGridJsonData(dataList, dataList.size(), searchVO);
 	}
 
@@ -573,6 +593,24 @@ public class ChaController extends BaseController {
 	@RequestMapping("/system/system/menu/cha/selectDetail7.do")
 	public ModelAndView selectDetail7(@ModelAttribute("searchVO") ChaVO searchVO) throws Exception {
 		return makeJsonData(chaService.selectDetail7(searchVO));
+	}
+
+	/**
+	 * 성과목표 조회
+	 * @param	ChaVO searchVO
+	 * @return	ModelAndView
+	 * @throws	Exception
+	 */
+	@RequestMapping("/system/system/menu/cha/selectDetail77.do")
+	public ModelAndView selectDetail77(@ModelAttribute("searchVO") ChaVO searchVO) throws Exception {
+		return makeJsonData(chaService.selectDetail77(searchVO));
+	}
+
+	@RequestMapping("/system/system/menu/cha/testAtchFile.do")
+	public String testAtchFile(@ModelAttribute("searchVO") ChaVO chaVO,  Model model) {
+		//model.addAttribute("searchVO",IdeaUsVO);
+		System.out.println("ChaVO@@@@@@ : " + chaVO);
+		return "testAtchFile";
 	}
 
 }

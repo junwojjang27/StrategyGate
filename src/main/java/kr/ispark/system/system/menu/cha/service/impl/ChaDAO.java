@@ -30,6 +30,26 @@ public class ChaDAO extends EgovComAbstractDAO {
 	public List<ChaVO> selectList(ChaVO searchVO) throws Exception {
 		return selectList("system.menu.cha.selectList", searchVO);
 	}
+
+	/**
+	 * 문화재청 성과목표 목록 조회
+	 * @param	ChaVO searchVO
+	 * @return	List<ChaVO>
+	 * @throws	Exception
+	 */
+	public List<ChaVO> selectList2(ChaVO searchVO) throws Exception {
+		return selectList("system.menu.cha.selectList2", searchVO);
+	}
+
+	/**
+	 * 문화재청 전략목표 목록 조회
+	 * @param	ChaVO searchVO
+	 * @return	List<ChaVO>
+	 * @throws	Exception
+	 */
+	public List<ChaVO> selectList3(ChaVO searchVO) throws Exception {
+		return selectList("system.menu.cha.selectList3", searchVO);
+	}
 	
 	/**
 	 * 문화재청 상세 조회
@@ -259,6 +279,16 @@ public class ChaDAO extends EgovComAbstractDAO {
 	 */
 	public ChaVO selectDetail7(ChaVO searchVO) throws Exception {
 		return (ChaVO)selectOne("system.menu.cha.selectDetail7", searchVO);
+	}
+
+	/**
+	 * 문화재청 상세 조회
+	 * @param	ChaVO searchVO
+	 * @return	ChaVO
+	 * @throws	Exception
+	 */
+	public ChaVO selectDetail77(ChaVO searchVO) throws Exception {
+		return (ChaVO)selectOne("system.menu.cha.selectDetail77", searchVO);
 	}
 }
 

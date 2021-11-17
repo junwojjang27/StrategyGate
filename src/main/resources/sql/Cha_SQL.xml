@@ -3,43 +3,129 @@
 <mapper namespace="system.menu.cha">
 	<select id="selectList" parameterType="chaVO" resultType="chaVO">
 		/*	문화재청 조회	system.menu.cha.selectList */
-		SELECT
+		SELECT T.*
+		FROM (
+		<include refid="common.pagingHeader"/>
+		<include refid="selectListQuery"/>
+		<include refid="common.pagingFooter"/>
+		) T
+
+
+	</select>
+
+	<sql id="selectListQuery">
+		SELECT DISTINCT
 			A.YEAR,
-			A.KPI_ID,
 			A.KPI_GBN_ID,
 			A.STRA_TGT_ID,
 			A.RESULT_TGT_ID,
 			A.SUBJECT_TGT_ID,
-			/*A.UNIT_ID,*/
-		    CA.CODE_NM AS UNIT_ID,
-			A.KPI_NM,
-			A.KPI_POOL_ID,
-			A.YEAR1_ACTUAL,
-			A.YEAR2_ACTUAL,
-			A.YEAR3_ACTUAL,
-			A.YEAR0_TARGET,
-			A.YEAR1_TARGET,
-			A.YEAR2_TARGET,
-			A.YEAR3_TARGET,
-			A.YEAR4_TARGET,
-			A.BASIS_CONTENT,
-			A.CAL_CONTENT,
-			A.DATA_CONTENT,
-			A.KEYWORD,
 			A.SORT_ORDER,
-			A.POOL_YN,
-			A.CREATE_DT,
-			A.MODIFY_DT,
-			A.DELETE_DT
+			case when b.RESULT_TGT_NM IS NOT NULL then (SELECT COUNT(bsc_self_kpi.result_tgt_id) FROM BSC_SELF_KPI WHERE bsc_self_kpi.result_tgt_id = a.result_tgt_id) else (SELECT COUNT(bsc_self_kpi.stra_tgt_id) FROM BSC_SELF_KPI WHERE bsc_self_kpi.stra_tgt_id = a.stra_tgt_id and bsc_self_kpi.result_tgt_id is null) end AS RESULT_CNT,
+			case when b.RESULT_TGT_NM IS NOT NULL then concat('  --> ', b.result_tgt_nm) else c.stra_tgt_nm end AS KPI_NM,
+			case when b.RESULT_TGT_NM IS NOT NULL then c.stra_no||' - '||b.result_tgt_no else c.stra_no end AS stra_no,
+			b.result_tgt_nm,
+			case when b.RESULT_TGT_NM IS NOT NULL then b.ATCH_FILE_ID else c.ATCH_FILE_ID end AS ATCH_FILE_KEY
+			FROM BSC_SELF_KPI A
+				 LEFT JOIN BSC_SELF_RESULT B
+						   ON A.RESULT_TGT_ID = B.RESULT_TGT_ID
+				 LEFT JOIN BSC_SELF_STRATEGY C
+						   ON A.STRA_TGT_ID = C.STRA_TGT_ID
+			WHERE 1=1
+			AND A.YEAR = #{findYear}
+			ORDER BY A.STRA_TGT_ID DESC, A.KPI_GBN_ID
+	</sql>
+
+	<select id="selectList2" parameterType="chaVO" resultType="chaVO">
+		/*	성과목표 문화재청 조회	system.menu.cha.selectList2 */
+		SELECT
+		A.YEAR,
+		A.KPI_ID,
+		A.KPI_GBN_ID,
+		A.STRA_TGT_ID,
+		A.RESULT_TGT_ID,
+		A.SUBJECT_TGT_ID,
+		/*A.UNIT_ID,*/
+		CA.CODE_NM AS UNIT_ID,
+		A.KPI_NM,
+		A.KPI_POOL_ID,
+		A.YEAR1_ACTUAL,
+		A.YEAR2_ACTUAL,
+		A.YEAR3_ACTUAL,
+		A.YEAR0_TARGET,
+		A.YEAR1_TARGET,
+		A.YEAR2_TARGET,
+		A.YEAR3_TARGET,
+		A.YEAR4_TARGET,
+		A.BASIS_CONTENT,
+		A.CAL_CONTENT,
+		A.DATA_CONTENT,
+		A.KEYWORD,
+		A.SORT_ORDER,
+		A.POOL_YN,
+		A.CREATE_DT,
+		A.MODIFY_DT,
+		A.DELETE_DT,
+		B.ATCH_FILE_ID AS ATCH_FILE_KEY
 		FROM BSC_SELF_KPI A
-			<include refid="common.func.getCodeJoin">    <!--카테고리 코드를 해당하는 문자로 변경-->
-				<property name="pYear" value="#{findYear}"/>
-				<property name="pCodeGrpId" value="'013'"/>
-				<property name="pAlias" value="CA"/>
-				<property name="pCompareColumn" value="A.UNIT_ID"/>
-			</include>
+		<include refid="common.func.getCodeJoin">    <!--카테고리 코드를 해당하는 문자로 변경-->
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'013'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="A.UNIT_ID"/>
+		</include>
+		LEFT JOIN BSC_SELF_RESULT B
+		ON A.RESULT_TGT_ID = B.RESULT_TGT_ID
 		WHERE 1=1
-		  AND YEAR = #{findYear}
+		AND A.YEAR = #{findYear}
+		AND A.RESULT_TGT_ID = #{resultTgtId}
+
+
+	</select>
+
+	<select id="selectList3" parameterType="chaVO" resultType="chaVO">
+		/*	전략목표 문화재청 조회	system.menu.cha.selectList3 */
+		SELECT
+		A.YEAR,
+		A.KPI_ID,
+		A.KPI_GBN_ID,
+		A.STRA_TGT_ID,
+		A.RESULT_TGT_ID,
+		A.SUBJECT_TGT_ID,
+		/*A.UNIT_ID,*/
+		CA.CODE_NM AS UNIT_ID,
+		A.KPI_NM,
+		A.KPI_POOL_ID,
+		A.YEAR1_ACTUAL,
+		A.YEAR2_ACTUAL,
+		A.YEAR3_ACTUAL,
+		A.YEAR0_TARGET,
+		A.YEAR1_TARGET,
+		A.YEAR2_TARGET,
+		A.YEAR3_TARGET,
+		A.YEAR4_TARGET,
+		A.BASIS_CONTENT,
+		A.CAL_CONTENT,
+		A.DATA_CONTENT,
+		A.KEYWORD,
+		A.SORT_ORDER,
+		A.POOL_YN,
+		A.CREATE_DT,
+		A.MODIFY_DT,
+		A.DELETE_DT,
+		B.ATCH_FILE_ID AS ATCH_FILE_KEY
+		FROM BSC_SELF_KPI A
+		<include refid="common.func.getCodeJoin">    <!--카테고리 코드를 해당하는 문자로 변경-->
+			<property name="pYear" value="#{findYear}"/>
+			<property name="pCodeGrpId" value="'013'"/>
+			<property name="pAlias" value="CA"/>
+			<property name="pCompareColumn" value="A.UNIT_ID"/>
+		</include>
+		LEFT JOIN BSC_SELF_STRATEGY B
+		ON A.STRA_TGT_ID = B.STRA_TGT_ID
+		WHERE 1=1
+		AND A.YEAR = #{findYear}
+		AND A.STRA_TGT_ID = #{straTgtId}
 
 
 	</select>
@@ -310,14 +396,31 @@
 	<select id="selectDetail7" parameterType="chaVO" resultType="chaVO">
 		/*	성과목표 상세 조회(임무, 비전)	 	system.menu.cha.selectDetail7	*/
 		SELECT
-			YEAR,
-			RESULT_TGT_NM,
-		    RESULT_TGT_NO,
-		    ATCH_FILE_ID AS ATCH_FILE_KEY
+			A.YEAR,
+			A.RESULT_TGT_NM,
+			A.RESULT_TGT_NO,
+			A.ATCH_FILE_ID AS ATCH_FILE_KEY,
+		    B.STRA_TGT_ID AS straTgtNm2
 
-		FROM BSC_SELF_RESULT
+		FROM BSC_SELF_RESULT A
+			LEFT JOIN BSC_SELF_KPI B
+				ON A.RESULT_TGT_ID = B.RESULT_TGT_ID
 		WHERE 1=1
-		  AND RESULT_TGT_ID = #{resultTgtId}
+		  AND A.RESULT_TGT_ID = #{resultTgtId}
+
+	</select>
+
+	<select id="selectDetail77" parameterType="chaVO" resultType="chaVO">
+		/*	성과목표 상세 조회(임무, 비전)	 	system.menu.cha.selectDetail77	*/
+		SELECT
+			A.YEAR,
+			A.STRA_TGT_NM,
+			A.STRA_NO,
+			A.ATCH_FILE_ID AS ATCH_FILE_KEY
+
+		FROM BSC_SELF_STRATEGY A
+		WHERE 1=1
+		  AND A.STRA_TGT_ID = #{straTgtId}
 
 	</select>
 </mapper>

@@ -35,14 +35,29 @@ $(function(){
 		colModel	:	[
 						{name:"kpiGbnId",	    index:"kpiGbnId",	width:15,	align:"center",	label:"체계구분"},
 						{name:"straNo",	        index:"straNo",	    width:15,	align:"center",	label:"번호"},
-						{name:"kpiNm",	        index:"kpiNm",	    width:100,	align:"center",	label:"체계",
-							formatter: function (cellvalue, options, rowObject) {
-								return "<a href='#' onclick='showDetail2(\"" + removeNull(rowObject.straTgtId) + "\",\"" + removeNull(rowObject.resultTgtId) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
-							},//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
-							unformat: linkUnformatter
+						{name:"kpiNm",	        index:"kpiNm",	    width:100,	align:"center",	label:"체계", align: "left",	sortable:false,
+							formatter:function(cellvalue, options, rowObject) {
+								var padding = "";
+								var value = escapeHTML(removeNull(cellvalue));
+								if(rowObject.groupLevel > 0) {
+									padding = "<img src='${img_path}/tree.gif' class='mr5' style='margin-left:" + ((rowObject.groupLevel-1) * 16) + "px'/>";
+								}
+								<%--<c:if test="${boardSetting.useCommentYn eq 'Y'}">
+								if(rowObject.commentCnt > 0) {
+									value += " [" + rowObject.commentCnt + "]";
+								}
+								</c:if>--%>
+								return padding + "<a href='#' onclick='showDetail2(\"" + removeNull(rowObject.straTgtId) + "\",\"" + removeNull(rowObject.resultTgtId) + "\");return false;'>" + escapeHTML(removeNull(cellvalue)) + "</a>";
+							}
 						},
-						{name:"temp",	        index:"temp",	        width:15,	align:"center",	label:"성과지표"},
-						{name:"atchFileId",	    index:"atchFileId",	    width:15,	align:"center",	label:"첨부파일"},
+						{name:"resultCnt",	        index:"resultCnt",	        width:15,	align:"center",	label:"성과지표"},
+						{name:"atchFileKey",	    index:"atchFileKey",	    width:15,	align:"center",	label:"첨부파일",
+							formatter: function (cellvalue, options, rowObject) {
+								return test123(removeNull(rowObject.atchFileKey));
+							}//,//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
+							//unformat: linkUnformatter
+						},
+
 						{name:"year",	        index:"year",	        width:100,	align:"center",	label:"null", hidden:true},
 						{name:"kpiId",	        index:"kpiId",	        width:100,	align:"center",	label:"null", hidden:true},
 						{name:"straTgtId",	    index:"straTgtId",	    width:100,	align:"center",	label:"null", hidden:true},
@@ -67,76 +82,89 @@ $(function(){
 						{name:"createDt",	    index:"createDt",	    width:100,	align:"center",	label:"null", hidden:true},
 						{name:"modifyDt",	    index:"modifyDt",	    width:100,	align:"center",	label:"null", hidden:true},
 						{name:"deleteDt",	    index:"deleteDt",	    width:100,	align:"center",	label:"null", hidden:true},
-						{name:"straTgtNm",	    index:"straTgtNm",	    width:100,	align:"center",	label:"null", hidden:true},
-						{name:"straNo",	        index:"straNo",	        width:100,	align:"center",	label:"null", hidden:true},
-						{name:"atchFileId",	    index:"atchFileId",	    width:100,	align:"center",	label:"null", hidden:true}
+						{name:"straTgtNm",	    index:"straTgtNm",	    width:100,	align:"center",	label:"null", hidden:true}
 						],
 		rowNum		: ${jqgrid_rownum_max},
 		sortname	: "sortOrder",
 		sortorder	: "asc",
 		cellEdit	: true,
 		multiselect	: true,
+		cellsubmit: 'clientArray',
 		loadComplete : function() {
+
+
+			/*var num = $("#list").getGridParam("reccount");		//현재 화면에 표시되고있는 레코드 숫자
+			var rowData;
+			for (var n = 1; n <= num; n++) {	//1 ~ (화면에 표시되고있는 레코드 숫자) 까지 반복하여 ideaCd를 비교해서 해당 제안을 찾음.
+				rowData = $("#list").jqGrid("getRowData", n);
+
+
+				if(isNotEmpty(rowData.atchFileKey)) {
+					/!**********첨부파일 시작**********!/
+					var modifyYn = "N";
+					//첨부파일 ajax
+					//alert(rowData.atchFileKey);
+					$.ajax({
+						url: "${context_path}/system/system/menu/cha/popAtchFile.do",
+						data: {
+							"modifyYn": modifyYn,
+							"atchFileId": rowData.atchFileKey,
+							"_csrf": getCsrf("form")
+						},
+						method: "POST",
+						cache: false,
+						dataType: "html"
+					}).done(function (html) {
+						//$("#matchFileId").html(html);
+						jQuery("#list").setCell(n, "atchFileKey", rowData.straNo);
+					}).fail(function (jqXHR, textStatus) {
+						try {
+							var json = JSON.parse(jqXHR.responseText);
+							if (!isEmpty(json.msg)) {
+								$.showMsgBox(json.msg);
+							} else {
+								$.showMsgBox(getMessage("errors.processing"));
+							}
+						} catch (e) {
+							$.showMsgBox(getMessage("errors.processing"));
+						}
+					});
+					/!**********첨부파일 끝**********!/
+				}
+			}*/
+
+
 			showDetail();
 		}
 	});
 });
 
-//성과목표 조회
-function showDetail2(straTgtId, resultTgtId) {
+function test123(atchFileKey){
 
-	var f = document.form;
-	f.straTgtId.value = straTgtId;
-	f.resultTgtId.value = resultTgtId;
+	//return "";
 
-	if(isNotEmpty(resultTgtId)) { //성과목표일때
-		sendAjax({
-			"url" : "${context_path}/system/system/menu/cha/selectDetail7.do",
-			"data" : getFormData("form"),
-			"doneCallbackFunc" : "setDetail2"
-		});
+	if (!isNotEmpty(atchFileKey)) {
+		alert("첨부파일없음");
+		return "";
 	}
-	/*else {	//전략목표일때
-		sendAjax({
-			"url" : "${context_path}/system/system/menu/cha/selectDetail77.do",
-			"data" : getFormData("form"),
-			"doneCallbackFunc" : "setDetail22"
-		});
-	}*/
-}
-
-// 성과목표 상세 조회 값 세팅
-function setDetail2(data) {
-
-	$("#addForm2").show();
-	var dataVO = data.dataVO;
-
-	alert(dataVO.resultTgtNm);
-
-	voToForm(dataVO, "form", ["year", "resultTgtNm", "straTgtNm", "resultTgtNo"]);	//VO의 값을 form에 세팅
-	// $("#userNm").text(dataVO.userNm);
-	// $("#deptNm").text(dataVO.deptNm);
-	// $("#useYn").val($("#findUseYn").val());
-	// $("#title").val(dataVO.title);
-
-	alert(dataVO.atchFileKey);
-
-	var modifyYn = "Y";
+	var modifyYn = "N";
 	//첨부파일 ajax
 	$.ajax({
-		url: "${context_path}/system/system/menu/cha/chaAtchFile.do",
+		url: "${context_path}/system/system/menu/cha/testAtchFile.do",
 		data: {
 			"modifyYn": modifyYn,
-			//"atchFileId": dataVO.atchFileKey,
+			"atchFileId": atchFileKey,
 			"_csrf": getCsrf("form")
 		},
 		method: "POST",
 		cache: false,
-		dataType: "html"
+		dataType: "text"
 	}).done(function (html) {
-		// $("#spanAttachFile2").empty();
 		// $("#spanAttachFile1").empty();
-		$("#spanAttachFile2").html(html);
+		// $("#spanAttachFile2").empty();
+		// $("#spanAttachFile1").html(html);
+		alert(html);
+		return html;
 	}).fail(function (jqXHR, textStatus) {
 		try {
 			var json = JSON.parse(jqXHR.responseText);
@@ -151,16 +179,93 @@ function setDetail2(data) {
 	});
 }
 
+//성과목표 조회
+function showDetail2(straTgtId, resultTgtId) {
+
+	var f = document.form;
+	f.straTgtId.value = straTgtId;
+	f.resultTgtId.value = resultTgtId;
+	//alert(f.resultTgtId.value);
+
+
+	if(isNotEmpty(resultTgtId)) { //성과목표일때
+		sendAjax({
+			"url" : "${context_path}/system/system/menu/cha/selectDetail7.do",
+			"data" : getFormData("form"),
+			"doneCallbackFunc" : "setDetail2"
+		});
+	}
+	else {	//전략목표일때
+		sendAjax({
+			"url" : "${context_path}/system/system/menu/cha/selectDetail77.do",
+			"data" : getFormData("form"),
+			"doneCallbackFunc" : "setDetail22"
+		});
+	}
+}
+
+// 성과목표 상세 조회 값 세팅
+function setDetail2(data) {
+
+
+	$("#addForm2").show(); // 성과목표
+	$("#addForm").hide();	// 전략목표
+
+
+	var dataVO = data.dataVO;
+
+	voToForm(dataVO, "form", ["year", "resultTgtNm", "straTgtNm", "resultTgtNo", "straTgtNm2"]);	//VO의 값을 form에 세팅
+	// $("#userNm").text(dataVO.userNm);
+	// $("#deptNm").text(dataVO.deptNm);
+	// $("#useYn").val($("#findUseYn").val());
+	// $("#title").val(dataVO.title);
+
+
+	//alert(dataVO.atchFileKey);
+
+
+	var modifyYn = "Y";
+	//첨부파일 ajax
+	$.ajax({
+		url: "${context_path}/system/system/menu/cha/popAtchFile.do",
+		data: {
+			"modifyYn": modifyYn,
+			"atchFileId": dataVO.atchFileKey,
+			"_csrf": getCsrf("form")
+		},
+		method: "POST",
+		cache: false,
+		dataType: "html"
+	}).done(function (html) {
+		 $("#spanAttachFile2").empty();
+		 $("#spanAttachFile1").empty();
+		$("#spanAttachFile2").html(html);
+	}).fail(function (jqXHR, textStatus) {
+		try {
+			var json = JSON.parse(jqXHR.responseText);
+			if (!isEmpty(json.msg)) {
+				$.showMsgBox(json.msg);
+			} else {
+				$.showMsgBox(getMessage("errors.processing"));
+			}
+		} catch (e) {
+			$.showMsgBox(getMessage("errors.processing"));
+		}
+	});
+	reloadGrid("list3", "form");
+}
+
 // 전략목표 상세 조회 값 세팅
 function setDetail22(data) {
 
-	$("#newForm").show();
+	$("#addForm2").hide(); // 성과목표
+	$("#addForm").show();	// 전략목표
+
+	//$("#newForm").show();
 	var dataVO = data.dataVO;
 
-	voToForm(dataVO, "form", ["year", "category", "title", "userNm", "deptNm", "content"]);	//VO의 값을 form에 세팅
-	$("#userNm").text(dataVO.userNm);
-	$("#deptNm").text(dataVO.deptNm);
-	$("#useYn").val($("#findUseYn").val());
+	voToForm(dataVO, "form", ["year", "resultTgtNm", "straTgtNm", "straNo", "straTgtNm2"]);	//VO의 값을 form에 세팅
+
 	// $("#title").val(dataVO.title);
 
 	var modifyYn = "Y";
@@ -176,9 +281,9 @@ function setDetail22(data) {
 		cache: false,
 		dataType: "html"
 	}).done(function (html) {
-		$("#spanAttachFile2").empty();
 		$("#spanAttachFile1").empty();
-		$("#spanAttachFile2").html(html);
+		$("#spanAttachFile2").empty();
+		$("#spanAttachFile1").html(html);
 	}).fail(function (jqXHR, textStatus) {
 		try {
 			var json = JSON.parse(jqXHR.responseText);
@@ -191,12 +296,13 @@ function setDetail22(data) {
 			$.showMsgBox(getMessage("errors.processing"));
 		}
 	});
+	reloadGrid("list2", "form");
 }
 
 $(function(){	//전략목표@@@@@@@@@@@@@@@@@@@@@@
 	var nowYear = parseInt($("#findYear").val());
 	$("#list2").jqGrid({
-		//url			:	"${context_path}/system/system/menu/cha/chaList_json.do",
+		url			:	"${context_path}/system/system/menu/cha/chaList3_json.do",
 		postData	:	getFormData("form"),
 		width		:	"${jqgrid_width}-50",
 		height		:	"250",
@@ -275,7 +381,7 @@ function getUnitSelect() {
 
 $(function(){	//성과목표@@@@@@@@@@@@@@@@@@@@@@
 	$("#list3").jqGrid({
-		//url			:	"${context_path}/system/system/menu/cha/chaList_json.do",
+		url			:	"${context_path}/system/system/menu/cha/chaList2_json.do",
 		postData	:	getFormData("form"),
 		width		:	"${jqgrid_width}",
 		height		:	"250",
@@ -640,6 +746,8 @@ function popAtchFile() {
 		"data" : getFormData("form")
 	});
 
+	showDetail();
+
 }
 
 //파일 첨부(비전)
@@ -755,11 +863,11 @@ function doDeleteData() {
 	<div class="gridContainer">
 		<table id="list"></table>
 	</div>
+
 	<div class="tbl-bottom tbl-bottom2">
 		<div class="tbl-btn">
 			<a href="#" class="save" onclick="addData2();return false;">전략목표 추가</a>
 			<a href="#" class="new" onclick="addData();return false;">성과목표 추가</a>
-			<a href="#" class="delete" onclick="deleteData();return false;"><spring:message code="button.delete"/></a>
 		</div>
 	</div>
 
