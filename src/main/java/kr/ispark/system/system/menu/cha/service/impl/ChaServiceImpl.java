@@ -106,6 +106,7 @@ public class ChaServiceImpl extends EgovAbstractServiceImpl {
 	 * @throws	Exception
 	 */
 	public int deleteCha(ChaVO dataVO) throws Exception {
+		System.out.println("삭제 서비스 dataVO : " + dataVO);
 		return chaDAO.deleteCha(dataVO);
 	}
 	
@@ -196,7 +197,7 @@ public class ChaServiceImpl extends EgovAbstractServiceImpl {
 			fileMngService.insertFileInfs(fileList2);
 		}
 
-		if(true) {
+		if(CommonUtil.isEmpty(dataVO.getStraTgtId())) {
 			dataVO.setAtchFileId(fileUtil.getAtchFileId(fileList2));
 			dataVO.setStraTgtId(idgenService.selectNextSeq("BSC_SELF_STRATEGY", "A", 6, "0"));
 			return chaDAO.insertData3(dataVO);
@@ -213,7 +214,7 @@ public class ChaServiceImpl extends EgovAbstractServiceImpl {
 
 		} else { //여기 구현해야함
 			System.out.println("수정은 아직 구현 놉");
-			return 0;
+			return chaDAO.updateData3(dataVO);
 //			dataVO.setMatchFileId(fileUtil.getAtchFileId(fileList2));
 //			return chaDAO.updateData3(dataVO);
 		}
@@ -259,13 +260,14 @@ public class ChaServiceImpl extends EgovAbstractServiceImpl {
 	 */
 	public int saveData4(ChaVO dataVO, List<FileVO> fileList2) throws Exception {
 		System.out.println("서비스");
+		System.out.println("서비스 dataVO : " + dataVO);
 		int resultCnt = 0;
 
 		if(!CommonUtil.isEmpty(fileList2)) {
 			fileMngService.insertFileInfs(fileList2);
 		}
 
-		if(true) {
+		if(CommonUtil.isEmpty(dataVO.getResultTgtId())) {
 			dataVO.setAtchFileId(fileUtil.getAtchFileId(fileList2));
 			dataVO.setResultTgtId(idgenService.selectNextSeq("BSC_SELF_STRATEGY", "A", 6, "0"));
 			return chaDAO.insertData4(dataVO);
@@ -282,7 +284,7 @@ public class ChaServiceImpl extends EgovAbstractServiceImpl {
 
 		} else { //여기 구현해야함
 			System.out.println("수정은 아직 구현 놉");
-			return 0;
+			return chaDAO.updateData4(dataVO);
 //			dataVO.setMatchFileId(fileUtil.getAtchFileId(fileList2));
 //			return chaDAO.updateData3(dataVO);
 		}

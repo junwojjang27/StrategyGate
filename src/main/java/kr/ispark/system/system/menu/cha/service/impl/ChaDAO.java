@@ -78,6 +78,7 @@ public class ChaDAO extends EgovComAbstractDAO {
 	 * @throws	Exception
 	 */
 	public int deleteCha(ChaVO searchVO) throws Exception {
+		System.out.println("삭제 searchVO : " + searchVO);
 		return update("system.menu.cha.deleteCha", searchVO);
 	}
 	
@@ -261,6 +262,42 @@ public class ChaDAO extends EgovComAbstractDAO {
 		System.out.println("searchVO : " + searchVO);
 		update("system.menu.cha.updateData22", searchVO);
 		return searchVO.getFindYear();
+	}
+
+	/**
+	 * 문화재청 전략목표 윗부분 수정
+	 * @param	ChaVO searchVO
+	 * @return	int
+	 * @throws	Exception
+	 */
+	public int updateData3(ChaVO searchVO) throws Exception {
+		int resultCnt = 0 ;
+
+		System.out.println("위수정 DAO");
+		System.out.println("searchVO : " + searchVO);
+
+		//resultCnt += insert("system.menu.cha.insertData33", searchVO);
+		resultCnt += update("system.menu.cha.updateData3", searchVO);
+
+		return resultCnt;
+	}
+
+	/**
+	 * 문화재청 성과목표 윗부분 수정
+	 * @param	ChaVO searchVO
+	 * @return	int
+	 * @throws	Exception
+	 */
+	public int updateData4(ChaVO searchVO) throws Exception {
+		int resultCnt = 0 ;
+
+		System.out.println("위수정 DAO");
+		System.out.println("searchVO : " + searchVO);
+
+		//resultCnt += insert("system.menu.cha.insertData33", searchVO);
+		resultCnt += update("system.menu.cha.updateData4", searchVO);
+
+		return resultCnt;
 	}
 
 	/**

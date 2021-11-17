@@ -12,7 +12,9 @@ package kr.ispark.system.system.menu.cha.web;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
+import egovframework.com.cmm.service.EgovFileMngService;
 import egovframework.com.cmm.service.FileVO;
 import egovframework.com.utl.sim.service.EgovFileTool;
 import kr.ispark.common.util.CommonUtil;
@@ -22,9 +24,11 @@ import kr.ispark.common.util.SessionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -43,7 +47,11 @@ public class ChaController extends BaseController {
 
 	@Resource(name = "CustomEgovFileMngUtil")
 	private CustomEgovFileMngUtil fileUtil;
-	
+
+
+	@Resource(name = "EgovFileMngService")
+	private EgovFileMngService fileService;
+
 	/**
 	 * 문화재청 목록 화면
 	 * @param	ChaVO searchVO
@@ -142,7 +150,12 @@ public class ChaController extends BaseController {
 	 */
 	@RequestMapping("/system/system/menu/cha/deleteCha.do")
 	public ModelAndView deleteCha(@ModelAttribute("dataVO") ChaVO dataVO, Model model) throws Exception {
-		return makeJsonDataByResultCnt(chaService.deleteCha(dataVO));
+		int resultCnt = chaService.deleteCha(dataVO);
+		if(resultCnt == 0) {
+			return makeFailJsonData();
+		}
+		return makeSuccessJsonData();
+		//return makeJsonDataByResultCnt(chaService.deleteCha(dataVO));
 	}
 	
 	/**
@@ -606,11 +619,35 @@ public class ChaController extends BaseController {
 		return makeJsonData(chaService.selectDetail77(searchVO));
 	}
 
-	@RequestMapping("/system/system/menu/cha/testAtchFile.do")
+	/*@RequestMapping("/system/system/menu/cha/testAtchFile.do")
 	public String testAtchFile(@ModelAttribute("searchVO") ChaVO chaVO,  Model model) {
 		//model.addAttribute("searchVO",IdeaUsVO);
 		System.out.println("ChaVO@@@@@@ : " + chaVO);
 		return "testAtchFile";
+	}*/
+
+	/**
+	 * 첨부파일에 대한 목록을 조회한다.
+	 * @param ChaVO
+	 * @param atchFileId
+	 * @param sessionVO
+	 * @param model
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/system/system/menu/cha/testAtchFile.do")
+	public String testAtchFile(@ModelAttribute("searchVO") FileVO fileVO, @RequestParam Map<String, Object> commandMap, ModelMap model) throws Exception {
+		String atchFileId = (String)commandMap.get("param_atchFileId");
+
+		fileVO.setAtchFileId(atchFileId);
+		List<FileVO> fileList = fileService.selectFileInfs(fileVO);
+
+		model.addAttribute("fileList", fileList);
+		model.addAttribute("updateFlag", "N");
+		model.addAttribute("fileListCnt", fileList.size());
+		model.addAttribute("atchFileId", atchFileId);
+
+		return "/system/system/menu/cha/chaFileList";
 	}
 
 }

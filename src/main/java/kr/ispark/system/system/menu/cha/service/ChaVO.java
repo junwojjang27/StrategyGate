@@ -68,14 +68,6 @@ public class ChaVO extends CommonVO {
 	private String straTgtId2;
 
 	private String resultCnt;
-
-
-	private int seq = -1;
-	@JsonIgnore
-	private int upSeq = -1;
-	private int groupSeq = -1;
-	private int groupOrder = 0;
-	private int groupLevel = 0;
 	
 	private List<ChaVO> gridDataList;
 }

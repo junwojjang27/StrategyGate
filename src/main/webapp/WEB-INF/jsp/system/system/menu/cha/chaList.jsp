@@ -31,7 +31,7 @@ $(function(){
 		url			:	"${context_path}/system/system/menu/cha/chaList_json.do",
 		postData	:	getFormData("form"),
 		width		:	"${jqgrid_width}-50",
-		height		:	"250",
+		height		:	"300",
 		colModel	:	[
 						{name:"kpiGbnId",	    index:"kpiGbnId",	width:15,	align:"center",	label:"체계구분"},
 						{name:"straNo",	        index:"straNo",	    width:15,	align:"center",	label:"번호"},
@@ -39,8 +39,8 @@ $(function(){
 							formatter:function(cellvalue, options, rowObject) {
 								var padding = "";
 								var value = escapeHTML(removeNull(cellvalue));
-								if(rowObject.groupLevel > 0) {
-									padding = "<img src='${img_path}/tree.gif' class='mr5' style='margin-left:" + ((rowObject.groupLevel-1) * 16) + "px'/>";
+								if(rowObject.kpiGbnId == "02") {
+									padding = "<img src='${img_path}/tree.gif' class='mr5' style='margin-left:10" + "px'/>";
 								}
 								<%--<c:if test="${boardSetting.useCommentYn eq 'Y'}">
 								if(rowObject.commentCnt > 0) {
@@ -51,11 +51,12 @@ $(function(){
 							}
 						},
 						{name:"resultCnt",	        index:"resultCnt",	        width:15,	align:"center",	label:"성과지표"},
-						{name:"atchFileKey",	    index:"atchFileKey",	    width:15,	align:"center",	label:"첨부파일",
+						{name:"atchFileKey",	    index:"atchFileKey",	    width:30,	align:"center",	label:"첨부파일",
 							formatter: function (cellvalue, options, rowObject) {
-								return test123(removeNull(rowObject.atchFileKey));
-							}//,//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
-							//unformat: linkUnformatter
+								//return test123(removeNull(rowObject.atchFileKey));
+								return "<span id = atch" + removeNull(options.rowId) + ">"+  escapeHTML(removeNull(cellvalue)) + "</span>";
+							},//formatter : 색깔이나 액션을 주는 (데이터 가공) / 제목에 링크, 돋보기 표시 등
+							unformat: linkUnformatter
 						},
 
 						{name:"year",	        index:"year",	        width:100,	align:"center",	label:"null", hidden:true},
@@ -91,6 +92,51 @@ $(function(){
 		multiselect	: true,
 		cellsubmit: 'clientArray',
 		loadComplete : function() {
+
+			var ids = $("#list").jqGrid("getRowData");
+			$(ids).each(function(i,e) {	//1 ~ (화면에 표시되고있는 레코드 숫자) 까지 반복하여 ideaCd를 비교해서 해당 제안을 찾음.
+
+
+				var count = 0;
+
+				//if(isNotEmpty(rowData.atchFileKey)) {
+					//var modifyYn = "N";
+					//alert(e.atchFileKey);
+					//첨부파일 ajax
+					$.ajax({
+						url: "${context_path}/system/system/menu/cha/testAtchFile.do",
+						data: {
+							//"modifyYn": modifyYn,
+							"param_atchFileId": e.atchFileKey,
+							"_csrf": getCsrf("form")
+						},
+						method: "POST",
+						cache: false,
+						dataType: "text"
+					}).done(function (text) {
+						var html = $.trim(text);
+						//alert(i);
+						// $("#spanAttachFile1").empty();
+						// $("#spanAttachFile2").empty();
+						$("#atch" + (i+1)).html(html);
+						//alert(html);
+						//return html;
+					}).fail(function (jqXHR, textStatus) {
+						try {
+							var json = JSON.parse(jqXHR.responseText);
+							if (!isEmpty(json.msg)) {
+								$.showMsgBox(json.msg);
+							} else {
+								$.showMsgBox(getMessage("errors.processing"));
+							}
+						} catch (e) {
+							$.showMsgBox(getMessage("errors.processing"));
+						}
+					});
+				//}
+			});
+
+
 
 
 			/*var num = $("#list").getGridParam("reccount");		//현재 화면에 표시되고있는 레코드 숫자
@@ -413,7 +459,7 @@ $(function(){	//성과목표@@@@@@@@@@@@@@@@@@@@@@
 			{name:"kpiGbnId",	    index:"kpiGbnId",	    width:15,	align:"center",	label:"체계구분", hidden:true},
 			{name:"straNo",	        index:"straNo",	        width:15,	align:"center",	label:"번호", hidden:true},
 			{name:"year",	        index:"year",	        width:100,	align:"center",	label:"null", hidden:true},
-			{name:"kpiId",	        index:"kpiId",	        width:100,	align:"center",	label:"null", hidden:true},
+			{name:"kpiId",	        index:"kpiId",	        width:100,	align:"center",	label:"아디"},
 			{name:"straTgtId",	    index:"straTgtId",	    width:100,	align:"center",	label:"null", hidden:true},
 			{name:"resultTgtId",	index:"resultTgtId",	width:100,	align:"center",	label:"null", hidden:true},
 			{name:"subjectTgtId",	index:"subjectTgtId",	width:100,	align:"center",	label:"null", hidden:true},
@@ -763,17 +809,20 @@ function popAtchFile2() {
 
 // 삭제
 function deleteData() {
-	if(deleteDataToForm("list", "kpiId", "form")) {
+	var f = document.form;
+
+	gridToFormChanged("list3", "form");
+	if(deleteDataToForm("list3", "kpiId", "form")) {
 		$.showConfirmBox("<spring:message code="common.delete.msg"/>", "doDeleteData");
 	}
 }
 
 // 삭제 처리
 function doDeleteData() {
-	var delList = [];
-	$("#form").find("[name=keys]").each(function(i, e) {
-		delList.push($(this).val());
-	});
+	// var delList = [];
+	// $("#form").find("[name=keys]").each(function(i, e) {
+	// 	delList.push($(this).val());
+	// });
 	
 	sendAjax({
 		"url" : "${context_path}/system/system/menu/cha/deleteCha.do",
@@ -781,14 +830,17 @@ function doDeleteData() {
 		"doneCallbackFunc" : "searchList"
 	});
 }
+
+
+
 </script>
 
 <form:form commandName="searchVO" id="form" name="form" method="post">
  	<form:hidden path="year"/>
-	<form:hidden path="kpiId"/>
+	<form:hidden path="kpiId" value="${dataVO.atchFileKey}"/>
     <form:hidden path="atchFileKey" value="${dataVO.atchFileKey}"/>
 	<form:hidden path="straTgtId"/>
-	<form:hidden path="resultTgtId"/>
+	<form:hidden path="resultTgtId" value="${dataVO.resultTgtId}"/>
 
 	<div class="sch-bx">
 		<ul>
@@ -985,7 +1037,7 @@ function doDeleteData() {
 					<td >
                         <div class="test1" >
                             <a href="#" class="save" onclick="addRow2();return false;">성과지표 추가</a>
-                            <a href="#" class="new" onclick="addData();return false;">성과지표 삭제</a>
+                            <a href="#" class="new" onclick="deleteData();return false;">성과지표 삭제</a>
                         </div>
                     </td>
 				</tr>

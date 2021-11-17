@@ -382,6 +382,29 @@
 				  AND YEAR=#{findYear}
 	</update>
 
+	<update id="updateData4" parameterType="chaVO">
+		/*	문화재청 성과목표 윗부분 수정	system.menu.cha.updateData4	*/
+		UPDATE BSC_SELF_RESULT
+		SET
+			STRA_TGT_ID=#{straTgtId},
+			RESULT_TGT_NM=#{resultTgtNm},
+			RESULT_TGT_NO=#{resultTgtNo}
+		WHERE 1=1
+				  AND YEAR=#{findYear}
+					AND RESULT_TGT_ID=#{resultTgtId}
+	</update>
+
+	<update id="updateData3" parameterType="chaVO">
+		/*	문화재청 전략목표 윗부분 수정	system.menu.cha.updateData3	*/
+		UPDATE BSC_SELF_STRATEGY
+		SET
+			STRA_TGT_NM=#{straTgtNm},
+			STRA_NO=#{straNo}
+		WHERE 1=1
+				  AND YEAR=#{findYear}
+		  AND STRA_TGT_ID=#{straTgtId}
+	</update>
+
 	<select id="selectList9" parameterType="chaVO" resultType="chaVO">
 		/*	콤보박스용..	system.menu.cha.selectList9 */
 		SELECT
